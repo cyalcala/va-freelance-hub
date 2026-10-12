@@ -1,5 +1,18 @@
 # Implementation Status
 
+## 2026-10-12 Manila — Local binding repair; live flow incident open
+
+Scrape and direct ingestion now bound physical statements to three rows for one
+source proposal/receipt. Native REDs 108/120 bindings; full 4,204/0/329,278,
+final direct 9/0/220, typecheck/build and all four audits pass. Independent review
+approves the bounded scope. [Evidence](operations/D1_BOUNDED_PUBLICATION_INSERTS_2026-10-12.md).
+No live deployment or migration. Current incident verifies one posted-today
+listing, five first-seen public rows, empty ready lake and a ten-minute caller
+failing HTTP 503 after physical lock advancement; current GCP jobs run older
+images and report zero syncs. NEXT is LIVE_ACQUISITION_AND_PUBLICATION_FLOW_RECOVERY.
+MATH accepted 0/13; certified daily flow UNKNOWN. Source-policy mutation fencing
+and complete uncertainty remain unresolved, not completed by batching.
+
 ## 2026-10-11 Manila — Authoritative preservation and Astra reconciliation
 
 Initial Antigravity/swarm preservation is backed up on canonical SSM and GitLab

@@ -38,6 +38,27 @@ and `docs/decisions/ADR-006-controlled-source-replenishment.md`
 
 **Resume prompt:** `docs/bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md`
 
+## 2026-10-12 owner-priority live publication incident
+
+The owner directs recovery of the observed one-posted-today website shortfall
+and steady trustworthy ten-minute/hourly flow toward 100–150 verified first
+publications/day. This is incident work within the existing source/publication
+program, supporting SP-23C and MATH-06/12/13, not a second expansion queue or
+acceptance of a mathematical card. The savepoint owns its mutable NEXT:
+LIVE_ACQUISITION_AND_PUBLICATION_FLOW_RECOVERY, starting with an advancing
+physical run lock, HTTP 503 and absent terminal diagnostics. Bounded inserts
+are verified locally; production revision/schema and empty ready supply remain
+separate recovery work. [Evidence and limits](../operations/D1_BOUNDED_PUBLICATION_INSERTS_2026-10-12.md).
+
+Preserve current restrictions, opt-outs, leases, per-item qualification, complete
+cutover predicate, source cadence and shared billing/request/AI/write budgets.
+No blind discovery/miner dispatch, raw lake publication, new source admission or
+unfenced duplicate clock follows from the incident. Compatible fixes need native
+adversarial/regression proof, reviewed artifacts, recovery and actual runtime
+receipts. Existing qualified jobs need not await unrelated expansion research.
+Historical planning counts and NEXT paragraphs below do not override fresh facts
+or this bounded owner priority. MATH accepted remains 0/13; daily flow UNKNOWN.
+
 ## 2026-10-03 PH remote source priority allocation
 
 The [priority strategy](../strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md)

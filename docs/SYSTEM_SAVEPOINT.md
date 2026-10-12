@@ -1,5 +1,51 @@
 # System Savepoint
 
+## 2026-10-12 Manila — Live shortfall recovered; bounded inserts verified locally
+
+Owner priority is the one October 12 website listing reported at 17:26, with
+steady reliable ten-minute/hourly progress toward 100–150/day. Full start SHA
+`0f8068350b6572385d2e88d145539cc6c20a9b86`; branch
+`codex/verified-flow-directory-checkpoint`. Freshly fetched main
+`f35bcdc3a2b341b62b22adcf6f0f2e279ed4e6e5` is an ancestor. Dirty Antigravity and
+prior interrupted work was preserved. Revised `astra777.txt` is the current
+continuation; its original 529 lines are byte-for-byte archived under docs/audits.
+
+**Live evidence:** one source-posted today, five first-seen public today (one
+stored verified label, four likely), fifteen in 24h. Turso acquisition stopped
+October 8, eligible ready unsynced supply zero; its endpoint matches GCP's secret
+in memory. Five sampled hourly publisher runs succeeded with zero syncs. GCP
+billing/access now works; the old denials are historical. The retained ten-minute
+Cloudflare clock exists but returns HTTP 503: an observed 18:01 tick advanced
+the physical lock while terminal diagnostics remained at 13:50. Lock mutation
+with unavailable acknowledgement is a strong inference, not yet exact error
+proof. Quota exhaustion is unsupported by the measured D1 aggregate.
+[GCP receipt](operations/GCP_PUBLICATION_INCIDENT_2026-10-12.md) and
+[public/funnel receipt](operations/PUBLICATION_FUNNEL_INCIDENT_2026-10-12.md)
+own exact versions, windows and limits. Pages is at reported `3065f0d...`,
+production schema 0054; current dependent gateway schema is unapplied.
+
+**Local verified slice:** physical scrape/direct inserts now use three-row
+chunks for one source proposal/receipt; native REDs were 108/120 bindings >100.
+Targeted scrape/date/helper 252/0/1,918; direct final 9/0/220; broad
+**4,204/0/329,278** in 255 files; final typecheck/build and four governance audits
+pass. Fixture instrumentation/type corrections followed the broad run and have
+separate targeted/type evidence. Independent reviews approve this bounded scope.
+[Evidence](operations/D1_BOUNDED_PUBLICATION_INSERTS_2026-10-12.md). No deployment,
+migration, new source or publication was performed in this slice. Partial
+unreceipted physical exposure and opt-out-between-chunks remain counterexamples.
+MATH accepted **0/13**, certified flow **UNKNOWN**. Remote receipts follow the
+verified behavior commit; the earlier source backup is not this pending slice.
+
+**Sole NEXT: LIVE_ACQUISITION_AND_PUBLICATION_FLOW_RECOVERY.** First obtain or
+prove the lock/503 acknowledgement boundary, restore the safest compatible
+ingestion path, then bounded permitted acquisition/ready supply and observed
+receipt/visibility with budgets and executing-artifact provenance. A retained
+caller diagnostic update may reveal the exact 503 without changing cadence.
+Do not blindly deploy schema-dependent current source, run broad discovery or
+unfence raw lake sync. Authority/reservation and economics/queue obligations
+remain open supporting work; the urgent observed incident takes priority under
+the owner's current instruction. Historical NEXT entries below are superseded.
+
 ## 2026-10-11 Manila — Antigravity/swarm preservation and independent scope correction
 
 Inventory start SHA `75d08a173fd2f0aa046b0651d485da73e848eb3e`, branch

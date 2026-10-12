@@ -1,5 +1,19 @@
 # Handoff
 
+## 2026-10-12 Manila — Live flow incident is current
+
+Continue the same work branch from incident start `0f8068350b6572385d2e88d145539cc6c20a9b86`.
+Read revised `astra777.txt`, newest savepoint and the October 12 GCP/public-funnel
+receipts. Local bounded-insert repair passed 4,204 tests, final typecheck/build,
+four audits and independent review, but production Pages is reported at
+`3065f0d...` with D1 schema 0054. No release/migration performed. Do not equate
+local repair with the observed live 503 root cause or deploy dependent schema
+blindly. A physically advanced scrape lock and unavailable acknowledgement are
+the next concrete counterexample. Restore compatible ingestion and permitted
+acquisition/ready supply, preserve all quality/budget/authority gates, then
+observe physical/receipt/visibility effects. MATH remains 0/13, flow UNKNOWN.
+[Bounded evidence](operations/D1_BOUNDED_PUBLICATION_INSERTS_2026-10-12.md).
+
 ## 2026-10-11 Manila — Antigravity/swarm preservation is the current handoff
 
 Continue `codex/verified-flow-directory-checkpoint`, inventory start

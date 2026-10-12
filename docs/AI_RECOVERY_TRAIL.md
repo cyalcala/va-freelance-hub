@@ -1,5 +1,21 @@
 # AI Recovery Trail
 
+## 2026-10-12 Manila — Owner incident resumed and measured
+
+Owner edited the goal after the prior stop, prioritizing one October 12 posting
+at 17:26 and steady ten-minute/hourly flow. Fresh live observations supersede
+dated billing/access-denial assumptions. Existing retained clock fires but
+receives 503; physical lock advances, terminal ingestion heartbeat stays stale.
+Same GCP/local lake has zero ready supply and no acquisition since October 8;
+hourly successful zero-output jobs prove no first-publication flow. Reports own
+exact times/provenance; production schema is 0054 and Pages source differs.
+Revised Astra preserves its original audit byte for byte in docs/audits.
+Local bounded-insert callback repairs and independent review complete with
+4,204 passing tests, final typecheck/build and four audits. Targeted fixture
+instrumentation/type corrections are separately recorded. [Proof/gaps/NEXT](operations/D1_BOUNDED_PUBLICATION_INSERTS_2026-10-12.md).
+No production mutation here. Continue LIVE_ACQUISITION_AND_PUBLICATION_FLOW_RECOVERY;
+0/13 mathematical acceptance and certified flow UNKNOWN remain unchanged.
+
 ## 2026-10-11 Manila — Verified initial backup, full Astra recovery, binding RED
 
 Preservation behavior/documentation commit `d8e28bc853c458e2f54de31cb9a2a318a051849e`

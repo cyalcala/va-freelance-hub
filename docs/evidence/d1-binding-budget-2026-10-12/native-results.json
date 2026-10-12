@@ -1,0 +1,4322 @@
+{
+  "scope": "OFFLINE_NATIVE_SQLITE_FTS_ACTUAL_DRIZZLE_HANDLERS_WITH_PARAMETER_CAP_ONLY_AND_DISCLOSED_LEDGER_CLOCK_PROJECTION",
+  "observedOriginalAstraSha256": "09a4f7b0ecd4ebf2d9a52448719dd58b39f8a1f27bb9b2425e653546fc38a901",
+  "originalAstraLfNormalizedSha256": "45ae113d76acfed0dba7f2f9a993510c07aaea3f0313ff89379ae1bed89cae0e",
+  "scrape": {
+    "logSha256": "59e319eee8d6619d30bb7f9c682146f56c97a6c0d3491348965c04b28df7ea4d",
+    "cases": [
+      {
+        "scenario": {
+          "source": "remotive",
+          "dates": [
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z"
+          ],
+          "enforceD1BindingBudget": true
+        },
+        "scope": {
+          "transport": "SYNTHETIC_ALLOWLISTED_RAW_PROVIDER_RESPONSES",
+          "parser": "ACTUAL_RSS_AND_REMOTEOK_JSON",
+          "persistence": "ACTUAL_ROUTE_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+          "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+          "reference": "2026-10-10T12:00:00.000Z",
+          "replacementCount": 1,
+          "clockProjection": [
+            {
+              "name": "source_publication_ledger_append_only_delete",
+              "replacements": 0,
+              "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+              "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+            },
+            {
+              "name": "source_publication_ledger_append_only_update",
+              "replacements": 0,
+              "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+              "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+            },
+            {
+              "name": "source_publication_ledger_reject_caller_id",
+              "replacements": 0,
+              "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+              "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+            },
+            {
+              "name": "source_publication_ledger_validate_insert",
+              "replacements": 1,
+              "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+              "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+            }
+          ],
+          "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+          "maxBoundParameters": 100,
+          "limitation": "Bun has no SQLite UDF registration; installed Node SQLite has no FTS5. Only literal ledger clock is projected; no live D1/provider/browser evidence."
+        },
+        "replies": [
+          {
+            "status": 200,
+            "response": {
+              "inserted": 3,
+              "actualChanges": 3,
+              "acceptedForInsert": 3,
+              "attemptedInsert": 3,
+              "insertFailedBatches": 0,
+              "insertErrors": [],
+              "triageFailures": 0,
+              "triageAiUnavailable": 0,
+              "triageProviderFailures": [],
+              "triageBudgetDeferred": 0,
+              "aiSubrequestCalls": 3,
+              "aiSubrequestBudget": 15,
+              "geoGateRejected": 0,
+              "postingFreshnessWithheld": 0,
+              "geoRejectionsBySource": {},
+              "consensusQuarantined": 0,
+              "unclearRetriaged": 0,
+              "unclearUpgraded": 0,
+              "unclearDeactivated": 0,
+              "unclearSkepticUnavailable": 0,
+              "unclearQuotaUnavailable": false,
+              "stateWriteOk": 5,
+              "stateWriteFailed": 0,
+              "rejectedPersisted": 0,
+              "rejectedInsertFailedBatches": 0,
+              "pendingPersisted": 0,
+              "pendingInsertFailedBatches": 0,
+              "pendingDrainClaimed": 0,
+              "pendingDrainPublished": 0,
+              "pendingDrainRejected": 0,
+              "pendingDrainQuarantined": 0,
+              "pendingDrainDeferred": 0,
+              "triageViaInngest": false,
+              "geminiConfigured": false,
+              "groqConfigured": false,
+              "droppedNoUrl": 0,
+              "quarantinedApplicationUrls": 0,
+              "anomalousApplicationHosts": [],
+              "unmatchedPauses": [],
+              "filteredOut": 0,
+              "processed": 3,
+              "backlogRemaining": 0,
+              "skipped": 0,
+              "failedSources": [],
+              "sourceResults": [
+                {
+                  "sourceId": "we-work-remotely",
+                  "sourceName": "We Work Remotely",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-09: public RSS page says anyone can use the feed with attribution and links back to WWR; robots allows the feed path.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /remote-jobs.rss",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://weworkremotely.com"
+                },
+                {
+                  "sourceId": "remotive",
+                  "sourceName": "Remotive",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-09: Remotive documents public API/RSS use with source mention and linkback; keep jobs ungated and route users to Remotive URLs.",
+                  "ok": true,
+                  "count": 3,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "ecce28ea01027a2e",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /remote-jobs/feed",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://remotive.com"
+                },
+                {
+                  "sourceId": "real-work-from-anywhere",
+                  "sourceName": "Real Work From Anywhere",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-12: official public RSS endpoint is reachable, robots allows all, and feed metadata uses hourly TTL; collect minimal metadata and link back to original postings.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /rss.xml",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://www.realworkfromanywhere.com"
+                },
+                {
+                  "sourceId": "jobicy-admin-support-apac",
+                  "sourceName": "Jobicy Admin Support APAC",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-12: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://jobicy.com"
+                },
+                {
+                  "sourceId": "jobicy-supporting-apac",
+                  "sourceName": "Jobicy Customer Support APAC",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Goldilocks review 2026-06-13: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Deferred by cadence group \"jobicy.com\": turn held by jobicy-admin-support-apac this tick (shared-origin alternation)."
+                },
+                {
+                  "sourceId": "remote-ok",
+                  "sourceName": "Remote OK",
+                  "sourceType": "JSON",
+                  "collectionMethod": "public_json_api",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-13: official public JSON API is reachable, robots allows /api, and the API legal header requires follow links back to Remote OK job URLs plus source mention. Do not use the Remote OK logo without permission.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "79b28c9ed0952022",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /api",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://remoteok.com"
+                },
+                {
+                  "sourceId": "problogger",
+                  "sourceName": "ProBlogger",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling."
+                },
+                {
+                  "sourceId": "remote-co",
+                  "sourceName": "Remote.co",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed."
+                },
+                {
+                  "sourceId": "authentic-jobs",
+                  "sourceName": "Authentic Jobs",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed."
+                },
+                {
+                  "sourceId": "dribbble",
+                  "sourceName": "Dribbble Jobs",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission."
+                },
+                {
+                  "sourceId": "onlinejobs-ph",
+                  "sourceName": "OnlineJobs.ph",
+                  "sourceType": "HTML",
+                  "collectionMethod": "public_html",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API."
+                },
+                {
+                  "sourceId": "jobspresso",
+                  "sourceName": "Jobspresso",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing."
+                }
+              ],
+              "fetchEventLog": {
+                "attempted": 12,
+                "recorded": 12,
+                "failedBatches": 0,
+                "errors": []
+              },
+              "cadenceGuards": {
+                "stateAvailable": true
+              },
+              "sourcesUnchanged": 0,
+              "robotsWouldBlock": 0,
+              "runDurationMs": 0
+            },
+            "physicalRows": 3,
+            "visibleIds": [
+              1,
+              2,
+              3
+            ],
+            "returnedIds": [
+              [
+                1,
+                2,
+                3
+              ]
+            ],
+            "ledger": [
+              {
+                "source": "remotive",
+                "n": 3,
+                "ids": "[1,2,3]"
+              }
+            ],
+            "ftsRows": 3,
+            "opportunityBindings": [
+              {
+                "opportunityInsert": true,
+                "parameters": 81,
+                "rejected": false
+              }
+            ],
+            "insertFaultInjected": false
+          }
+        ],
+        "transportAttempts": [
+          {
+            "phase": "parser-preview",
+            "source": "remotive",
+            "url": "https://remotive.com/remote-jobs/feed"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://weworkremotely.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://remotive.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://www.realworkfromanywhere.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://jobicy.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": "we-work-remotely",
+            "url": "https://weworkremotely.com/remote-jobs.rss"
+          },
+          {
+            "phase": "route",
+            "source": "remotive",
+            "url": "https://remotive.com/remote-jobs/feed"
+          },
+          {
+            "phase": "route",
+            "source": "real-work-from-anywhere",
+            "url": "https://www.realworkfromanywhere.com/rss.xml"
+          },
+          {
+            "phase": "route",
+            "source": "jobicy-admin-support-apac",
+            "url": "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://remoteok.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": "remote-ok",
+            "url": "https://remoteok.com/api"
+          }
+        ]
+      },
+      {
+        "scenario": {
+          "source": "remote-ok",
+          "dates": [
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z"
+          ],
+          "enforceD1BindingBudget": true
+        },
+        "scope": {
+          "transport": "SYNTHETIC_ALLOWLISTED_RAW_PROVIDER_RESPONSES",
+          "parser": "ACTUAL_RSS_AND_REMOTEOK_JSON",
+          "persistence": "ACTUAL_ROUTE_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+          "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+          "reference": "2026-10-10T12:00:00.000Z",
+          "replacementCount": 1,
+          "clockProjection": [
+            {
+              "name": "source_publication_ledger_append_only_delete",
+              "replacements": 0,
+              "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+              "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+            },
+            {
+              "name": "source_publication_ledger_append_only_update",
+              "replacements": 0,
+              "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+              "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+            },
+            {
+              "name": "source_publication_ledger_reject_caller_id",
+              "replacements": 0,
+              "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+              "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+            },
+            {
+              "name": "source_publication_ledger_validate_insert",
+              "replacements": 1,
+              "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+              "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+            }
+          ],
+          "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+          "maxBoundParameters": 100,
+          "limitation": "Bun has no SQLite UDF registration; installed Node SQLite has no FTS5. Only literal ledger clock is projected; no live D1/provider/browser evidence."
+        },
+        "replies": [
+          {
+            "status": 200,
+            "response": {
+              "inserted": 4,
+              "actualChanges": 4,
+              "acceptedForInsert": 4,
+              "attemptedInsert": 4,
+              "insertFailedBatches": 0,
+              "insertErrors": [],
+              "triageFailures": 0,
+              "triageAiUnavailable": 0,
+              "triageProviderFailures": [],
+              "triageBudgetDeferred": 0,
+              "aiSubrequestCalls": 4,
+              "aiSubrequestBudget": 15,
+              "geoGateRejected": 0,
+              "postingFreshnessWithheld": 0,
+              "geoRejectionsBySource": {},
+              "consensusQuarantined": 0,
+              "unclearRetriaged": 0,
+              "unclearUpgraded": 0,
+              "unclearDeactivated": 0,
+              "unclearSkepticUnavailable": 0,
+              "unclearQuotaUnavailable": false,
+              "stateWriteOk": 5,
+              "stateWriteFailed": 0,
+              "rejectedPersisted": 0,
+              "rejectedInsertFailedBatches": 0,
+              "pendingPersisted": 0,
+              "pendingInsertFailedBatches": 0,
+              "pendingDrainClaimed": 0,
+              "pendingDrainPublished": 0,
+              "pendingDrainRejected": 0,
+              "pendingDrainQuarantined": 0,
+              "pendingDrainDeferred": 0,
+              "triageViaInngest": false,
+              "geminiConfigured": false,
+              "groqConfigured": false,
+              "droppedNoUrl": 0,
+              "quarantinedApplicationUrls": 0,
+              "anomalousApplicationHosts": [],
+              "unmatchedPauses": [],
+              "filteredOut": 0,
+              "processed": 4,
+              "backlogRemaining": 0,
+              "skipped": 0,
+              "failedSources": [],
+              "sourceResults": [
+                {
+                  "sourceId": "we-work-remotely",
+                  "sourceName": "We Work Remotely",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-09: public RSS page says anyone can use the feed with attribution and links back to WWR; robots allows the feed path.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /remote-jobs.rss",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://weworkremotely.com"
+                },
+                {
+                  "sourceId": "remotive",
+                  "sourceName": "Remotive",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-09: Remotive documents public API/RSS use with source mention and linkback; keep jobs ungated and route users to Remotive URLs.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /remote-jobs/feed",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://remotive.com"
+                },
+                {
+                  "sourceId": "real-work-from-anywhere",
+                  "sourceName": "Real Work From Anywhere",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-12: official public RSS endpoint is reachable, robots allows all, and feed metadata uses hourly TTL; collect minimal metadata and link back to original postings.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /rss.xml",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://www.realworkfromanywhere.com"
+                },
+                {
+                  "sourceId": "jobicy-admin-support-apac",
+                  "sourceName": "Jobicy Admin Support APAC",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-12: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://jobicy.com"
+                },
+                {
+                  "sourceId": "jobicy-supporting-apac",
+                  "sourceName": "Jobicy Customer Support APAC",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Goldilocks review 2026-06-13: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Deferred by cadence group \"jobicy.com\": turn held by jobicy-admin-support-apac this tick (shared-origin alternation)."
+                },
+                {
+                  "sourceId": "remote-ok",
+                  "sourceName": "Remote OK",
+                  "sourceType": "JSON",
+                  "collectionMethod": "public_json_api",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-13: official public JSON API is reachable, robots allows /api, and the API legal header requires follow links back to Remote OK job URLs plus source mention. Do not use the Remote OK logo without permission.",
+                  "ok": true,
+                  "count": 4,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "7a5b3d14acc93582",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /api",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://remoteok.com"
+                },
+                {
+                  "sourceId": "problogger",
+                  "sourceName": "ProBlogger",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling."
+                },
+                {
+                  "sourceId": "remote-co",
+                  "sourceName": "Remote.co",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed."
+                },
+                {
+                  "sourceId": "authentic-jobs",
+                  "sourceName": "Authentic Jobs",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed."
+                },
+                {
+                  "sourceId": "dribbble",
+                  "sourceName": "Dribbble Jobs",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission."
+                },
+                {
+                  "sourceId": "onlinejobs-ph",
+                  "sourceName": "OnlineJobs.ph",
+                  "sourceType": "HTML",
+                  "collectionMethod": "public_html",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API."
+                },
+                {
+                  "sourceId": "jobspresso",
+                  "sourceName": "Jobspresso",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing."
+                }
+              ],
+              "fetchEventLog": {
+                "attempted": 12,
+                "recorded": 12,
+                "failedBatches": 0,
+                "errors": []
+              },
+              "cadenceGuards": {
+                "stateAvailable": true
+              },
+              "sourcesUnchanged": 0,
+              "robotsWouldBlock": 0,
+              "runDurationMs": 0
+            },
+            "physicalRows": 4,
+            "visibleIds": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "returnedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4
+              ]
+            ],
+            "ledger": [
+              {
+                "source": "remote-ok",
+                "n": 4,
+                "ids": "[1,2,3,4]"
+              }
+            ],
+            "ftsRows": 4,
+            "opportunityBindings": [
+              {
+                "opportunityInsert": true,
+                "parameters": 81,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 27,
+                "rejected": false
+              }
+            ],
+            "insertFaultInjected": false
+          }
+        ],
+        "transportAttempts": [
+          {
+            "phase": "parser-preview",
+            "source": "remote-ok",
+            "url": "https://remoteok.com/api"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://weworkremotely.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://remotive.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://www.realworkfromanywhere.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://jobicy.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": "we-work-remotely",
+            "url": "https://weworkremotely.com/remote-jobs.rss"
+          },
+          {
+            "phase": "route",
+            "source": "remotive",
+            "url": "https://remotive.com/remote-jobs/feed"
+          },
+          {
+            "phase": "route",
+            "source": "real-work-from-anywhere",
+            "url": "https://www.realworkfromanywhere.com/rss.xml"
+          },
+          {
+            "phase": "route",
+            "source": "jobicy-admin-support-apac",
+            "url": "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://remoteok.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": "remote-ok",
+            "url": "https://remoteok.com/api"
+          }
+        ]
+      },
+      {
+        "scenario": {
+          "source": "remote-ok",
+          "dates": [
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z"
+          ],
+          "enforceD1BindingBudget": true
+        },
+        "scope": {
+          "transport": "SYNTHETIC_ALLOWLISTED_RAW_PROVIDER_RESPONSES",
+          "parser": "ACTUAL_RSS_AND_REMOTEOK_JSON",
+          "persistence": "ACTUAL_ROUTE_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+          "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+          "reference": "2026-10-10T12:00:00.000Z",
+          "replacementCount": 1,
+          "clockProjection": [
+            {
+              "name": "source_publication_ledger_append_only_delete",
+              "replacements": 0,
+              "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+              "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+            },
+            {
+              "name": "source_publication_ledger_append_only_update",
+              "replacements": 0,
+              "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+              "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+            },
+            {
+              "name": "source_publication_ledger_reject_caller_id",
+              "replacements": 0,
+              "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+              "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+            },
+            {
+              "name": "source_publication_ledger_validate_insert",
+              "replacements": 1,
+              "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+              "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+            }
+          ],
+          "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+          "maxBoundParameters": 100,
+          "limitation": "Bun has no SQLite UDF registration; installed Node SQLite has no FTS5. Only literal ledger clock is projected; no live D1/provider/browser evidence."
+        },
+        "replies": [
+          {
+            "status": 200,
+            "response": {
+              "inserted": 10,
+              "actualChanges": 10,
+              "acceptedForInsert": 10,
+              "attemptedInsert": 10,
+              "insertFailedBatches": 0,
+              "insertErrors": [],
+              "triageFailures": 0,
+              "triageAiUnavailable": 0,
+              "triageProviderFailures": [],
+              "triageBudgetDeferred": 0,
+              "aiSubrequestCalls": 10,
+              "aiSubrequestBudget": 15,
+              "geoGateRejected": 0,
+              "postingFreshnessWithheld": 0,
+              "geoRejectionsBySource": {},
+              "consensusQuarantined": 0,
+              "unclearRetriaged": 0,
+              "unclearUpgraded": 0,
+              "unclearDeactivated": 0,
+              "unclearSkepticUnavailable": 0,
+              "unclearQuotaUnavailable": false,
+              "stateWriteOk": 5,
+              "stateWriteFailed": 0,
+              "rejectedPersisted": 0,
+              "rejectedInsertFailedBatches": 0,
+              "pendingPersisted": 0,
+              "pendingInsertFailedBatches": 0,
+              "pendingDrainClaimed": 0,
+              "pendingDrainPublished": 0,
+              "pendingDrainRejected": 0,
+              "pendingDrainQuarantined": 0,
+              "pendingDrainDeferred": 0,
+              "triageViaInngest": false,
+              "geminiConfigured": false,
+              "groqConfigured": false,
+              "droppedNoUrl": 0,
+              "quarantinedApplicationUrls": 0,
+              "anomalousApplicationHosts": [],
+              "unmatchedPauses": [],
+              "filteredOut": 0,
+              "processed": 10,
+              "backlogRemaining": 0,
+              "skipped": 0,
+              "failedSources": [],
+              "sourceResults": [
+                {
+                  "sourceId": "we-work-remotely",
+                  "sourceName": "We Work Remotely",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-09: public RSS page says anyone can use the feed with attribution and links back to WWR; robots allows the feed path.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /remote-jobs.rss",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://weworkremotely.com"
+                },
+                {
+                  "sourceId": "remotive",
+                  "sourceName": "Remotive",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-09: Remotive documents public API/RSS use with source mention and linkback; keep jobs ungated and route users to Remotive URLs.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /remote-jobs/feed",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://remotive.com"
+                },
+                {
+                  "sourceId": "real-work-from-anywhere",
+                  "sourceName": "Real Work From Anywhere",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-12: official public RSS endpoint is reachable, robots allows all, and feed metadata uses hourly TTL; collect minimal metadata and link back to original postings.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /rss.xml",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://www.realworkfromanywhere.com"
+                },
+                {
+                  "sourceId": "jobicy-admin-support-apac",
+                  "sourceName": "Jobicy Admin Support APAC",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-12: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://jobicy.com"
+                },
+                {
+                  "sourceId": "jobicy-supporting-apac",
+                  "sourceName": "Jobicy Customer Support APAC",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Goldilocks review 2026-06-13: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Deferred by cadence group \"jobicy.com\": turn held by jobicy-admin-support-apac this tick (shared-origin alternation)."
+                },
+                {
+                  "sourceId": "remote-ok",
+                  "sourceName": "Remote OK",
+                  "sourceType": "JSON",
+                  "collectionMethod": "public_json_api",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-13: official public JSON API is reachable, robots allows /api, and the API legal header requires follow links back to Remote OK job URLs plus source mention. Do not use the Remote OK logo without permission.",
+                  "ok": true,
+                  "count": 10,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "a10f6839655a056e",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /api",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://remoteok.com"
+                },
+                {
+                  "sourceId": "problogger",
+                  "sourceName": "ProBlogger",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling."
+                },
+                {
+                  "sourceId": "remote-co",
+                  "sourceName": "Remote.co",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed."
+                },
+                {
+                  "sourceId": "authentic-jobs",
+                  "sourceName": "Authentic Jobs",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed."
+                },
+                {
+                  "sourceId": "dribbble",
+                  "sourceName": "Dribbble Jobs",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission."
+                },
+                {
+                  "sourceId": "onlinejobs-ph",
+                  "sourceName": "OnlineJobs.ph",
+                  "sourceType": "HTML",
+                  "collectionMethod": "public_html",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API."
+                },
+                {
+                  "sourceId": "jobspresso",
+                  "sourceName": "Jobspresso",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing."
+                }
+              ],
+              "fetchEventLog": {
+                "attempted": 12,
+                "recorded": 12,
+                "failedBatches": 0,
+                "errors": []
+              },
+              "cadenceGuards": {
+                "stateAvailable": true
+              },
+              "sourcesUnchanged": 0,
+              "robotsWouldBlock": 0,
+              "runDurationMs": 0
+            },
+            "physicalRows": 10,
+            "visibleIds": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10
+            ],
+            "returnedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4,
+                5,
+                6
+              ],
+              [
+                7,
+                8,
+                9
+              ],
+              [
+                10
+              ]
+            ],
+            "ledger": [
+              {
+                "source": "remote-ok",
+                "n": 10,
+                "ids": "[1,2,3,4,5,6,7,8,9,10]"
+              }
+            ],
+            "ftsRows": 10,
+            "opportunityBindings": [
+              {
+                "opportunityInsert": true,
+                "parameters": 81,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 81,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 81,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 27,
+                "rejected": false
+              }
+            ],
+            "insertFaultInjected": false
+          }
+        ],
+        "transportAttempts": [
+          {
+            "phase": "parser-preview",
+            "source": "remote-ok",
+            "url": "https://remoteok.com/api"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://weworkremotely.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://remotive.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://www.realworkfromanywhere.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://jobicy.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": "we-work-remotely",
+            "url": "https://weworkremotely.com/remote-jobs.rss"
+          },
+          {
+            "phase": "route",
+            "source": "remotive",
+            "url": "https://remotive.com/remote-jobs/feed"
+          },
+          {
+            "phase": "route",
+            "source": "real-work-from-anywhere",
+            "url": "https://www.realworkfromanywhere.com/rss.xml"
+          },
+          {
+            "phase": "route",
+            "source": "jobicy-admin-support-apac",
+            "url": "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://remoteok.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": "remote-ok",
+            "url": "https://remoteok.com/api"
+          }
+        ]
+      },
+      {
+        "scenario": {
+          "source": "remotive",
+          "dates": [],
+          "sourceDates": {
+            "remotive": [
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z",
+              null,
+              "2026-09-31T12:00:00.000Z"
+            ],
+            "real-work-from-anywhere": [
+              "2026-10-09T12:00:00.000Z",
+              "2026-09-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z"
+            ],
+            "remote-ok": [
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-10T12:00:00.000000001Z",
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z"
+            ]
+          },
+          "enforceD1BindingBudget": true
+        },
+        "scope": {
+          "transport": "SYNTHETIC_ALLOWLISTED_RAW_PROVIDER_RESPONSES",
+          "parser": "ACTUAL_RSS_AND_REMOTEOK_JSON",
+          "persistence": "ACTUAL_ROUTE_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+          "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+          "reference": "2026-10-10T12:00:00.000Z",
+          "replacementCount": 1,
+          "clockProjection": [
+            {
+              "name": "source_publication_ledger_append_only_delete",
+              "replacements": 0,
+              "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+              "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+            },
+            {
+              "name": "source_publication_ledger_append_only_update",
+              "replacements": 0,
+              "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+              "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+            },
+            {
+              "name": "source_publication_ledger_reject_caller_id",
+              "replacements": 0,
+              "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+              "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+            },
+            {
+              "name": "source_publication_ledger_validate_insert",
+              "replacements": 1,
+              "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+              "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+            }
+          ],
+          "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+          "maxBoundParameters": 100,
+          "limitation": "Bun has no SQLite UDF registration; installed Node SQLite has no FTS5. Only literal ledger clock is projected; no live D1/provider/browser evidence."
+        },
+        "replies": [
+          {
+            "status": 200,
+            "response": {
+              "inserted": 11,
+              "actualChanges": 11,
+              "acceptedForInsert": 11,
+              "attemptedInsert": 11,
+              "insertFailedBatches": 0,
+              "insertErrors": [],
+              "triageFailures": 0,
+              "triageAiUnavailable": 0,
+              "triageProviderFailures": [],
+              "triageBudgetDeferred": 0,
+              "aiSubrequestCalls": 11,
+              "aiSubrequestBudget": 15,
+              "geoGateRejected": 0,
+              "postingFreshnessWithheld": 4,
+              "geoRejectionsBySource": {},
+              "consensusQuarantined": 0,
+              "unclearRetriaged": 0,
+              "unclearUpgraded": 0,
+              "unclearDeactivated": 0,
+              "unclearSkepticUnavailable": 0,
+              "unclearQuotaUnavailable": false,
+              "stateWriteOk": 5,
+              "stateWriteFailed": 0,
+              "rejectedPersisted": 20,
+              "rejectedInsertFailedBatches": 0,
+              "pendingPersisted": 0,
+              "pendingInsertFailedBatches": 0,
+              "pendingDrainClaimed": 0,
+              "pendingDrainPublished": 0,
+              "pendingDrainRejected": 0,
+              "pendingDrainQuarantined": 0,
+              "pendingDrainDeferred": 0,
+              "triageViaInngest": false,
+              "geminiConfigured": false,
+              "groqConfigured": false,
+              "droppedNoUrl": 0,
+              "quarantinedApplicationUrls": 0,
+              "anomalousApplicationHosts": [],
+              "unmatchedPauses": [],
+              "filteredOut": 4,
+              "processed": 15,
+              "backlogRemaining": 0,
+              "skipped": 4,
+              "failedSources": [],
+              "sourceResults": [
+                {
+                  "sourceId": "we-work-remotely",
+                  "sourceName": "We Work Remotely",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-09: public RSS page says anyone can use the feed with attribution and links back to WWR; robots allows the feed path.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /remote-jobs.rss",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://weworkremotely.com"
+                },
+                {
+                  "sourceId": "remotive",
+                  "sourceName": "Remotive",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-09: Remotive documents public API/RSS use with source mention and linkback; keep jobs ungated and route users to Remotive URLs.",
+                  "ok": true,
+                  "count": 7,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "b53c9c86500816ab",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /remote-jobs/feed",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://remotive.com"
+                },
+                {
+                  "sourceId": "real-work-from-anywhere",
+                  "sourceName": "Real Work From Anywhere",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-12: official public RSS endpoint is reachable, robots allows all, and feed metadata uses hourly TTL; collect minimal metadata and link back to original postings.",
+                  "ok": true,
+                  "count": 3,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "122fcd6c673d4c2d",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /rss.xml",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://www.realworkfromanywhere.com"
+                },
+                {
+                  "sourceId": "jobicy-admin-support-apac",
+                  "sourceName": "Jobicy Admin Support APAC",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-12: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://jobicy.com"
+                },
+                {
+                  "sourceId": "jobicy-supporting-apac",
+                  "sourceName": "Jobicy Customer Support APAC",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Goldilocks review 2026-06-13: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Deferred by cadence group \"jobicy.com\": turn held by jobicy-admin-support-apac this tick (shared-origin alternation)."
+                },
+                {
+                  "sourceId": "remote-ok",
+                  "sourceName": "Remote OK",
+                  "sourceType": "JSON",
+                  "collectionMethod": "public_json_api",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-13: official public JSON API is reachable, robots allows /api, and the API legal header requires follow links back to Remote OK job URLs plus source mention. Do not use the Remote OK logo without permission.",
+                  "ok": true,
+                  "count": 5,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "ca103b78929dbcf6",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /api",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://remoteok.com"
+                },
+                {
+                  "sourceId": "problogger",
+                  "sourceName": "ProBlogger",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling."
+                },
+                {
+                  "sourceId": "remote-co",
+                  "sourceName": "Remote.co",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed."
+                },
+                {
+                  "sourceId": "authentic-jobs",
+                  "sourceName": "Authentic Jobs",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed."
+                },
+                {
+                  "sourceId": "dribbble",
+                  "sourceName": "Dribbble Jobs",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission."
+                },
+                {
+                  "sourceId": "onlinejobs-ph",
+                  "sourceName": "OnlineJobs.ph",
+                  "sourceType": "HTML",
+                  "collectionMethod": "public_html",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API."
+                },
+                {
+                  "sourceId": "jobspresso",
+                  "sourceName": "Jobspresso",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing."
+                }
+              ],
+              "fetchEventLog": {
+                "attempted": 12,
+                "recorded": 12,
+                "failedBatches": 0,
+                "errors": []
+              },
+              "cadenceGuards": {
+                "stateAvailable": true
+              },
+              "sourcesUnchanged": 0,
+              "robotsWouldBlock": 0,
+              "runDurationMs": 0
+            },
+            "physicalRows": 15,
+            "visibleIds": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11
+            ],
+            "returnedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ],
+              [
+                6,
+                7
+              ],
+              [
+                8,
+                9,
+                10
+              ],
+              [
+                11
+              ]
+            ],
+            "ledger": [
+              {
+                "source": "remotive",
+                "n": 5,
+                "ids": "[1,2,3,4,5]"
+              },
+              {
+                "source": "real-work-from-anywhere",
+                "n": 2,
+                "ids": "[6,7]"
+              },
+              {
+                "source": "remote-ok",
+                "n": 4,
+                "ids": "[8,9,10,11]"
+              }
+            ],
+            "ftsRows": 15,
+            "opportunityBindings": [
+              {
+                "opportunityInsert": true,
+                "parameters": 81,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 54,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 54,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 81,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 27,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 81,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 27,
+                "rejected": false
+              }
+            ],
+            "insertFaultInjected": false
+          }
+        ],
+        "transportAttempts": [
+          {
+            "phase": "parser-preview",
+            "source": "remotive",
+            "url": "https://remotive.com/remote-jobs/feed"
+          },
+          {
+            "phase": "parser-preview",
+            "source": "real-work-from-anywhere",
+            "url": "https://www.realworkfromanywhere.com/rss.xml"
+          },
+          {
+            "phase": "parser-preview",
+            "source": "remote-ok",
+            "url": "https://remoteok.com/api"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://weworkremotely.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://remotive.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://www.realworkfromanywhere.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://jobicy.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": "we-work-remotely",
+            "url": "https://weworkremotely.com/remote-jobs.rss"
+          },
+          {
+            "phase": "route",
+            "source": "remotive",
+            "url": "https://remotive.com/remote-jobs/feed"
+          },
+          {
+            "phase": "route",
+            "source": "real-work-from-anywhere",
+            "url": "https://www.realworkfromanywhere.com/rss.xml"
+          },
+          {
+            "phase": "route",
+            "source": "jobicy-admin-support-apac",
+            "url": "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://remoteok.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": "remote-ok",
+            "url": "https://remoteok.com/api"
+          }
+        ]
+      },
+      {
+        "scenario": {
+          "source": "remote-ok",
+          "dates": [
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z"
+          ],
+          "dedup": true,
+          "enforceD1BindingBudget": true
+        },
+        "scope": {
+          "transport": "SYNTHETIC_ALLOWLISTED_RAW_PROVIDER_RESPONSES",
+          "parser": "ACTUAL_RSS_AND_REMOTEOK_JSON",
+          "persistence": "ACTUAL_ROUTE_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+          "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+          "reference": "2026-10-10T12:00:00.000Z",
+          "replacementCount": 1,
+          "clockProjection": [
+            {
+              "name": "source_publication_ledger_append_only_delete",
+              "replacements": 0,
+              "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+              "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+            },
+            {
+              "name": "source_publication_ledger_append_only_update",
+              "replacements": 0,
+              "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+              "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+            },
+            {
+              "name": "source_publication_ledger_reject_caller_id",
+              "replacements": 0,
+              "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+              "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+            },
+            {
+              "name": "source_publication_ledger_validate_insert",
+              "replacements": 1,
+              "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+              "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+            }
+          ],
+          "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+          "maxBoundParameters": 100,
+          "limitation": "Bun has no SQLite UDF registration; installed Node SQLite has no FTS5. Only literal ledger clock is projected; no live D1/provider/browser evidence."
+        },
+        "replies": [
+          {
+            "status": 200,
+            "response": {
+              "inserted": 0,
+              "actualChanges": 0,
+              "acceptedForInsert": 0,
+              "attemptedInsert": 0,
+              "insertFailedBatches": 0,
+              "insertErrors": [],
+              "skipped": 4,
+              "pendingDrainClaimed": 0,
+              "pendingDrainPublished": 0,
+              "pendingDrainRejected": 0,
+              "pendingDrainDeferred": 0,
+              "droppedNoUrl": 0,
+              "quarantinedApplicationUrls": 0,
+              "anomalousApplicationHosts": [],
+              "unmatchedPauses": [],
+              "failedSources": [],
+              "sourceResults": [
+                {
+                  "sourceId": "we-work-remotely",
+                  "sourceName": "We Work Remotely",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-09: public RSS page says anyone can use the feed with attribution and links back to WWR; robots allows the feed path.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /remote-jobs.rss",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://weworkremotely.com"
+                },
+                {
+                  "sourceId": "remotive",
+                  "sourceName": "Remotive",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-09: Remotive documents public API/RSS use with source mention and linkback; keep jobs ungated and route users to Remotive URLs.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /remote-jobs/feed",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://remotive.com"
+                },
+                {
+                  "sourceId": "real-work-from-anywhere",
+                  "sourceName": "Real Work From Anywhere",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-12: official public RSS endpoint is reachable, robots allows all, and feed metadata uses hourly TTL; collect minimal metadata and link back to original postings.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /rss.xml",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://www.realworkfromanywhere.com"
+                },
+                {
+                  "sourceId": "jobicy-admin-support-apac",
+                  "sourceName": "Jobicy Admin Support APAC",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-12: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://jobicy.com"
+                },
+                {
+                  "sourceId": "jobicy-supporting-apac",
+                  "sourceName": "Jobicy Customer Support APAC",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Goldilocks review 2026-06-13: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Deferred by cadence group \"jobicy.com\": turn held by jobicy-admin-support-apac this tick (shared-origin alternation)."
+                },
+                {
+                  "sourceId": "remote-ok",
+                  "sourceName": "Remote OK",
+                  "sourceType": "JSON",
+                  "collectionMethod": "public_json_api",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-13: official public JSON API is reachable, robots allows /api, and the API legal header requires follow links back to Remote OK job URLs plus source mention. Do not use the Remote OK logo without permission.",
+                  "ok": true,
+                  "count": 4,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "7a5b3d14acc93582",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /api",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://remoteok.com"
+                },
+                {
+                  "sourceId": "problogger",
+                  "sourceName": "ProBlogger",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling."
+                },
+                {
+                  "sourceId": "remote-co",
+                  "sourceName": "Remote.co",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed."
+                },
+                {
+                  "sourceId": "authentic-jobs",
+                  "sourceName": "Authentic Jobs",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed."
+                },
+                {
+                  "sourceId": "dribbble",
+                  "sourceName": "Dribbble Jobs",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission."
+                },
+                {
+                  "sourceId": "onlinejobs-ph",
+                  "sourceName": "OnlineJobs.ph",
+                  "sourceType": "HTML",
+                  "collectionMethod": "public_html",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API."
+                },
+                {
+                  "sourceId": "jobspresso",
+                  "sourceName": "Jobspresso",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing."
+                }
+              ],
+              "fetchEventLog": {
+                "attempted": 12,
+                "recorded": 12,
+                "failedBatches": 0,
+                "errors": []
+              },
+              "cadenceGuards": {
+                "stateAvailable": true
+              },
+              "sourcesUnchanged": 0,
+              "robotsWouldBlock": 0,
+              "unclearRetriaged": 0,
+              "unclearUpgraded": 0,
+              "unclearDeactivated": 0,
+              "unclearSkepticUnavailable": 0,
+              "unclearQuotaUnavailable": false,
+              "stateWriteOk": 5,
+              "stateWriteFailed": 0,
+              "message": "Zero new jobs after dedup"
+            },
+            "physicalRows": 4,
+            "visibleIds": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "returnedIds": [],
+            "ledger": [],
+            "ftsRows": 4,
+            "opportunityBindings": [],
+            "insertFaultInjected": false
+          }
+        ],
+        "transportAttempts": [
+          {
+            "phase": "parser-preview",
+            "source": "remote-ok",
+            "url": "https://remoteok.com/api"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://weworkremotely.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://remotive.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://www.realworkfromanywhere.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://jobicy.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": "we-work-remotely",
+            "url": "https://weworkremotely.com/remote-jobs.rss"
+          },
+          {
+            "phase": "route",
+            "source": "remotive",
+            "url": "https://remotive.com/remote-jobs/feed"
+          },
+          {
+            "phase": "route",
+            "source": "real-work-from-anywhere",
+            "url": "https://www.realworkfromanywhere.com/rss.xml"
+          },
+          {
+            "phase": "route",
+            "source": "jobicy-admin-support-apac",
+            "url": "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://remoteok.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": "remote-ok",
+            "url": "https://remoteok.com/api"
+          }
+        ]
+      },
+      {
+        "scenario": {
+          "source": "remote-ok",
+          "dates": [
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z",
+            "2026-10-09T12:00:00.000Z"
+          ],
+          "duplicateSourceUrlIndex": 3,
+          "enforceD1BindingBudget": true
+        },
+        "scope": {
+          "transport": "SYNTHETIC_ALLOWLISTED_RAW_PROVIDER_RESPONSES",
+          "parser": "ACTUAL_RSS_AND_REMOTEOK_JSON",
+          "persistence": "ACTUAL_ROUTE_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+          "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+          "reference": "2026-10-10T12:00:00.000Z",
+          "replacementCount": 1,
+          "clockProjection": [
+            {
+              "name": "source_publication_ledger_append_only_delete",
+              "replacements": 0,
+              "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+              "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+            },
+            {
+              "name": "source_publication_ledger_append_only_update",
+              "replacements": 0,
+              "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+              "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+            },
+            {
+              "name": "source_publication_ledger_reject_caller_id",
+              "replacements": 0,
+              "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+              "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+            },
+            {
+              "name": "source_publication_ledger_validate_insert",
+              "replacements": 1,
+              "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+              "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+            }
+          ],
+          "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+          "maxBoundParameters": 100,
+          "limitation": "Bun has no SQLite UDF registration; installed Node SQLite has no FTS5. Only literal ledger clock is projected; no live D1/provider/browser evidence."
+        },
+        "replies": [
+          {
+            "status": 200,
+            "response": {
+              "inserted": 3,
+              "actualChanges": 3,
+              "acceptedForInsert": 4,
+              "attemptedInsert": 4,
+              "insertFailedBatches": 0,
+              "insertErrors": [],
+              "triageFailures": 0,
+              "triageAiUnavailable": 0,
+              "triageProviderFailures": [],
+              "triageBudgetDeferred": 0,
+              "aiSubrequestCalls": 4,
+              "aiSubrequestBudget": 15,
+              "geoGateRejected": 0,
+              "postingFreshnessWithheld": 0,
+              "geoRejectionsBySource": {},
+              "consensusQuarantined": 0,
+              "unclearRetriaged": 0,
+              "unclearUpgraded": 0,
+              "unclearDeactivated": 0,
+              "unclearSkepticUnavailable": 0,
+              "unclearQuotaUnavailable": false,
+              "stateWriteOk": 5,
+              "stateWriteFailed": 0,
+              "rejectedPersisted": 0,
+              "rejectedInsertFailedBatches": 0,
+              "pendingPersisted": 0,
+              "pendingInsertFailedBatches": 0,
+              "pendingDrainClaimed": 0,
+              "pendingDrainPublished": 0,
+              "pendingDrainRejected": 0,
+              "pendingDrainQuarantined": 0,
+              "pendingDrainDeferred": 0,
+              "triageViaInngest": false,
+              "geminiConfigured": false,
+              "groqConfigured": false,
+              "droppedNoUrl": 0,
+              "quarantinedApplicationUrls": 0,
+              "anomalousApplicationHosts": [],
+              "unmatchedPauses": [],
+              "filteredOut": 0,
+              "processed": 4,
+              "backlogRemaining": 0,
+              "skipped": 1,
+              "failedSources": [],
+              "sourceResults": [
+                {
+                  "sourceId": "we-work-remotely",
+                  "sourceName": "We Work Remotely",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-09: public RSS page says anyone can use the feed with attribution and links back to WWR; robots allows the feed path.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /remote-jobs.rss",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://weworkremotely.com"
+                },
+                {
+                  "sourceId": "remotive",
+                  "sourceName": "Remotive",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-09: Remotive documents public API/RSS use with source mention and linkback; keep jobs ungated and route users to Remotive URLs.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /remote-jobs/feed",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://remotive.com"
+                },
+                {
+                  "sourceId": "real-work-from-anywhere",
+                  "sourceName": "Real Work From Anywhere",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-12: official public RSS endpoint is reachable, robots allows all, and feed metadata uses hourly TTL; collect minimal metadata and link back to original postings.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /rss.xml",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://www.realworkfromanywhere.com"
+                },
+                {
+                  "sourceId": "jobicy-admin-support-apac",
+                  "sourceName": "Jobicy Admin Support APAC",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-12: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "13dafe8603fd5dc8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://jobicy.com"
+                },
+                {
+                  "sourceId": "jobicy-supporting-apac",
+                  "sourceName": "Jobicy Customer Support APAC",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Goldilocks review 2026-06-13: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Deferred by cadence group \"jobicy.com\": turn held by jobicy-admin-support-apac this tick (shared-origin alternation)."
+                },
+                {
+                  "sourceId": "remote-ok",
+                  "sourceName": "Remote OK",
+                  "sourceType": "JSON",
+                  "collectionMethod": "public_json_api",
+                  "complianceStatus": "allowed",
+                  "complianceNotes": "Current review 2026-06-13: official public JSON API is reachable, robots allows /api, and the API legal header requires follow links back to Remote OK job URLs plus source mention. Do not use the Remote OK logo without permission.",
+                  "ok": true,
+                  "count": 4,
+                  "durationMs": 0,
+                  "notModified": false,
+                  "etag": null,
+                  "lastModified": null,
+                  "bodyHash": "57420cce9c14e2b8",
+                  "robotsMode": "enforce",
+                  "robotsVerdict": "allowed",
+                  "robotsEvidence": "Allow: / matched /api",
+                  "robotsCrawlDelay": null,
+                  "robotsWouldBlock": false,
+                  "robotsOrigin": "https://remoteok.com"
+                },
+                {
+                  "sourceId": "problogger",
+                  "sourceName": "ProBlogger",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling."
+                },
+                {
+                  "sourceId": "remote-co",
+                  "sourceName": "Remote.co",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed."
+                },
+                {
+                  "sourceId": "authentic-jobs",
+                  "sourceName": "Authentic Jobs",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed."
+                },
+                {
+                  "sourceId": "dribbble",
+                  "sourceName": "Dribbble Jobs",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission."
+                },
+                {
+                  "sourceId": "onlinejobs-ph",
+                  "sourceName": "OnlineJobs.ph",
+                  "sourceType": "HTML",
+                  "collectionMethod": "public_html",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API."
+                },
+                {
+                  "sourceId": "jobspresso",
+                  "sourceName": "Jobspresso",
+                  "sourceType": "RSS",
+                  "collectionMethod": "rss_feed",
+                  "complianceStatus": "paused",
+                  "complianceNotes": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing.",
+                  "ok": true,
+                  "count": 0,
+                  "durationMs": 0,
+                  "skipped": true,
+                  "skipReason": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing."
+                }
+              ],
+              "fetchEventLog": {
+                "attempted": 12,
+                "recorded": 12,
+                "failedBatches": 0,
+                "errors": []
+              },
+              "cadenceGuards": {
+                "stateAvailable": true
+              },
+              "sourcesUnchanged": 0,
+              "robotsWouldBlock": 0,
+              "runDurationMs": 0
+            },
+            "physicalRows": 3,
+            "visibleIds": [
+              1,
+              2,
+              3
+            ],
+            "returnedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              []
+            ],
+            "ledger": [
+              {
+                "source": "remote-ok",
+                "n": 3,
+                "ids": "[1,2,3]"
+              }
+            ],
+            "ftsRows": 3,
+            "opportunityBindings": [
+              {
+                "opportunityInsert": true,
+                "parameters": 81,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 27,
+                "rejected": false
+              }
+            ],
+            "insertFaultInjected": false
+          }
+        ],
+        "transportAttempts": [
+          {
+            "phase": "parser-preview",
+            "source": "remote-ok",
+            "url": "https://remoteok.com/api"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://weworkremotely.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://remotive.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://www.realworkfromanywhere.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://jobicy.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": "we-work-remotely",
+            "url": "https://weworkremotely.com/remote-jobs.rss"
+          },
+          {
+            "phase": "route",
+            "source": "remotive",
+            "url": "https://remotive.com/remote-jobs/feed"
+          },
+          {
+            "phase": "route",
+            "source": "real-work-from-anywhere",
+            "url": "https://www.realworkfromanywhere.com/rss.xml"
+          },
+          {
+            "phase": "route",
+            "source": "jobicy-admin-support-apac",
+            "url": "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://remoteok.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": "remote-ok",
+            "url": "https://remoteok.com/api"
+          }
+        ]
+      },
+      {
+        "scenario": {
+          "source": "remotive",
+          "dates": [],
+          "failOpportunityInsertAttempt": 3,
+          "sourceDates": {
+            "remotive": [
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z"
+            ],
+            "real-work-from-anywhere": [
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z"
+            ],
+            "remote-ok": [
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z",
+              null
+            ]
+          },
+          "enforceD1BindingBudget": true
+        },
+        "scope": {
+          "transport": "SYNTHETIC_ALLOWLISTED_RAW_PROVIDER_RESPONSES",
+          "parser": "ACTUAL_RSS_AND_REMOTEOK_JSON",
+          "persistence": "ACTUAL_ROUTE_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+          "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+          "reference": "2026-10-10T12:00:00.000Z",
+          "replacementCount": 1,
+          "clockProjection": [
+            {
+              "name": "source_publication_ledger_append_only_delete",
+              "replacements": 0,
+              "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+              "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+            },
+            {
+              "name": "source_publication_ledger_append_only_update",
+              "replacements": 0,
+              "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+              "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+            },
+            {
+              "name": "source_publication_ledger_reject_caller_id",
+              "replacements": 0,
+              "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+              "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+            },
+            {
+              "name": "source_publication_ledger_validate_insert",
+              "replacements": 1,
+              "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+              "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+            }
+          ],
+          "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+          "maxBoundParameters": 100,
+          "limitation": "Bun has no SQLite UDF registration; installed Node SQLite has no FTS5. Only literal ledger clock is projected; no live D1/provider/browser evidence."
+        },
+        "replies": [
+          {
+            "status": 500,
+            "response": {
+              "error": "Internal Server Error",
+              "runDurationMs": 0,
+              "publicationOutcome": "UNKNOWN",
+              "inserted": null,
+              "actualChanges": null,
+              "skipped": null,
+              "confirmedPublishedLowerBound": 3,
+              "reconciliationRequired": true
+            },
+            "physicalRows": 6,
+            "visibleIds": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "returnedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4,
+                5,
+                6
+              ]
+            ],
+            "ledger": [
+              {
+                "source": "remotive",
+                "n": 3,
+                "ids": "[1,2,3]"
+              }
+            ],
+            "ftsRows": 6,
+            "opportunityBindings": [
+              {
+                "opportunityInsert": true,
+                "parameters": 81,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 81,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 27,
+                "rejected": false
+              }
+            ],
+            "insertFaultInjected": true
+          }
+        ],
+        "transportAttempts": [
+          {
+            "phase": "parser-preview",
+            "source": "remotive",
+            "url": "https://remotive.com/remote-jobs/feed"
+          },
+          {
+            "phase": "parser-preview",
+            "source": "real-work-from-anywhere",
+            "url": "https://www.realworkfromanywhere.com/rss.xml"
+          },
+          {
+            "phase": "parser-preview",
+            "source": "remote-ok",
+            "url": "https://remoteok.com/api"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://weworkremotely.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://remotive.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://www.realworkfromanywhere.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://jobicy.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": "we-work-remotely",
+            "url": "https://weworkremotely.com/remote-jobs.rss"
+          },
+          {
+            "phase": "route",
+            "source": "remotive",
+            "url": "https://remotive.com/remote-jobs/feed"
+          },
+          {
+            "phase": "route",
+            "source": "real-work-from-anywhere",
+            "url": "https://www.realworkfromanywhere.com/rss.xml"
+          },
+          {
+            "phase": "route",
+            "source": "jobicy-admin-support-apac",
+            "url": "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://remoteok.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": "remote-ok",
+            "url": "https://remoteok.com/api"
+          }
+        ]
+      },
+      {
+        "scenario": {
+          "source": "remotive",
+          "dates": [],
+          "prefixDrift": true,
+          "sourceDates": {
+            "remotive": [
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z"
+            ],
+            "real-work-from-anywhere": [
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z"
+            ],
+            "remote-ok": [
+              "2026-10-09T12:00:00.000Z",
+              "2026-10-09T12:00:00.000Z"
+            ]
+          },
+          "enforceD1BindingBudget": true
+        },
+        "scope": {
+          "transport": "SYNTHETIC_ALLOWLISTED_RAW_PROVIDER_RESPONSES",
+          "parser": "ACTUAL_RSS_AND_REMOTEOK_JSON",
+          "persistence": "ACTUAL_ROUTE_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+          "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+          "reference": "2026-10-10T12:00:00.000Z",
+          "replacementCount": 1,
+          "clockProjection": [
+            {
+              "name": "source_publication_ledger_append_only_delete",
+              "replacements": 0,
+              "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+              "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+            },
+            {
+              "name": "source_publication_ledger_append_only_update",
+              "replacements": 0,
+              "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+              "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+            },
+            {
+              "name": "source_publication_ledger_reject_caller_id",
+              "replacements": 0,
+              "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+              "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+            },
+            {
+              "name": "source_publication_ledger_validate_insert",
+              "replacements": 1,
+              "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+              "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+            }
+          ],
+          "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+          "maxBoundParameters": 100,
+          "limitation": "Bun has no SQLite UDF registration; installed Node SQLite has no FTS5. Only literal ledger clock is projected; no live D1/provider/browser evidence."
+        },
+        "replies": [
+          {
+            "status": 500,
+            "response": {
+              "error": "Internal Server Error",
+              "runDurationMs": 0,
+              "publicationOutcome": "UNKNOWN",
+              "inserted": null,
+              "actualChanges": null,
+              "skipped": null,
+              "confirmedPublishedLowerBound": 3,
+              "reconciliationRequired": true
+            },
+            "physicalRows": 7,
+            "visibleIds": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            "returnedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4,
+                5,
+                6
+              ],
+              [
+                7
+              ]
+            ],
+            "ledger": [
+              {
+                "source": "remotive",
+                "n": 3,
+                "ids": "[1,2,3]"
+              }
+            ],
+            "ftsRows": 7,
+            "opportunityBindings": [
+              {
+                "opportunityInsert": true,
+                "parameters": 81,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 81,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 27,
+                "rejected": false
+              }
+            ],
+            "insertFaultInjected": false
+          }
+        ],
+        "transportAttempts": [
+          {
+            "phase": "parser-preview",
+            "source": "remotive",
+            "url": "https://remotive.com/remote-jobs/feed"
+          },
+          {
+            "phase": "parser-preview",
+            "source": "real-work-from-anywhere",
+            "url": "https://www.realworkfromanywhere.com/rss.xml"
+          },
+          {
+            "phase": "parser-preview",
+            "source": "remote-ok",
+            "url": "https://remoteok.com/api"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://weworkremotely.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://remotive.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://www.realworkfromanywhere.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://jobicy.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": "we-work-remotely",
+            "url": "https://weworkremotely.com/remote-jobs.rss"
+          },
+          {
+            "phase": "route",
+            "source": "remotive",
+            "url": "https://remotive.com/remote-jobs/feed"
+          },
+          {
+            "phase": "route",
+            "source": "real-work-from-anywhere",
+            "url": "https://www.realworkfromanywhere.com/rss.xml"
+          },
+          {
+            "phase": "route",
+            "source": "jobicy-admin-support-apac",
+            "url": "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac"
+          },
+          {
+            "phase": "route",
+            "source": null,
+            "url": "https://remoteok.com/robots.txt"
+          },
+          {
+            "phase": "route",
+            "source": "remote-ok",
+            "url": "https://remoteok.com/api"
+          }
+        ]
+      }
+    ]
+  },
+  "direct": {
+    "logSha256": "ce8fdfae2d87c29b6c20ab124c211806392be030f79a311c0490d50bd6c561d3",
+    "cases": [
+      {
+        "scenario": {
+          "groups": [
+            {
+              "source": "remotive",
+              "dates": [
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z"
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "reference": "2026-10-10T12:00:00.000Z",
+          "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+          "replacementCount": 1,
+          "clockProjection": [
+            {
+              "name": "source_publication_ledger_append_only_delete",
+              "replacements": 0,
+              "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+              "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+            },
+            {
+              "name": "source_publication_ledger_append_only_update",
+              "replacements": 0,
+              "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+              "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+            },
+            {
+              "name": "source_publication_ledger_reject_caller_id",
+              "replacements": 0,
+              "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+              "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+            },
+            {
+              "name": "source_publication_ledger_validate_insert",
+              "replacements": 1,
+              "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+              "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+            }
+          ],
+          "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+          "maxBoundParameters": 100,
+          "canarySetup": "EXACT_SIX_FALLBACK",
+          "persistence": "ACTUAL_AUTHENTICATED_HANDLER_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+          "limitation": "Synthetic payload and credentials; exactly one ledger clock literal projected; no live D1/provider/production/browser evidence."
+        },
+        "replies": [
+          {
+            "status": 200,
+            "response": {
+              "success": true,
+              "inserted": 3,
+              "publishedCount": 3,
+              "hiddenInserted": 0,
+              "totalReceived": 3,
+              "rejectedForUrl": 0
+            },
+            "physicalRows": 3,
+            "visibleIds": [
+              1,
+              2,
+              3
+            ],
+            "returnedIds": [
+              [
+                1,
+                2,
+                3
+              ]
+            ],
+            "executedIds": [
+              [
+                1,
+                2,
+                3
+              ]
+            ],
+            "ledger": [
+              {
+                "source": "remotive",
+                "mode": "unlimited",
+                "proposed": 3,
+                "n": 3,
+                "ids": "[1,2,3]",
+                "tickKey": "ingest:2026-10-10T12:00:00.000Z",
+                "retryKey": "publication-retry-v1:85b70eef522cc7eaf54365dae79f422a3654d8f8d2d4fb02cafc21f60139ab4e"
+              }
+            ],
+            "ftsRows": 3,
+            "opportunityBindings": [
+              {
+                "opportunityInsert": true,
+                "parameters": 90,
+                "rejected": false
+              }
+            ],
+            "faults": []
+          }
+        ],
+        "transportAttempts": 0
+      },
+      {
+        "scenario": {
+          "groups": [
+            {
+              "source": "remotive",
+              "dates": [
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z"
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "reference": "2026-10-10T12:00:00.000Z",
+          "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+          "replacementCount": 1,
+          "clockProjection": [
+            {
+              "name": "source_publication_ledger_append_only_delete",
+              "replacements": 0,
+              "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+              "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+            },
+            {
+              "name": "source_publication_ledger_append_only_update",
+              "replacements": 0,
+              "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+              "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+            },
+            {
+              "name": "source_publication_ledger_reject_caller_id",
+              "replacements": 0,
+              "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+              "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+            },
+            {
+              "name": "source_publication_ledger_validate_insert",
+              "replacements": 1,
+              "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+              "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+            }
+          ],
+          "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+          "maxBoundParameters": 100,
+          "canarySetup": "EXACT_SIX_FALLBACK",
+          "persistence": "ACTUAL_AUTHENTICATED_HANDLER_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+          "limitation": "Synthetic payload and credentials; exactly one ledger clock literal projected; no live D1/provider/production/browser evidence."
+        },
+        "replies": [
+          {
+            "status": 200,
+            "response": {
+              "success": true,
+              "inserted": 4,
+              "publishedCount": 4,
+              "hiddenInserted": 0,
+              "totalReceived": 4,
+              "rejectedForUrl": 0
+            },
+            "physicalRows": 4,
+            "visibleIds": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "returnedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4
+              ]
+            ],
+            "executedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4
+              ]
+            ],
+            "ledger": [
+              {
+                "source": "remotive",
+                "mode": "unlimited",
+                "proposed": 4,
+                "n": 4,
+                "ids": "[1,2,3,4]",
+                "tickKey": "ingest:2026-10-10T12:00:00.000Z",
+                "retryKey": "publication-retry-v1:29a859ceb53a7d263d806701d30492b5eba09fdb1ccff081092d1933b0356307"
+              }
+            ],
+            "ftsRows": 4,
+            "opportunityBindings": [
+              {
+                "opportunityInsert": true,
+                "parameters": 90,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 30,
+                "rejected": false
+              }
+            ],
+            "faults": []
+          }
+        ],
+        "transportAttempts": 0
+      },
+      {
+        "scenario": {
+          "groups": [
+            {
+              "source": "remotive",
+              "dates": [
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z"
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "reference": "2026-10-10T12:00:00.000Z",
+          "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+          "replacementCount": 1,
+          "clockProjection": [
+            {
+              "name": "source_publication_ledger_append_only_delete",
+              "replacements": 0,
+              "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+              "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+            },
+            {
+              "name": "source_publication_ledger_append_only_update",
+              "replacements": 0,
+              "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+              "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+            },
+            {
+              "name": "source_publication_ledger_reject_caller_id",
+              "replacements": 0,
+              "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+              "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+            },
+            {
+              "name": "source_publication_ledger_validate_insert",
+              "replacements": 1,
+              "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+              "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+            }
+          ],
+          "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+          "maxBoundParameters": 100,
+          "canarySetup": "EXACT_SIX_FALLBACK",
+          "persistence": "ACTUAL_AUTHENTICATED_HANDLER_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+          "limitation": "Synthetic payload and credentials; exactly one ledger clock literal projected; no live D1/provider/production/browser evidence."
+        },
+        "replies": [
+          {
+            "status": 200,
+            "response": {
+              "success": true,
+              "inserted": 10,
+              "publishedCount": 10,
+              "hiddenInserted": 0,
+              "totalReceived": 10,
+              "rejectedForUrl": 0
+            },
+            "physicalRows": 10,
+            "visibleIds": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10
+            ],
+            "returnedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4,
+                5,
+                6
+              ],
+              [
+                7,
+                8,
+                9
+              ],
+              [
+                10
+              ]
+            ],
+            "executedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4,
+                5,
+                6
+              ],
+              [
+                7,
+                8,
+                9
+              ],
+              [
+                10
+              ]
+            ],
+            "ledger": [
+              {
+                "source": "remotive",
+                "mode": "unlimited",
+                "proposed": 10,
+                "n": 10,
+                "ids": "[1,2,3,4,5,6,7,8,9,10]",
+                "tickKey": "ingest:2026-10-10T12:00:00.000Z",
+                "retryKey": "publication-retry-v1:8506e491d0828f4ed58854f5cd1270c69ecf4b8fa776ea6f45d551f22cac9871"
+              }
+            ],
+            "ftsRows": 10,
+            "opportunityBindings": [
+              {
+                "opportunityInsert": true,
+                "parameters": 90,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 90,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 90,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 30,
+                "rejected": false
+              }
+            ],
+            "faults": []
+          }
+        ],
+        "transportAttempts": 0
+      },
+      {
+        "scenario": {
+          "groups": [
+            {
+              "source": "remotive",
+              "dates": [
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                null,
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z"
+              ]
+            },
+            {
+              "source": "remote-ok",
+              "dates": [
+                "2026-10-09T12:00:00.000Z",
+                "2026-09-31T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z"
+              ]
+            },
+            {
+              "source": "jobicy-admin-support-apac",
+              "dates": [
+                "2026-10-10T12:00:00.000000001Z",
+                "2026-10-09T12:00:00.000Z"
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "reference": "2026-10-10T12:00:00.000Z",
+          "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+          "replacementCount": 1,
+          "clockProjection": [
+            {
+              "name": "source_publication_ledger_append_only_delete",
+              "replacements": 0,
+              "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+              "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+            },
+            {
+              "name": "source_publication_ledger_append_only_update",
+              "replacements": 0,
+              "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+              "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+            },
+            {
+              "name": "source_publication_ledger_reject_caller_id",
+              "replacements": 0,
+              "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+              "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+            },
+            {
+              "name": "source_publication_ledger_validate_insert",
+              "replacements": 1,
+              "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+              "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+            }
+          ],
+          "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+          "maxBoundParameters": 100,
+          "canarySetup": "EXACT_SIX_FALLBACK",
+          "persistence": "ACTUAL_AUTHENTICATED_HANDLER_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+          "limitation": "Synthetic payload and credentials; exactly one ledger clock literal projected; no live D1/provider/production/browser evidence."
+        },
+        "replies": [
+          {
+            "status": 200,
+            "response": {
+              "success": true,
+              "inserted": 12,
+              "publishedCount": 9,
+              "hiddenInserted": 3,
+              "totalReceived": 12,
+              "rejectedForUrl": 0
+            },
+            "physicalRows": 12,
+            "visibleIds": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9
+            ],
+            "returnedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4
+              ],
+              [
+                5,
+                6,
+                7
+              ],
+              [
+                8
+              ],
+              [
+                9
+              ],
+              [
+                10,
+                11,
+                12
+              ]
+            ],
+            "executedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4
+              ],
+              [
+                5,
+                6,
+                7
+              ],
+              [
+                8
+              ],
+              [
+                9
+              ],
+              [
+                10,
+                11,
+                12
+              ]
+            ],
+            "ledger": [
+              {
+                "source": "remotive",
+                "mode": "unlimited",
+                "proposed": 4,
+                "n": 4,
+                "ids": "[1,2,3,4]",
+                "tickKey": "ingest:2026-10-10T12:00:00.000Z",
+                "retryKey": "publication-retry-v1:cadbe27bb44bc6e48fa15745a174c4ab77c158eeaf3082a1dcbc259c35d0d54f"
+              },
+              {
+                "source": "remote-ok",
+                "mode": "unlimited",
+                "proposed": 4,
+                "n": 4,
+                "ids": "[5,6,7,8]",
+                "tickKey": "ingest:2026-10-10T12:00:00.000Z",
+                "retryKey": "publication-retry-v1:4c1e58e7eb93723b7cd64a876c0604c60bdeac7bd34e3fe9fa09c6996171de56"
+              },
+              {
+                "source": "jobicy-admin-support-apac",
+                "mode": "unlimited",
+                "proposed": 1,
+                "n": 1,
+                "ids": "[9]",
+                "tickKey": "ingest:2026-10-10T12:00:00.000Z",
+                "retryKey": "publication-retry-v1:6f36b165313d7fbce351c9ad49c6cf42ac4358a786e45a2b22972535bc2ac550"
+              }
+            ],
+            "ftsRows": 12,
+            "opportunityBindings": [
+              {
+                "opportunityInsert": true,
+                "parameters": 90,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 30,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 90,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 30,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 30,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 90,
+                "rejected": false
+              }
+            ],
+            "faults": []
+          }
+        ],
+        "transportAttempts": 0
+      },
+      {
+        "scenario": {
+          "groups": [
+            {
+              "source": "remote-ok",
+              "dates": [
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z"
+              ]
+            }
+          ],
+          "retryAndDedup": true
+        },
+        "scope": {
+          "reference": "2026-10-10T12:00:00.000Z",
+          "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+          "replacementCount": 1,
+          "clockProjection": [
+            {
+              "name": "source_publication_ledger_append_only_delete",
+              "replacements": 0,
+              "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+              "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+            },
+            {
+              "name": "source_publication_ledger_append_only_update",
+              "replacements": 0,
+              "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+              "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+            },
+            {
+              "name": "source_publication_ledger_reject_caller_id",
+              "replacements": 0,
+              "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+              "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+            },
+            {
+              "name": "source_publication_ledger_validate_insert",
+              "replacements": 1,
+              "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+              "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+            }
+          ],
+          "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+          "maxBoundParameters": 100,
+          "canarySetup": "EXACT_SIX_FALLBACK",
+          "persistence": "ACTUAL_AUTHENTICATED_HANDLER_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+          "limitation": "Synthetic payload and credentials; exactly one ledger clock literal projected; no live D1/provider/production/browser evidence."
+        },
+        "replies": [
+          {
+            "status": 200,
+            "response": {
+              "success": true,
+              "inserted": 4,
+              "publishedCount": 4,
+              "hiddenInserted": 0,
+              "totalReceived": 4,
+              "rejectedForUrl": 0
+            },
+            "physicalRows": 4,
+            "visibleIds": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "returnedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4
+              ]
+            ],
+            "executedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4
+              ]
+            ],
+            "ledger": [
+              {
+                "source": "remote-ok",
+                "mode": "unlimited",
+                "proposed": 4,
+                "n": 4,
+                "ids": "[1,2,3,4]",
+                "tickKey": "ingest:2026-10-10T12:00:00.000Z",
+                "retryKey": "publication-retry-v1:f85c100899ca4a399258bda2c2047cb36ee1f768140d4f91a5dba63f2b2f3d9d"
+              }
+            ],
+            "ftsRows": 4,
+            "opportunityBindings": [
+              {
+                "opportunityInsert": true,
+                "parameters": 90,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 30,
+                "rejected": false
+              }
+            ],
+            "faults": []
+          },
+          {
+            "status": 200,
+            "response": {
+              "success": true,
+              "inserted": 4,
+              "publishedCount": 4,
+              "hiddenInserted": 0,
+              "totalReceived": 4,
+              "rejectedForUrl": 0
+            },
+            "physicalRows": 4,
+            "visibleIds": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "returnedIds": [],
+            "executedIds": [],
+            "ledger": [
+              {
+                "source": "remote-ok",
+                "mode": "unlimited",
+                "proposed": 4,
+                "n": 4,
+                "ids": "[1,2,3,4]",
+                "tickKey": "ingest:2026-10-10T12:00:00.000Z",
+                "retryKey": "publication-retry-v1:f85c100899ca4a399258bda2c2047cb36ee1f768140d4f91a5dba63f2b2f3d9d"
+              }
+            ],
+            "ftsRows": 4,
+            "opportunityBindings": [],
+            "faults": []
+          },
+          {
+            "status": 200,
+            "response": {
+              "success": true,
+              "inserted": 0,
+              "publishedCount": 0,
+              "hiddenInserted": 0,
+              "totalReceived": 4,
+              "rejectedForUrl": 0
+            },
+            "physicalRows": 4,
+            "visibleIds": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "returnedIds": [
+              [],
+              []
+            ],
+            "executedIds": [
+              [],
+              []
+            ],
+            "ledger": [
+              {
+                "source": "remote-ok",
+                "mode": "unlimited",
+                "proposed": 4,
+                "n": 4,
+                "ids": "[1,2,3,4]",
+                "tickKey": "ingest:2026-10-10T12:00:00.000Z",
+                "retryKey": "publication-retry-v1:f85c100899ca4a399258bda2c2047cb36ee1f768140d4f91a5dba63f2b2f3d9d"
+              },
+              {
+                "source": "remote-ok",
+                "mode": "unlimited",
+                "proposed": 4,
+                "n": 0,
+                "ids": "[]",
+                "tickKey": "ingest:2026-10-10T12:00:01.000Z",
+                "retryKey": "publication-retry-v1:7cc602dc71c16e7af73a4a029fa6f2c54013be738e7df302d6fd8afe428b4371"
+              }
+            ],
+            "ftsRows": 4,
+            "opportunityBindings": [
+              {
+                "opportunityInsert": true,
+                "parameters": 90,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 30,
+                "rejected": false
+              }
+            ],
+            "faults": []
+          }
+        ],
+        "transportAttempts": 0
+      },
+      {
+        "scenario": {
+          "groups": [
+            {
+              "source": "remotive",
+              "dates": [
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z"
+              ]
+            }
+          ],
+          "duplicateAcrossChunks": true
+        },
+        "scope": {
+          "reference": "2026-10-10T12:00:00.000Z",
+          "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+          "replacementCount": 1,
+          "clockProjection": [
+            {
+              "name": "source_publication_ledger_append_only_delete",
+              "replacements": 0,
+              "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+              "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+            },
+            {
+              "name": "source_publication_ledger_append_only_update",
+              "replacements": 0,
+              "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+              "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+            },
+            {
+              "name": "source_publication_ledger_reject_caller_id",
+              "replacements": 0,
+              "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+              "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+            },
+            {
+              "name": "source_publication_ledger_validate_insert",
+              "replacements": 1,
+              "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+              "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+            }
+          ],
+          "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+          "maxBoundParameters": 100,
+          "canarySetup": "EXACT_SIX_FALLBACK",
+          "persistence": "ACTUAL_AUTHENTICATED_HANDLER_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+          "limitation": "Synthetic payload and credentials; exactly one ledger clock literal projected; no live D1/provider/production/browser evidence."
+        },
+        "replies": [
+          {
+            "status": 200,
+            "response": {
+              "success": true,
+              "inserted": 3,
+              "publishedCount": 3,
+              "hiddenInserted": 0,
+              "totalReceived": 4,
+              "rejectedForUrl": 0
+            },
+            "physicalRows": 3,
+            "visibleIds": [
+              1,
+              2,
+              3
+            ],
+            "returnedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              []
+            ],
+            "executedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              []
+            ],
+            "ledger": [
+              {
+                "source": "remotive",
+                "mode": "unlimited",
+                "proposed": 4,
+                "n": 3,
+                "ids": "[1,2,3]",
+                "tickKey": "ingest:2026-10-10T12:00:00.000Z",
+                "retryKey": "publication-retry-v1:29fefefc09287d815caa1d2300afc621b54fe35c0ed04d9f1453dd235523632d"
+              }
+            ],
+            "ftsRows": 3,
+            "opportunityBindings": [
+              {
+                "opportunityInsert": true,
+                "parameters": 90,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 30,
+                "rejected": false
+              }
+            ],
+            "faults": []
+          }
+        ],
+        "transportAttempts": 0
+      },
+      {
+        "scenario": {
+          "groups": [
+            {
+              "source": "remotive",
+              "dates": [
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z"
+              ]
+            }
+          ],
+          "canaryCap": 4,
+          "canaryDifferentRetry": true
+        },
+        "scope": {
+          "reference": "2026-10-10T12:00:00.000Z",
+          "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+          "replacementCount": 1,
+          "clockProjection": [
+            {
+              "name": "source_publication_ledger_append_only_delete",
+              "replacements": 0,
+              "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+              "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+            },
+            {
+              "name": "source_publication_ledger_append_only_update",
+              "replacements": 0,
+              "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+              "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+            },
+            {
+              "name": "source_publication_ledger_reject_caller_id",
+              "replacements": 0,
+              "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+              "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+            },
+            {
+              "name": "source_publication_ledger_validate_insert",
+              "replacements": 1,
+              "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+              "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+            }
+          ],
+          "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+          "maxBoundParameters": 100,
+          "canarySetup": "SYNTHETIC_INITIAL_REGISTRY_STATE_SEEDED_BEFORE_LIFECYCLE_TRIGGERS_NOT_ADMISSION_EVIDENCE",
+          "persistence": "ACTUAL_AUTHENTICATED_HANDLER_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+          "limitation": "Synthetic payload and credentials; exactly one ledger clock literal projected; no live D1/provider/production/browser evidence."
+        },
+        "replies": [
+          {
+            "status": 200,
+            "response": {
+              "success": true,
+              "inserted": 4,
+              "publishedCount": 4,
+              "hiddenInserted": 0,
+              "totalReceived": 7,
+              "rejectedForUrl": 0
+            },
+            "physicalRows": 4,
+            "visibleIds": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "returnedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4
+              ]
+            ],
+            "executedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4
+              ]
+            ],
+            "ledger": [
+              {
+                "source": "remotive",
+                "mode": "capped",
+                "proposed": 4,
+                "n": 4,
+                "ids": "[1,2,3,4]",
+                "tickKey": "ingest:2026-10-10T12:00:00.000Z",
+                "retryKey": "publication-retry-v1:29a859ceb53a7d263d806701d30492b5eba09fdb1ccff081092d1933b0356307"
+              }
+            ],
+            "ftsRows": 4,
+            "opportunityBindings": [
+              {
+                "opportunityInsert": true,
+                "parameters": 90,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 30,
+                "rejected": false
+              }
+            ],
+            "faults": []
+          },
+          {
+            "status": 200,
+            "response": {
+              "success": true,
+              "inserted": 0,
+              "publishedCount": 0,
+              "hiddenInserted": 0,
+              "totalReceived": 7,
+              "rejectedForUrl": 0
+            },
+            "physicalRows": 4,
+            "visibleIds": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "returnedIds": [],
+            "executedIds": [],
+            "ledger": [
+              {
+                "source": "remotive",
+                "mode": "capped",
+                "proposed": 4,
+                "n": 4,
+                "ids": "[1,2,3,4]",
+                "tickKey": "ingest:2026-10-10T12:00:00.000Z",
+                "retryKey": "publication-retry-v1:29a859ceb53a7d263d806701d30492b5eba09fdb1ccff081092d1933b0356307"
+              },
+              {
+                "source": "remotive",
+                "mode": "blocked",
+                "proposed": 4,
+                "n": 0,
+                "ids": "[]",
+                "tickKey": "ingest:2026-10-10T12:00:00.000Z",
+                "retryKey": "publication-retry-v1:f4349dd33124792465f6268550884643f27332d42387a1f5017a335da2a5bab8"
+              }
+            ],
+            "ftsRows": 4,
+            "opportunityBindings": [],
+            "faults": []
+          }
+        ],
+        "transportAttempts": 0
+      },
+      {
+        "scenario": {
+          "groups": [
+            {
+              "source": "remotive",
+              "dates": [
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z"
+              ]
+            },
+            {
+              "source": "remote-ok",
+              "dates": [
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z"
+              ]
+            },
+            {
+              "source": "jobicy-admin-support-apac",
+              "dates": [
+                "2026-10-09T12:00:00.000Z",
+                null
+              ]
+            }
+          ],
+          "failBeforeInsert": 3
+        },
+        "scope": {
+          "reference": "2026-10-10T12:00:00.000Z",
+          "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+          "replacementCount": 1,
+          "clockProjection": [
+            {
+              "name": "source_publication_ledger_append_only_delete",
+              "replacements": 0,
+              "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+              "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+            },
+            {
+              "name": "source_publication_ledger_append_only_update",
+              "replacements": 0,
+              "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+              "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+            },
+            {
+              "name": "source_publication_ledger_reject_caller_id",
+              "replacements": 0,
+              "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+              "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+            },
+            {
+              "name": "source_publication_ledger_validate_insert",
+              "replacements": 1,
+              "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+              "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+            }
+          ],
+          "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+          "maxBoundParameters": 100,
+          "canarySetup": "EXACT_SIX_FALLBACK",
+          "persistence": "ACTUAL_AUTHENTICATED_HANDLER_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+          "limitation": "Synthetic payload and credentials; exactly one ledger clock literal projected; no live D1/provider/production/browser evidence."
+        },
+        "replies": [
+          {
+            "status": 500,
+            "response": {
+              "success": false,
+              "code": "POST_PERSISTENCE_FAILURE",
+              "publicationOutcome": "UNKNOWN",
+              "inserted": null,
+              "confirmedPublishedLowerBound": 3,
+              "reconciliationRequired": true,
+              "error": "Publication persistence outcome is UNKNOWN; reconciliation is required"
+            },
+            "physicalRows": 6,
+            "visibleIds": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "returnedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4,
+                5,
+                6
+              ]
+            ],
+            "executedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4,
+                5,
+                6
+              ]
+            ],
+            "ledger": [
+              {
+                "source": "remotive",
+                "mode": "unlimited",
+                "proposed": 3,
+                "n": 3,
+                "ids": "[1,2,3]",
+                "tickKey": "ingest:2026-10-10T12:00:00.000Z",
+                "retryKey": "publication-retry-v1:85b70eef522cc7eaf54365dae79f422a3654d8f8d2d4fb02cafc21f60139ab4e"
+              }
+            ],
+            "ftsRows": 6,
+            "opportunityBindings": [
+              {
+                "opportunityInsert": true,
+                "parameters": 90,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 90,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 90,
+                "rejected": false
+              }
+            ],
+            "faults": [
+              {
+                "ordinal": 3,
+                "phase": "before-write"
+              }
+            ]
+          }
+        ],
+        "transportAttempts": 0
+      },
+      {
+        "scenario": {
+          "groups": [
+            {
+              "source": "remotive",
+              "dates": [
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z"
+              ]
+            },
+            {
+              "source": "remote-ok",
+              "dates": [
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z",
+                "2026-10-09T12:00:00.000Z"
+              ]
+            },
+            {
+              "source": "jobicy-admin-support-apac",
+              "dates": [
+                "2026-10-09T12:00:00.000Z",
+                null
+              ]
+            }
+          ],
+          "failAfterInsert": 3
+        },
+        "scope": {
+          "reference": "2026-10-10T12:00:00.000Z",
+          "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+          "replacementCount": 1,
+          "clockProjection": [
+            {
+              "name": "source_publication_ledger_append_only_delete",
+              "replacements": 0,
+              "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+              "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+            },
+            {
+              "name": "source_publication_ledger_append_only_update",
+              "replacements": 0,
+              "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+              "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+            },
+            {
+              "name": "source_publication_ledger_reject_caller_id",
+              "replacements": 0,
+              "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+              "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+            },
+            {
+              "name": "source_publication_ledger_validate_insert",
+              "replacements": 1,
+              "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+              "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+            }
+          ],
+          "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+          "maxBoundParameters": 100,
+          "canarySetup": "EXACT_SIX_FALLBACK",
+          "persistence": "ACTUAL_AUTHENTICATED_HANDLER_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+          "limitation": "Synthetic payload and credentials; exactly one ledger clock literal projected; no live D1/provider/production/browser evidence."
+        },
+        "replies": [
+          {
+            "status": 500,
+            "response": {
+              "success": false,
+              "code": "POST_PERSISTENCE_FAILURE",
+              "publicationOutcome": "UNKNOWN",
+              "inserted": null,
+              "confirmedPublishedLowerBound": 3,
+              "reconciliationRequired": true,
+              "error": "Publication persistence outcome is UNKNOWN; reconciliation is required"
+            },
+            "physicalRows": 9,
+            "visibleIds": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9
+            ],
+            "returnedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4,
+                5,
+                6
+              ]
+            ],
+            "executedIds": [
+              [
+                1,
+                2,
+                3
+              ],
+              [
+                4,
+                5,
+                6
+              ],
+              [
+                7,
+                8,
+                9
+              ]
+            ],
+            "ledger": [
+              {
+                "source": "remotive",
+                "mode": "unlimited",
+                "proposed": 3,
+                "n": 3,
+                "ids": "[1,2,3]",
+                "tickKey": "ingest:2026-10-10T12:00:00.000Z",
+                "retryKey": "publication-retry-v1:85b70eef522cc7eaf54365dae79f422a3654d8f8d2d4fb02cafc21f60139ab4e"
+              }
+            ],
+            "ftsRows": 9,
+            "opportunityBindings": [
+              {
+                "opportunityInsert": true,
+                "parameters": 90,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 90,
+                "rejected": false
+              },
+              {
+                "opportunityInsert": true,
+                "parameters": 90,
+                "rejected": false
+              }
+            ],
+            "faults": [
+              {
+                "ordinal": 3,
+                "phase": "after-write"
+              }
+            ]
+          }
+        ],
+        "transportAttempts": 0
+      }
+    ]
+  },
+  "files": [
+    {
+      "path": "apps/web/src/pages/api/cron/scrape.ts",
+      "localUtf8Sha256": "ab3ed7be4cf4059154f207450297cd96d5edc4889424f17f03e1df2a4b7ddab1",
+      "lfNormalizedSha256": "ab3ed7be4cf4059154f207450297cd96d5edc4889424f17f03e1df2a4b7ddab1"
+    },
+    {
+      "path": "apps/web/src/pages/api/ingest.ts",
+      "localUtf8Sha256": "e87c2513145f4788483ce190bcb03d7b0e10d1b677a1e204849d2040442f1e80",
+      "lfNormalizedSha256": "a45b52fe28137a00be48c5665afc58346d6bf6c9f700bceda047b3cc07111f26"
+    },
+    {
+      "path": "apps/web/tests/adversarial-d1-binding-budget.test.ts",
+      "localUtf8Sha256": "7f4a9202696c33716b5b76a5bc6266c58431557d04c8939d09a071c165c4aba0",
+      "lfNormalizedSha256": "7f4a9202696c33716b5b76a5bc6266c58431557d04c8939d09a071c165c4aba0"
+    },
+    {
+      "path": "apps/web/tests/fixtures/native-fresh-scrape-posting-date.ts",
+      "localUtf8Sha256": "541e5c60cae4f458b76ab8386b0b85e8d9667f47af1852588cae91f1cb109996",
+      "lfNormalizedSha256": "541e5c60cae4f458b76ab8386b0b85e8d9667f47af1852588cae91f1cb109996"
+    },
+    {
+      "path": "apps/web/tests/native-direct-ingest-binding-budget.test.ts",
+      "localUtf8Sha256": "6ced83e1bf4aa4a39d12bd57bdf2ad3d7be732a9c58480fb7fbc31285e57c411",
+      "lfNormalizedSha256": "6ced83e1bf4aa4a39d12bd57bdf2ad3d7be732a9c58480fb7fbc31285e57c411"
+    },
+    {
+      "path": "apps/web/tests/fixtures/native-direct-ingest-binding-budget.ts",
+      "localUtf8Sha256": "57bcf6f0c65743cb75b63509d9433b2a375d97dee46bc62e1f86f06f2134f29a",
+      "lfNormalizedSha256": "57bcf6f0c65743cb75b63509d9433b2a375d97dee46bc62e1f86f06f2134f29a"
+    }
+  ],
+  "limits": [
+    "Not live D1/runtime/provider/browser acceptance",
+    "Partial unreceipted physical exposure remains",
+    "Opt-out-between-chunks native counterexample remains",
+    "MATH acceptance 0/13; daily certified flow UNKNOWN",
+    "Full regression preceded fixture-only actual transport counter and type corrections; final targeted/type/build recorded separately"
+  ]
+}

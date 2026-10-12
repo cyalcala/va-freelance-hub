@@ -1,5 +1,17 @@
 # Current resume pointer
 
+Current owner priority (2026-10-12 Manila): repair the verified website shortfall
+and sustain trustworthy ten-minute/hourly flow. Read revised `astra777.txt`,
+[savepoint](../SYSTEM_SAVEPOINT.md), [incident](../operations/PUBLICATION_FUNNEL_INCIDENT_2026-10-12.md),
+[GCP receipt](../operations/GCP_PUBLICATION_INCIDENT_2026-10-12.md) and
+[local bounded-insert evidence](../operations/D1_BOUNDED_PUBLICATION_INSERTS_2026-10-12.md).
+Native binding repairs are locally verified; 4,204 tests, final typecheck/build
+and four audits pass. Production Pages/schema remain older. NEXT is
+LIVE_ACQUISITION_AND_PUBLICATION_FLOW_RECOVERY, beginning with the physical-lock
+advance plus HTTP 503/absent terminal diagnostic counterexample. Ten-minute
+clock exists; GCP zero-output and empty acquisition supply coexist. MATH 0/13,
+certified flow UNKNOWN. No live fix or daily objective acceptance yet.
+
 Latest owner-directed continuation (2026-10-11 Manila): first preserve Antigravity
 and swarm progress on canonical SSM and GitLab mirror, then deeply read
 `astra777.txt` and continue the 100/day floor, 150/day stretch objective.

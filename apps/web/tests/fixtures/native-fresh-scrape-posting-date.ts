@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { getDb, opportunities } from "@va-hub/db";
-import { enabledSources, fetchJSONSource, fetchRSSFeed, sources, type Source } from "@va-hub/scraper";
+import { D1_MAX_BOUND_PARAMETERS, enabledSources, fetchJSONSource, fetchRSSFeed, sources, type Source } from "@va-hub/scraper";
 import { publicOpportunityFilters } from "../../src/lib/public-opportunities";
 import { createScrapeHandler } from "../../src/pages/api/cron/scrape";
 
@@ -17,20 +17,29 @@ const scenario = JSON.parse(process.argv[2]!) as {
   dedup?: boolean;
   postWriteDrift?: boolean;
   prefixDrift?: boolean;
+  sourceDates?: Record<string, Array<string | null>>;
+  enforceD1BindingBudget?: boolean;
+  failOpportunityInsertAttempt?: number;
+  duplicateSourceUrlIndex?: number;
 };
 const sha256 = (value: string) => createHash("sha256").update(value).digest("hex");
 const xmlText = (value: string) => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const selected = sources.find(source => source.id === scenario.source);
 if (!selected || (selected.type !== "rss" && selected.type !== "json")) throw new Error("unsupported native fixture source");
-const sourceDates = new Map<string, Array<string | null>>(scenario.prefixDrift
+const sourceDates = new Map<string, Array<string | null>>(scenario.sourceDates ? Object.entries(scenario.sourceDates) : scenario.prefixDrift
   ? [["remotive", scenario.dates.slice(0, 1)], ["real-work-from-anywhere", scenario.dates.slice(1, 2)], ["remote-ok", scenario.dates.slice(2, 3)]]
   : [[selected.id, scenario.dates]]);
+for (const [id] of sourceDates) {
+  const source = sources.find(candidate => candidate.id === id);
+  if (!["remotive", "remote-ok", "real-work-from-anywhere"].includes(id)
+    || !source || (source.type !== "rss" && source.type !== "json")) throw new Error("unsupported grouped native fixture source");
+}
 function rawBody(source: Source, dates: Array<string | null>): string {
   const rows = dates.map((date, index) => ({
     title: `Customer Support ${source.id} ${index}`,
-    url: source.id === "remote-ok" ? `https://remoteok.com/remote-jobs/native-posting-${index}`
-      : source.id === "real-work-from-anywhere" ? `https://www.realworkfromanywhere.com/jobs/native-posting-${index}`
-      : `https://remotive.com/remote-jobs/customer-support/native-posting-${index}`,
+    url: source.id === "remote-ok" ? `https://remoteok.com/remote-jobs/native-posting-${scenario.duplicateSourceUrlIndex === index ? 0 : index}`
+      : source.id === "real-work-from-anywhere" ? `https://www.realworkfromanywhere.com/jobs/native-posting-${scenario.duplicateSourceUrlIndex === index ? 0 : index}`
+      : `https://remotive.com/remote-jobs/customer-support/native-posting-${scenario.duplicateSourceUrlIndex === index ? 0 : index}`,
     date,
   }));
   if (source.type === "json") return JSON.stringify(rows.map(row => ({
@@ -102,14 +111,25 @@ try {
   sqlite.exec("DELETE FROM source_registry; DELETE FROM source_opt_outs; DELETE FROM va_directory; DELETE FROM opportunities;");
 
   const queries: string[] = [];
+  const bindingAttempts: Array<{ opportunityInsert: boolean; parameters: number; rejected: boolean }> = [];
   const actualReturnedIds: number[][] = [];
+  let opportunityInsertAttempts = 0;
+  let insertFaultInjected = false;
   let ownershipReads = 0;
   const binding = { prepare(query: string) {
     queries.push(query);
     const statement = sqlite.query(query);
     let params: any[] = [];
     return {
-      bind(...values: any[]) { params = values; return this; },
+      bind(...values: any[]) {
+        // Reproduce only D1's parameter cap. SQLite still executes the real
+        // statement, migrations, FTS and receipt triggers; this is not D1 parity.
+        const rejected = scenario.enforceD1BindingBudget === true && values.length > D1_MAX_BOUND_PARAMETERS;
+        bindingAttempts.push({ opportunityInsert: /^insert into "opportunities"/i.test(query), parameters: values.length, rejected });
+        if (rejected) throw new Error(`D1_BINDING_BUDGET_EXCEEDED:${values.length}>${D1_MAX_BOUND_PARAMETERS}`);
+        params = values;
+        return this;
+      },
       async first() {
         if (query.includes("SELECT COUNT(*) AS ownedCount") && query.includes("FROM opportunities")) {
           ownershipReads++;
@@ -121,6 +141,14 @@ try {
       },
       async all() { return { results: statement.all(...params) }; },
       async raw() {
+        if (/^insert into "opportunities"/i.test(query) && /returning/i.test(query)) {
+          opportunityInsertAttempts++;
+          // Fail before this statement executes; earlier SQLite chunks remain.
+          if (opportunityInsertAttempts === scenario.failOpportunityInsertAttempt) {
+            insertFaultInjected = true;
+            throw new Error("SYNTHETIC_LATER_OPPORTUNITY_CHUNK_FAILURE");
+          }
+        }
         const rows = statement.values(...params);
         if (/^insert into "opportunities"/i.test(query) && /returning/i.test(query)) actualReturnedIds.push(rows.map(row => Number(row[0])));
         return rows;
@@ -143,11 +171,18 @@ try {
       sourceUrl: item.sourceUrl, locationType: item.locationType, locationRaw: item.locationRaw })) });
     parsedItems.push(...output.items.map(item => ({ ...item, sourceId: id })));
   }
-  if (scenario.dedup) await db.insert(opportunities).values(parsedItems.map(item => ({
-    ...item, phEligibility: "eligible_verified" as const, isActive: true,
-  })));
+  if (scenario.dedup) {
+    // Seed through real bounded statements before observing the route.
+    for (let offset = 0; offset < parsedItems.length; offset += 3) {
+      await db.insert(opportunities).values(parsedItems.slice(offset, offset + 3).map(item => ({
+        ...item, phEligibility: "eligible_verified" as const, isActive: true,
+      })));
+    }
+  }
   queries.length = 0;
   actualReturnedIds.length = 0;
+  bindingAttempts.length = 0;
+  opportunityInsertAttempts = 0;
   let aiCalls = 0;
   const env = { DB: binding, CRON_SECRET: "synthetic-cron-secret", AI: { run: async () => {
     aiCalls++;
@@ -165,12 +200,14 @@ try {
     scope: { transport: "SYNTHETIC_ALLOWLISTED_RAW_PROVIDER_RESPONSES", parser: "ACTUAL_RSS_AND_REMOTEOK_JSON",
       persistence: "ACTUAL_ROUTE_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY", clock: CLOCK_SCOPE,
       reference: REFERENCE, replacementCount, clockProjection,
+      bindingBudget: scenario.enforceD1BindingBudget ? "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME" : "NO_D1_PARAMETER_CAP_SIMULATION",
+      maxBoundParameters: D1_MAX_BOUND_PARAMETERS,
       limitation: "Bun has no SQLite UDF registration; installed Node SQLite has no FTS5. Only literal ledger clock is projected; no live D1/provider/browser evidence." },
     scenario, rawInputs, parsed, status: response.status, body: await response.json(), aiCalls,
     rows: sqlite.query("SELECT id, title, is_active AS active, inactive_reason AS reason, ph_eligibility AS eligibility, location_type AS type, source_id AS source, posted_at AS postedAt, scraped_at AS scrapedAt, updated_at AS updatedAt FROM opportunities ORDER BY id").all(),
     visible, ftsCount: (sqlite.query("SELECT COUNT(*) AS n FROM opportunities_fts").get() as { n: number }).n,
     ledger: sqlite.query("SELECT source_id AS source, published_count AS n, published_ids_json AS ids FROM source_publication_ledger ORDER BY id").all(),
-    ownershipReads, actualReturnedIds, transports,
+    ownershipReads, actualReturnedIds, transports, bindingAttempts, opportunityInsertAttempts, insertFaultInjected,
     opportunityInserts: queries.filter(query => /^insert into "opportunities"/i.test(query)).length,
     deleteQueries: queries.filter(query => /^delete\b/i.test(query)).length,
   };

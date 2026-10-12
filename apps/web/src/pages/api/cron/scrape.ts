@@ -3024,8 +3024,14 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
         const published = await publishGroupedInserts(
           publicationDb,
           async (batch) => {
-            const rows = await db.insert(opportunities).values(batch).onConflictDoNothing().returning({ id: opportunities.id });
-            return normalizePersistedOpportunityIds(rows.map((row) => row.id));
+            // Keep one source proposal/receipt while bounding each physical D1
+            // statement. A later chunk failure escapes to UNKNOWN for the group.
+            const ids: number[] = [];
+            for (const chunk of chunkArray(batch, D1_INSERT_BATCH_SIZE)) {
+              const rows = await db.insert(opportunities).values(chunk).onConflictDoNothing().returning({ id: opportunities.id });
+              ids.push(...normalizePersistedOpportunityIds(rows.map((row) => row.id)));
+            }
+            return normalizePersistedOpportunityIds(ids);
           },
           triagedItems,
           observedAt,

@@ -223,11 +223,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const publicItems = normalizedItems.filter((row) => row.isActive && isPublicPhEligibility(row.phEligibility));
     const hiddenItems = normalizedItems.filter((row) => !row.isActive || !isPublicPhEligibility(row.phEligibility));
     const insertChunk = async (chunk: NewOpportunity[]) => {
-      const result = await db.insert(opportunities)
-        .values(chunk)
-        .onConflictDoNothing()
-        .returning({ id: opportunities.id });
-      return normalizePersistedOpportunityIds(result.map((row) => row.id));
+      // The gateway authorizes one complete source proposal. Physical SQL
+      // statements still obey D1's per-statement budget; a later failure throws
+      // before returning a partial acknowledgement for that source group.
+      const ids: number[] = [];
+      for (const batch of chunkArray(chunk, DIRECT_INGEST_BATCH_SIZE)) {
+        const result = await db.insert(opportunities)
+          .values(batch)
+          .onConflictDoNothing()
+          .returning({ id: opportunities.id });
+        ids.push(...normalizePersistedOpportunityIds(result.map((row) => row.id)));
+      }
+      return normalizePersistedOpportunityIds(ids);
     };
     if (publicationDb && publicItems.length > 0) {
       const published = await publishGroupedInserts(publicationDb, insertChunk, publicItems, observedAt, "ingest");
