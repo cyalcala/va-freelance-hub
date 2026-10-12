@@ -218,3 +218,78 @@ test("body read failure withholds partial private bytes and exception text", asy
   } });
   expect(await readScrapeResponseBody(new Response(stream))).toEqual({ raw: "", bodyValidity: "UNREADABLE" });
 });
+
+const REGISTRY_FAILURE = { error: "Source policy verification is temporarily unavailable. Retry shortly.",
+  reason: "registry-policy-unavailable", runDurationMs: 8 };
+const LOCK_FAILURE = { error: "Scrape coordination is temporarily unavailable. Retry shortly." };
+
+for (const [name, body, failureClass] of [
+  ["registry policy", REGISTRY_FAILURE, "REGISTRY_POLICY_UNAVAILABLE"],
+  ["run lock", LOCK_FAILURE, "RUN_LOCK_UNAVAILABLE"],
+] as const) {
+  test(`503 serverFailureClass retains only the exact ${name} signature without accepting publication`, () => {
+    const result = assessScrapeResponse(JSON.stringify(body), 503);
+    expect(result).toMatchObject({ publicationOutcome: "UNKNOWN", reconciliationRequired: true,
+      inserted: null, actualChanges: null, confirmedPublishedLowerBound: null, diagnosticsComplete: false,
+      responseEvidence: { httpStatus: 503, transport: "COMPLETE", bodyValidity: "JSON_OBJECT",
+        terminalState: "error", reason: "HTTP_RESPONSE_REJECTED", serverFailureClass: failureClass } });
+    expect(JSON.stringify(result)).not.toContain(body.error);
+    expect(Object.values(result.failureCounts).every(value => value === null)).toBe(true);
+  });
+}
+
+for (const [name, body] of [
+  ["private message", { error: "PRIVATE_503_ERROR SECRET_503_TOKEN" }],
+  ["code-like untrusted message", { error: "REGISTRY_POLICY_UNAVAILABLE" }],
+  ["non-string error", { error: [LOCK_FAILURE.error] }],
+  ["registry reason without exact error", { ...REGISTRY_FAILURE, error: "PRIVATE_503_ERROR" }],
+  ["registry error without reason", { error: REGISTRY_FAILURE.error, runDurationMs: 8 }],
+  ["registry duration missing", { error: REGISTRY_FAILURE.error, reason: REGISTRY_FAILURE.reason }],
+  ["registry duration invalid", { ...REGISTRY_FAILURE, runDurationMs: "8" }],
+  ["registry duration negative", { ...REGISTRY_FAILURE, runDurationMs: -1 }],
+  ["contradictory registry reason and lock error", { ...REGISTRY_FAILURE, ...LOCK_FAILURE }],
+  ["contradictory lock reason", { ...LOCK_FAILURE, reason: "run-lock-held" }],
+  ["positive publication evidence", { ...REGISTRY_FAILURE, inserted: 27, actualChanges: 27 }],
+  ["uncertain publication evidence", { ...REGISTRY_FAILURE, publicationOutcome: "UNKNOWN", confirmedPublishedLowerBound: 2 }],
+  ["extra private fields", { ...LOCK_FAILURE, message: "PRIVATE_503_ERROR", credential: "SECRET_503_TOKEN" }],
+  ["server-supplied class spoof", { ...LOCK_FAILURE, serverFailureClass: "REGISTRY_POLICY_UNAVAILABLE" }],
+  ["array body", [REGISTRY_FAILURE]],
+] as const) {
+  test(`503 serverFailureClass abstains on ${name} without retaining private or contradictory input`, () => {
+    const result = assessScrapeResponse(JSON.stringify(body), 503);
+    expect(result.responseEvidence.serverFailureClass).toBe("UNCLASSIFIED_SERVER_ERROR");
+    expect(result.publicationOutcome).toBe("UNKNOWN");
+    expect(result.inserted).toBeNull();
+    expect(result.actualChanges).toBeNull();
+    expect(result.reconciliationRequired).toBe(true);
+    const retained = JSON.stringify(result);
+    expect(retained).not.toContain("PRIVATE_503_ERROR");
+    expect(retained).not.toContain("SECRET_503_TOKEN");
+  });
+}
+
+test("serverFailureClass requires 503 for known signatures and never annotates non-server responses", () => {
+  for (const status of [200, 401, 429, null, 600]) {
+    expect(assessScrapeResponse(JSON.stringify(REGISTRY_FAILURE), status).responseEvidence.serverFailureClass).toBeUndefined();
+  }
+  for (const status of [500, 502, 504]) {
+    expect(assessScrapeResponse(JSON.stringify(REGISTRY_FAILURE), status).responseEvidence.serverFailureClass).toBe("UNCLASSIFIED_SERVER_ERROR");
+  }
+  expect(assess({}).responseEvidence.serverFailureClass).toBeUndefined();
+  expect(assessScrapeResponse(JSON.stringify({ skipped: true, reason: "run-lock-held", lockState: "held" }), 200)
+    .responseEvidence.serverFailureClass).toBeUndefined();
+});
+
+test("503 serverFailureClass cannot use malformed oversized unreadable or incomplete response evidence", () => {
+  for (const result of [
+    assessScrapeResponse("{", 503),
+    assessScrapeResponse(JSON.stringify(REGISTRY_FAILURE), 503, "INCOMPLETE"),
+    assessScrapeResponse(JSON.stringify(REGISTRY_FAILURE), 503, "COMPLETE", "UNREADABLE"),
+    assessScrapeResponse(JSON.stringify(REGISTRY_FAILURE), 503, "COMPLETE", "OVERSIZED"),
+    assessScrapeResponse(JSON.stringify({ ...REGISTRY_FAILURE, padding: "x".repeat(MAX_SCRAPE_RESPONSE_BYTES) }), 503),
+  ]) {
+    expect(result.responseEvidence.serverFailureClass).toBe("UNCLASSIFIED_SERVER_ERROR");
+    expect(result.inserted).toBeNull();
+    expect(result.publicationOutcome).toBe("UNKNOWN");
+  }
+});

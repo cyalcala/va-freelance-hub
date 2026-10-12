@@ -6,6 +6,7 @@ const FAILURE_FIELDS = ["insertFailedBatches", "rejectedInsertFailedBatches", "p
 
 type JsonRecord = Record<string, unknown>;
 type BodyValidity = "JSON_OBJECT" | "MALFORMED" | "OVERSIZED" | "UNREADABLE";
+type ServerFailureClass = "REGISTRY_POLICY_UNAVAILABLE" | "RUN_LOCK_UNAVAILABLE" | "UNCLASSIFIED_SERVER_ERROR";
 type Reason = "INVALID_ACKNOWLEDGEMENT" | "PUBLICATION_OUTCOME_UNKNOWN" | "TRANSPORT_INCOMPLETE"
   | "HTTP_RESPONSE_REJECTED" | "RESPONSE_TOO_LARGE" | "SERVER_REPORTED_ERROR"
   | "CONTRADICTORY_LOCK_ACKNOWLEDGEMENT" | "RUN_LOCK_HELD" | "DIAGNOSTICS_INCOMPLETE"
@@ -29,6 +30,8 @@ export interface ScrapeReceipt {
     bodyValidity: BodyValidity;
     terminalState: "unknown" | "error" | "lock-held" | "completed" | "degraded";
     reason: Reason;
+    /** Exact upstream response signature, never an underlying D1 diagnosis. */
+    serverFailureClass?: ServerFailureClass;
   };
 }
 
@@ -37,6 +40,25 @@ function record(value: unknown): JsonRecord | null {
 }
 function count(value: unknown): number | null {
   return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : null;
+}
+
+function classifyServerFailure(body: JsonRecord | null, httpStatus: number,
+  transport: "COMPLETE" | "INCOMPLETE", bodyValidity: BodyValidity): ServerFailureClass {
+  if (httpStatus === 503 && transport === "COMPLETE" && bodyValidity === "JSON_OBJECT" && body) {
+    const keys = Object.keys(body);
+    // These exact endpoint shapes contain no publication evidence or private
+    // diagnostics. Additional or contradictory fields withhold the stage class.
+    if (keys.length === 3 && keys.every(key => ["error", "reason", "runDurationMs"].includes(key))
+      && body.error === "Source policy verification is temporarily unavailable. Retry shortly."
+      && body.reason === "registry-policy-unavailable" && count(body.runDurationMs) !== null) {
+      return "REGISTRY_POLICY_UNAVAILABLE";
+    }
+    if (keys.length === 1 && keys[0] === "error"
+      && body.error === "Scrape coordination is temporarily unavailable. Retry shortly.") {
+      return "RUN_LOCK_UNAVAILABLE";
+    }
+  }
+  return "UNCLASSIFIED_SERVER_ERROR";
 }
 
 function diagnostics(body: JsonRecord, required: boolean) {
@@ -102,7 +124,9 @@ export function assessScrapeResponse(raw: string, status: number | null,
     confirmedPublishedLowerBound: count(body?.confirmedPublishedLowerBound),
     diagnosticsComplete: false, failureCounts: health.counts, cadenceStateAvailable: health.cadence,
     responseEvidence: { version: 1, operation: "scrape", httpStatus, transport,
-      bodyValidity, terminalState: "unknown", reason: "INVALID_ACKNOWLEDGEMENT" },
+      bodyValidity, terminalState: "unknown", reason: "INVALID_ACKNOWLEDGEMENT",
+      ...(httpStatus !== null && httpStatus >= 500
+        ? { serverFailureClass: classifyServerFailure(body, httpStatus, transport, bodyValidity) } : {}) },
   };
   const reject = (reason: Reason, terminalState: "unknown" | "error" = "unknown") => {
     receipt.responseEvidence.reason = reason;

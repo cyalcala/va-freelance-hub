@@ -167,6 +167,34 @@ function expectSanitized(result: FixtureResult) {
 }
 
 for (const scenario of [
+  { name: "registry policy unavailable", body: JSON.stringify({
+    error: "Source policy verification is temporarily unavailable. Retry shortly.",
+    reason: "registry-policy-unavailable", runDurationMs: 8 }), failureClass: "REGISTRY_POLICY_UNAVAILABLE" },
+  { name: "run lock unavailable", body: JSON.stringify({
+    error: "Scrape coordination is temporarily unavailable. Retry shortly." }), failureClass: "RUN_LOCK_UNAVAILABLE" },
+  { name: "contradictory private server response", body: JSON.stringify({
+    error: "Scrape coordination is temporarily unavailable. Retry shortly.",
+    reason: "registry-policy-unavailable", message: PRIVATE_TEXT, credential: SECRET }), failureClass: "UNCLASSIFIED_SERVER_ERROR" },
+  { name: "truncated registry response", body: JSON.stringify({
+    error: "Source policy verification is temporarily unavailable. Retry shortly.",
+    reason: "registry-policy-unavailable", runDurationMs: 8 }), mode: "truncated", failureClass: "UNCLASSIFIED_SERVER_ERROR" },
+]) {
+  test(`native retained Worker emits sanitized serverFailureClass for ${scenario.name} after one POST`, async () => {
+    const result = await nativeFixture(503, scenario.body, { mode: scenario.mode });
+    expect(result.requests).toEqual([{ method: "POST", path: "/scrape" }]);
+    expect(result.status).toBe(500);
+    const body = JSON.parse(result.body);
+    expect(body.error).toBe("SCRAPE_RESPONSE_REJECTED");
+    expect(body.receipt).toMatchObject({ publicationOutcome: "UNKNOWN", reconciliationRequired: true,
+      inserted: null, actualChanges: null, diagnosticsComplete: false,
+      responseEvidence: { httpStatus: 503, serverFailureClass: scenario.failureClass } });
+    expect(receiptFromLog(result)).toEqual(body.receipt);
+    expectSanitized(result);
+    if (scenario.mode === "truncated") expect(body.receipt.responseEvidence.transport).toBe("INCOMPLETE");
+  }, TIMEOUT);
+}
+
+for (const scenario of [
   { name: "contradictory UNKNOWN 200 with positive counters", status: 200,
     body: completed({ publicationOutcome: "UNKNOWN", reconciliationRequired: true, confirmedPublishedLowerBound: 2 }) },
   { name: "ordinary unauthorized upstream response", status: 401,
