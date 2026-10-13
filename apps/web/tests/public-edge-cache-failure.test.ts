@@ -1,4 +1,4 @@
-import { afterEach, expect, mock, test } from "bun:test";
+import { afterEach, expect, mock, spyOn, test } from "bun:test";
 import { readPublicHtmlCache } from "../src/lib/public-edge-cache";
 
 // Astro supplies this virtual module at build time. Its identity wrapper is
@@ -58,6 +58,34 @@ test("a cached stale HTML page cannot conceal recovered fresh data", async () =>
   expect(await response.text()).toBe("Verified last-known-good board");
   expect(response.headers.get("X-Edge-Cache")).toBe("MISS");
   expect(writes).toBe(1);
+});
+
+test("a middleware cache hit forwards only the snapshot's remaining lifetime", async () => {
+  const generatedAt = "2026-10-12T12:00:00.000Z";
+  const clock = spyOn(Date, "now").mockReturnValue(Date.parse(generatedAt) + 299_000);
+  const body = '<meta name="va-hub:snapshot-age-seconds" content="240">Saved board';
+  let renders = 0;
+  let writes = 0;
+  Object.defineProperty(globalThis, "caches", { configurable: true, value: { default: {
+    async match() { return new Response(body, { headers: {
+      "X-Public-Snapshot": "fresh", "X-Public-Snapshot-Generated-At": generatedAt,
+      "X-Public-Snapshot-Age-Seconds": "240", "Cache-Control": "public, max-age=60, s-maxage=60",
+    } }); },
+    async put() { writes += 1; },
+  } } });
+  try {
+    const response = await onRequest({ request: new Request("https://example.com/opportunities"), locals: {} } as never,
+      async () => { renders += 1; return new Response("Unexpected render"); }) as Response;
+    expect(response.headers.get("X-Edge-Cache")).toBe("HIT");
+    expect(response.headers.get("Cache-Control")).toBe("public, max-age=1, s-maxage=1");
+    expect(response.headers.get("X-Public-Snapshot-Generated-At")).toBe(generatedAt);
+    expect(response.headers.get("X-Public-Snapshot-Age-Seconds")).toBe("240");
+    expect(await response.text()).toBe(body);
+    expect(renders).toBe(0);
+    expect(writes).toBe(0);
+  } finally {
+    clock.mockRestore();
+  }
 });
 
 test("new fallback HTML stays usable without being stored as a fresh cached page", async () => {

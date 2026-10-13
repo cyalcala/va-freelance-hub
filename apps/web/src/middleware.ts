@@ -1,13 +1,13 @@
 import { defineMiddleware } from "astro:middleware";
 import { applySecurityHeaders } from "@/lib/security-headers";
-import { publicHtmlCacheKey, mayStorePublicHtml, runtimePublicHtmlCache, readPublicHtmlCache } from "@/lib/public-edge-cache";
+import { publicHtmlCacheKey, publicHtmlCacheControl, mayStorePublicHtml, runtimePublicHtmlCache, readPublicHtmlCache } from "@/lib/public-edge-cache";
 
 // Cloudflare Pages `_headers` rules do not cover SSR/API responses. Apply the
 // shared policy at Astro's server boundary, while static assets get their own
 // Page-level policy in public/_headers.
 //
 // In addition, use Cloudflare's Edge Cache API (caches.default) to cache public
-// HTML SSR pages for 5 minutes. This protects D1 daily row-read quota by serving
+// HTML SSR pages within their snapshot's remaining lifetime. This protects D1 quota by serving
 // repetitive traffic & search engine bots directly from Cloudflare's global Edge PoPs.
 export const onRequest = defineMiddleware(async (context, next) => {
   const request = context.request;
@@ -21,6 +21,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       const match = await readPublicHtmlCache(edgeCache, cacheKey);
       if (match && mayStorePublicHtml(match)) {
         const cached = new Response(match.body, match);
+        cached.headers.set("Cache-Control", publicHtmlCacheControl(cached));
         cached.headers.set("X-Edge-Cache", "HIT");
         return cached;
       }
@@ -31,6 +32,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const response = await next();
   applySecurityHeaders(response.headers);
+  if (response.headers.has("X-Public-Snapshot")) {
+    response.headers.set("Cache-Control", publicHtmlCacheControl(response));
+  }
 
   // A saved/outage page must not pin old listings/diagnostics after the shared
   // board recovers. Rendering this page still uses the in-memory/edge snapshot.
@@ -40,10 +44,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   if (edgeCache && cacheKey && mayStorePublicHtml(response)) {
     try {
-      // 5-minute (300s) Edge TTL matching the recommended cache policy
+      // Snapshot-backed HTML cannot outlive the data it describes.
       response.headers.set(
         "Cache-Control",
-        "public, max-age=60, s-maxage=300, stale-while-revalidate=600"
+        publicHtmlCacheControl(response)
       );
       response.headers.set("X-Edge-Cache", "MISS");
 
