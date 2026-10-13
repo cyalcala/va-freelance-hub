@@ -1,0 +1,20 @@
+{
+  "algorithm": "SHA-256",
+  "files": [
+    {
+      "file": "post-release-boundary-readonly.ts",
+      "sha256": "dd089f7c8ad31ae629af1e6ab240c2eb6c7f04bb11e1518abbf78a350ebea270",
+      "bytes": 2381
+    },
+    {
+      "file": "post-release-boundary.json",
+      "sha256": "e574990dd3a655d09d9677a6fda71126fec992865151c1accc1fa5bf0248a3fa",
+      "bytes": 5411
+    },
+    {
+      "file": "POST_RELEASE_BOUNDARY.md",
+      "sha256": "b697bd49c84df3f6d3a1b87cc7b042fca170a580b54402848645b3c9e4262e6c",
+      "bytes": 2215
+    }
+  ]
+}

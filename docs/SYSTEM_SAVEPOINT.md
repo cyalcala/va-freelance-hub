@@ -1,5 +1,27 @@
 # System Savepoint
 
+## 2026-10-13 20:01 Manila — cache deployment observed
+
+[The bounded cache release](operations/PAGES_SNAPSHOT_RELEASE_2026-10-13.md)
+is now production deployment 8c649da0-93ef-4458-89ad-715f1367a2ca, source
+34e3bd1efa34dc3a2c31f2cc3e5b6c5b04790e83. Independent read-back found unchanged
+production settings. The today board displayed 22 IDs and missing 9214 recovered
+from 404 to 200 after an observed refresh. At 335–336 seconds snapshot expiry was
+truthfully stale/no-store. Hard freshness/CPU/throughput remain unproven.
+
+Evidence checkpoint 0b39b4aaebb45dba0cb663849b07666ef77e3205 is exactly read
+back on SSM/GitLab. Raw captured hashes match canonical blobs after the explicit
+Git newline preservation repair. The separate 0054 jobflow candidate passed
+3388 tests, zero failures, 320594 assertions, 233 files, 109.29 seconds and app
+typecheck and build in 38.84 seconds. A later root cross-check found the
+actual admitted identity workable:pineapple-staffing differs from the new
+runtime/test fixture token workable:pineapple. Release is HELD for correction
+and renewed proof; those earlier results do not cover the correction.
+Independent frozen native/guard review passed 49/0/647. Its earlier 3387/1 run
+and diagnosed heartbeat fixture failure remain evidence, not an erased result.
+NEXT: finish the separate jobflow release and observe ordinary agency fetches,
+then durable all-opening coverage. MATH 0/13; certified daily flow UNKNOWN.
+
 ## 2026-10-13 — Measured agency starvation and cache release preparation
 
 [The current bounded flow report](operations/PUBLICATION_FLOW_2026-10-13.md)

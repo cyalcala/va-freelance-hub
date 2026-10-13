@@ -1,0 +1,20 @@
+{
+  "algorithm": "SHA-256",
+  "files": [
+    {
+      "file": "post-release-first-readonly.ts",
+      "sha256": "7cbb37507c5456b35f70197c2e4563020ae4d5d6d57c94306eddf002f3bd2e02",
+      "bytes": 9464
+    },
+    {
+      "file": "post-release-first.json",
+      "sha256": "27013cd72ec95c8c05ef7389d810824573e0aeca77a2d0906c11e3a5320e0400",
+      "bytes": 10340
+    },
+    {
+      "file": "POST_RELEASE_FIRST.md",
+      "sha256": "07178b5d11d6bcd5c699de7322d45b2f3a05dbb1e2cc825cc9f134d443682969",
+      "bytes": 3202
+    }
+  ]
+}

@@ -1,0 +1,378 @@
+{
+  "scope": "FIRST_POST_RELEASE_METADATA_PUBLIC_GETS_AND_ONE_SNAPSHOT_SELECT_NO_RUNTIME_ACCEPTANCE",
+  "observedStart": "2026-10-13T11:55:24.174Z",
+  "expectedSource": "34e3bd1efa34dc3a2c31f2cc3e5b6c5b04790e83",
+  "observations": [
+    {
+      "kind": "pages-project",
+      "observedAtUtc": "2026-10-13T11:55:25.674Z",
+      "status": 200,
+      "success": true,
+      "errorCodes": [],
+      "name": "remotejobs-ph",
+      "subdomain": "remotejobs-ph.pages.dev",
+      "productionBranch": "main",
+      "canonicalDeployment": {
+        "id": "8c649da0-93ef-4458-89ad-715f1367a2ca",
+        "environment": "production",
+        "createdOn": "2026-10-13T11:52:29.354194Z",
+        "commitHash": "34e3bd1efa34dc3a2c31f2cc3e5b6c5b04790e83",
+        "branch": "main",
+        "latestStage": {
+          "name": "deploy",
+          "status": "success"
+        },
+        "envVars": [
+          {
+            "name": "GEMINI_API_KEY",
+            "type": "secret_text"
+          },
+          {
+            "name": "GROQ_API_KEY",
+            "type": "secret_text"
+          },
+          {
+            "name": "INNGEST_SIGNING_KEY",
+            "type": "secret_text"
+          },
+          {
+            "name": "OPENROUTER_API_KEY",
+            "type": "secret_text"
+          },
+          {
+            "name": "PROXY_SECRET",
+            "type": "secret_text"
+          }
+        ]
+      },
+      "latestDeployment": {
+        "id": "8c649da0-93ef-4458-89ad-715f1367a2ca",
+        "environment": "production",
+        "createdOn": "2026-10-13T11:52:29.354194Z",
+        "commitHash": "34e3bd1efa34dc3a2c31f2cc3e5b6c5b04790e83",
+        "branch": "main",
+        "latestStage": {
+          "name": "deploy",
+          "status": "success"
+        },
+        "envVars": [
+          {
+            "name": "GEMINI_API_KEY",
+            "type": "secret_text"
+          },
+          {
+            "name": "GROQ_API_KEY",
+            "type": "secret_text"
+          },
+          {
+            "name": "INNGEST_SIGNING_KEY",
+            "type": "secret_text"
+          },
+          {
+            "name": "OPENROUTER_API_KEY",
+            "type": "secret_text"
+          },
+          {
+            "name": "PROXY_SECRET",
+            "type": "secret_text"
+          }
+        ]
+      },
+      "productionScriptName": "pages-worker--14231676-production",
+      "productionConfig": {
+        "compatibilityDate": "2024-11-01",
+        "compatibilityFlags": [
+          "nodejs_compat"
+        ],
+        "d1Bindings": [
+          {
+            "binding": "DB",
+            "id": "08072f16-d3d1-436a-9104-b057a162db7c"
+          }
+        ],
+        "aiBindingNames": [
+          "AI"
+        ],
+        "envVars": [
+          {
+            "name": "GEMINI_API_KEY",
+            "type": "secret_text"
+          },
+          {
+            "name": "GROQ_API_KEY",
+            "type": "secret_text"
+          },
+          {
+            "name": "INNGEST_SIGNING_KEY",
+            "type": "secret_text"
+          },
+          {
+            "name": "OPENROUTER_API_KEY",
+            "type": "secret_text"
+          },
+          {
+            "name": "PROXY_SECRET",
+            "type": "secret_text"
+          }
+        ],
+        "otherBindingNames": {
+          "kv_namespaces": [],
+          "r2_buckets": [],
+          "services": [],
+          "durable_object_namespaces": [],
+          "vectorize_bindings": [],
+          "hyperdrive_bindings": []
+        }
+      },
+      "productionConfigMatchesPreflight": true,
+      "canonicalSourceMatchesExpected": true
+    },
+    {
+      "kind": "ordinary-public-get",
+      "path": "/",
+      "observedAtUtc": "2026-10-13T11:55:26.692Z",
+      "status": 200,
+      "elapsedMs": 1017,
+      "headers": {
+        "cache-control": "no-store",
+        "date": "Tue, 13 Oct 2026 11:55:27 GMT",
+        "x-public-snapshot": "stale",
+        "x-public-snapshot-age-seconds": "5578",
+        "x-public-snapshot-companies": "735",
+        "x-public-snapshot-generated-at": "2026-10-13T10:22:28.616Z",
+        "x-public-snapshot-jobs": "1660",
+        "x-public-snapshot-source": "edge"
+      },
+      "snapshotMeta": [
+        {
+          "name": "va-hub:snapshot-status",
+          "content": "stale"
+        },
+        {
+          "name": "va-hub:snapshot-generated-at",
+          "content": "2026-10-13T10:22:28.616Z"
+        },
+        {
+          "name": "va-hub:snapshot-source",
+          "content": "edge"
+        },
+        {
+          "name": "va-hub:snapshot-age-seconds",
+          "content": "5578"
+        },
+        {
+          "name": "va-hub:snapshot-jobs",
+          "content": "1660"
+        },
+        {
+          "name": "va-hub:snapshot-companies",
+          "content": "735"
+        }
+      ],
+      "counts": [],
+      "renderedJobIds": [
+        9212,
+        9207,
+        9206,
+        9205,
+        9204,
+        9199,
+        9191,
+        9188,
+        9187,
+        9186,
+        9181,
+        9178,
+        9196,
+        9151,
+        9126,
+        9118,
+        9117,
+        8379,
+        8294,
+        6577,
+        6512,
+        3749,
+        9200,
+        9180,
+        9159,
+        9162,
+        9201,
+        9198,
+        9193,
+        9194,
+        9149,
+        9146,
+        9142,
+        9124,
+        9086,
+        9197,
+        9153,
+        9140,
+        9136,
+        9091,
+        9203,
+        9202,
+        9172,
+        9131,
+        9115
+      ],
+      "jsonLdDatePosted": [],
+      "bodySha256": "d9035d6a211819f30f9fc4ed4f8a99b92c95c499626a3639b5023a011d77610f",
+      "bodyBytes": 77878,
+      "rawBodyRetained": false
+    },
+    {
+      "kind": "ordinary-public-get",
+      "path": "/opportunities?fresh=today",
+      "observedAtUtc": "2026-10-13T11:55:26.544Z",
+      "status": 200,
+      "elapsedMs": 869,
+      "headers": {
+        "cache-control": "no-store",
+        "date": "Tue, 13 Oct 2026 11:55:26 GMT",
+        "x-public-snapshot": "stale",
+        "x-public-snapshot-age-seconds": "5578",
+        "x-public-snapshot-companies": "735",
+        "x-public-snapshot-generated-at": "2026-10-13T10:22:28.616Z",
+        "x-public-snapshot-jobs": "1660",
+        "x-public-snapshot-source": "edge"
+      },
+      "snapshotMeta": [
+        {
+          "name": "va-hub:snapshot-status",
+          "content": "stale"
+        },
+        {
+          "name": "va-hub:snapshot-generated-at",
+          "content": "2026-10-13T10:22:28.616Z"
+        },
+        {
+          "name": "va-hub:snapshot-source",
+          "content": "edge"
+        },
+        {
+          "name": "va-hub:snapshot-age-seconds",
+          "content": "5578"
+        },
+        {
+          "name": "va-hub:snapshot-jobs",
+          "content": "1660"
+        },
+        {
+          "name": "va-hub:snapshot-companies",
+          "content": "735"
+        }
+      ],
+      "counts": [
+        21
+      ],
+      "renderedJobIds": [
+        9212,
+        9207,
+        9206,
+        9205,
+        9204,
+        9203,
+        9202,
+        9201,
+        9200,
+        9199,
+        9198,
+        9197,
+        9196,
+        9194,
+        9193,
+        9191,
+        9189,
+        9188,
+        9187,
+        9186,
+        9182
+      ],
+      "jsonLdDatePosted": [],
+      "bodySha256": "9c4f9c46b7654fde90608a67082b809a612698b99061587f5f38bd0a1ddb7d1d",
+      "bodyBytes": 34917,
+      "rawBodyRetained": false
+    },
+    {
+      "kind": "ordinary-public-get",
+      "path": "/jobs/9214",
+      "observedAtUtc": "2026-10-13T11:55:26.683Z",
+      "status": 404,
+      "elapsedMs": 1008,
+      "headers": {
+        "date": "Tue, 13 Oct 2026 11:55:27 GMT"
+      },
+      "snapshotMeta": [],
+      "counts": [],
+      "renderedJobIds": [],
+      "jsonLdDatePosted": [],
+      "bodySha256": "e3ebaa16dd9d9b9fc107c42183fb6cf9d22927e1af03dbbdfa0ccc38e4e4ac31",
+      "bodyBytes": 9,
+      "rawBodyRetained": false
+    },
+    {
+      "kind": "ordinary-public-get",
+      "path": "/data-policy",
+      "observedAtUtc": "2026-10-13T11:55:26.338Z",
+      "status": 200,
+      "elapsedMs": 663,
+      "headers": {
+        "cache-control": "public, max-age=60, s-maxage=300, stale-while-revalidate=600",
+        "date": "Tue, 13 Oct 2026 11:55:26 GMT",
+        "x-edge-cache": "MISS"
+      },
+      "snapshotMeta": [],
+      "counts": [],
+      "renderedJobIds": [],
+      "jsonLdDatePosted": [],
+      "bodySha256": "a4800705778c0f11ab3610f08f45f4113250536183316f113b9117dee1de78ca",
+      "bodyBytes": 8214,
+      "rawBodyRetained": false
+    },
+    {
+      "kind": "snapshot-metadata",
+      "observedAtUtc": "2026-10-13T11:55:27.476Z",
+      "status": 200,
+      "success": true,
+      "errorCodes": [],
+      "query": "SELECT id,generated_at,refresh_started_at,LENGTH(payload) AS payload_chars,json_valid(payload) AS payload_is_plain_json FROM public_serving_snapshot WHERE id=1",
+      "params": [],
+      "querySha256": "851abe919a837eb2bf0f7b6d74b10358067988fc2e487b0587c1fc9388625d67",
+      "results": [
+        {
+          "success": true,
+          "rowsRead": 1,
+          "rowsWritten": 0,
+          "rows": [
+            {
+              "id": 1,
+              "generated_at": "2026-10-13T11:23:06.080Z",
+              "refresh_started_at": "2026-10-13T11:55:26.727Z",
+              "payload_chars": 686391,
+              "payload_is_plain_json": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "worker-analytics",
+      "observedAtUtc": "2026-10-13T11:55:28.461Z",
+      "status": 200,
+      "query": "query PostRelease($accountTag: string, $start: string, $end: string, $scriptName: string) { viewer { accounts(filter: {accountTag: $accountTag}) { workersInvocationsAdaptive(limit: 20, filter: {scriptName: $scriptName, datetime_geq: $start, datetime_leq: $end}) { dimensions {scriptName status} sum {requests errors} quantiles {cpuTimeP50 cpuTimeP99} } } } }",
+      "variables": {
+        "accountTag": "76cf15ef361089aa0411e75ff77d343a",
+        "start": "2026-10-13T11:52:29.354194Z",
+        "end": "2026-10-13T11:55:27.476Z",
+        "scriptName": "pages-worker--14231676-production"
+      },
+      "errorCount": 0,
+      "errorCategories": [],
+      "rows": [],
+      "note": "Adaptive analytics may lag; empty results are not zero cost or errors. Time bounds alone do not attest a particular Worker version."
+    }
+  ],
+  "observedEnd": "2026-10-13T11:55:28.462Z"
+}

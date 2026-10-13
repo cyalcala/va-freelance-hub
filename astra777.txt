@@ -1,5 +1,32 @@
 # Astra777 — current incident and continuation contract
 
+## October 13 — cache deployment observed; agency release next
+
+Read docs/operations/PAGES_SNAPSHOT_RELEASE_2026-10-13.md. Production is now
+8c649da0-93ef-4458-89ad-715f1367a2ca / exact source
+34e3bd1efa34dc3a2c31f2cc3e5b6c5b04790e83, unchanged schema 0054/configuration.
+At 12:01 UTC the today filter showed 22 IDs and previously missing 9214 returned 200.
+Five-minute expiry is honest; hard delivery latency and sustainable CPU remain
+unproven. The 22 arrivals are not independently certified daily verified jobs.
+Main evidence checkpoint 0b39b4aaebb45dba0cb663849b07666ef77e3205 is exactly
+read back on SSM/GitLab, including repaired byte preservation of hashed logs.
+
+The separate jobflow release passed whole regression 3388/0/320594 across 233
+files in 109.29 seconds, app typecheck and build in 38.84 seconds. Those
+receipts precede the cohort-identity correction below and do not certify it. The prior full
+run 3387/1 exposed an obsolete heartbeat mock lacking RETURNING; the corrected
+fixture keeps the 500/heartbeat/release assertions and passes independent review.
+Independent native/guard review passed 49/0/647 on frozen runtime inputs.
+A standalone exact-robots guard extension passed 92 CI tests, but root
+subsequently found a real identity mismatch: the captured admitted source is
+workable:pineapple-staffing while the new runtime/test cohort used
+workable:pineapple. The jobflow release is HELD until actual-identity RED,
+correction and renewed verification. Earlier synthetic-cohort PASS is not
+proof that all seven real identities were covered. No admission is changed.
+No jobflow deployment or completed MATH claim follows from these local results.
+NEXT is finish that release, observe normal clocks, and implement complete
+permitted opening intake before the canary caps. Goal active; MATH 0/13.
+
 ## October 13 live evidence and immutable release preparation
 
 Read docs/operations/PUBLICATION_FLOW_2026-10-13.md and its offline-verifiable
