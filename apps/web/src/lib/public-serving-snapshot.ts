@@ -5,10 +5,11 @@ import { publicOpportunityFilters } from "./public-opportunities";
 import type { PublicBoard, PublicDirectoryRow, PublicJob } from "./public-board";
 import { timestampMs } from "./public-board";
 import { getDurableLkgSnapshot } from "./durable-lkg-snapshot";
+import { PUBLIC_SNAPSHOT_FRESH_MS } from "./public-edge-cache";
 
-const FRESH_MS = 15 * 60 * 1000;
+const FRESH_MS = PUBLIC_SNAPSHOT_FRESH_MS;
 const STALE_RECHECK_MS = 60_000;
-const REBUILD_AFTER_MS = 60 * 60 * 1000;
+const REBUILD_AFTER_MS = FRESH_MS;
 const LEASE_MS = 10 * 60 * 1000;
 const MAX_PAYLOAD_CHARS = 900_000;
 const DEPENDENCY_TIMEOUT_MS = 2_000;
@@ -25,7 +26,7 @@ export const CLAIM_REFRESH_SQL = `INSERT INTO public_serving_snapshot
   (id, generated_at, refresh_started_at, payload)
 VALUES (1, '1970-01-01T00:00:00.000Z', ?, '')
 ON CONFLICT(id) DO UPDATE SET refresh_started_at = excluded.refresh_started_at
-WHERE public_serving_snapshot.generated_at < ?
+WHERE public_serving_snapshot.generated_at <= ?
   AND (public_serving_snapshot.refresh_started_at IS NULL OR public_serving_snapshot.refresh_started_at < ?)`;
 
 export const READ_SNAPSHOT_SQL = `SELECT generated_at AS generatedAt, payload
@@ -318,7 +319,8 @@ export function promoteSnapshot(
   slot.activeSource = source;
   // Failed/leased refreshes must not grant old data another 15-minute warm
   // exemption. One cheap row recheck per minute lets a recovered board appear.
-  slot.serveUntil = now + (Date.parse(candidate.generatedAt) + REBUILD_AFTER_MS <= now ? STALE_RECHECK_MS : FRESH_MS);
+  slot.serveUntil = Date.parse(candidate.generatedAt) + REBUILD_AFTER_MS <= now
+    ? now + STALE_RECHECK_MS : Math.min(now + FRESH_MS, Date.parse(candidate.generatedAt) + REBUILD_AFTER_MS);
   slot.lastPromotionAt = new Date(now).toISOString();
   slot.lastRefreshResult = "success";
   slot.lastRefreshError = null;
@@ -345,7 +347,7 @@ export function getPublicSnapshotHealth(now = Date.now()): SnapshotHealthTelemet
   const board = slot.activeBoard;
   const generatedMs = board ? timestampMs(board.generatedAt) : 0;
   const ageMs = generatedMs ? Math.max(0, now - generatedMs) : 0;
-  const isStale = ageMs > REBUILD_AFTER_MS;
+  const isStale = ageMs >= REBUILD_AFTER_MS;
 
   let status: SnapshotServingStatus;
   if (!board) {
@@ -858,7 +860,8 @@ export async function resolvePublicBoard(options: {
 
   // 3. Stale in-memory board (TTL means "refresh this data", NOT "delete usable data")
   if (slot.activeBoard) {
-    slot.serveUntil = now + (Date.parse(slot.activeBoard.generatedAt) + REBUILD_AFTER_MS <= now ? STALE_RECHECK_MS : FRESH_MS);
+    slot.serveUntil = Date.parse(slot.activeBoard.generatedAt) + REBUILD_AFTER_MS <= now
+      ? now + STALE_RECHECK_MS : Math.min(now + FRESH_MS, Date.parse(slot.activeBoard.generatedAt) + REBUILD_AFTER_MS);
     schedule(() => refreshStored(store, cache, now), waitUntil);
     return slot.activeBoard;
   }
@@ -903,7 +906,7 @@ function runtimeCache(): EdgeCache | null {
 /**
  * Public pages call this instead of scanning D1. A warm isolate or edge copy
  * returns immediately. The opportunities table is read only while rebuilding
- * the single snapshot row, at most once per hour globally.
+ * the single snapshot row, at most once per five minutes globally.
  * If D1 is unavailable or exhausted, the durable LKG snapshot is served.
  */
 const offlineStore: SnapshotStore = {

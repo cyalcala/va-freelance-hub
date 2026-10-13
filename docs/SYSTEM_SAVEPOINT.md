@@ -1,5 +1,32 @@
 # System Savepoint
 
+## 2026-10-13 — Dayshift focus and verified snapshot source
+
+The owner restates the immediate focus as dayshift/vetted VA agencies and the
+north star as 100–150 or more unique newly published verified PH-eligible remote
+jobs every day, smoothly and sustainably. This does not raise billing/source
+caps, waive evidence or make 150 a publication ceiling. October 12 counts remain
+dated observations, not today's current truth.
+
+The recovery/audit checkpoint `09fff133c5b70bd9a50719cc2c1e8d51f54f4c70` is
+exactly read back on both SSM and GitLab. The local snapshot repair passed final
+54/0/223 targeted regression, app typecheck and broader build (186.38s), plus
+independent review. [Exact scope](operations/PUBLIC_SNAPSHOT_FIVE_MINUTE_CHECKPOINT_2026-10-13.md).
+It is not deployed. The 0054-compatible combined release still needs complete
+verification. No full main/schema deployment is authorized by this checkpoint.
+
+[Current dayshift careers evidence](research/DAYSHIFT_PRIORITY_CAREERS_2026-10-13.md)
+reconciles three existing records without enrollment: Affordable Staff explicitly
+excludes WFH, Hammerjack has mixed arrangements at its official careers portal,
+and EzyVA's current careers identity remains unresolved. These are company-level
+facts, not verified vacancy counts. Preserve their roles' independent gates.
+
+**NEXT:** finish the combined 0054 release, then prioritize actual permitted
+opening coverage at admitted dayshift/vetted employers and resolve supported
+careers/source evidence at remaining existing records. Durable overflow intake,
+original-date provenance, runtime/visibility and independent daily certification
+remain unproven. MATH **0/13**; goal active.
+
 ## 2026-10-12 21:30 Manila — Behavioral counterexamples and source recovery checkpoint
 
 This checkpoint preserves the owner Australian/dayshift steering, revised Astra,

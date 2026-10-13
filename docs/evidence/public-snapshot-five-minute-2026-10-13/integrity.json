@@ -1,0 +1,81 @@
+{
+  "capturedAt": "2026-10-13T11:09:02.929097+00:00",
+  "startSha": "09fff133c5b70bd9a50719cc2c1e8d51f54f4c70",
+  "scope": "LOCAL_SNAPSHOT_SOURCE_TEST_BUILD_NOT_DEPLOYMENT_OR_SLO",
+  "runtime": "Bun1.3.14",
+  "targeted": {
+    "pass": 54,
+    "fail": 0,
+    "assertions": 223,
+    "files": 3,
+    "elapsedSeconds": 17.81,
+    "priorIndependentPassElapsedSeconds": 15.22
+  },
+  "appTypecheckExit": 0,
+  "appBuildExit": 0,
+  "appBuildElapsedSeconds": 186.38,
+  "mathAccepted": "0/13",
+  "certifiedDailyFlow": "UNKNOWN",
+  "artifacts": [
+    {
+      "path": "apps/web/src/lib/public-edge-cache.ts",
+      "bytes": 2834,
+      "sha256": "89e530cb2e2df8db56515792670bbd3c30561f91e287ddedfd929c19b4685ef3",
+      "lfNormalizedSha256": "5ee9ea083312725ef31cc4bcda7d6774841537a32a3439d03dfa6f7879c2b429"
+    },
+    {
+      "path": "apps/web/src/lib/public-serving-snapshot.ts",
+      "bytes": 35689,
+      "sha256": "82b78688474dcac5978bc1669d5a21eaf355dce8b3aad04fd7aaba01343381ae",
+      "lfNormalizedSha256": "82b78688474dcac5978bc1669d5a21eaf355dce8b3aad04fd7aaba01343381ae"
+    },
+    {
+      "path": "apps/web/src/middleware.ts",
+      "bytes": 2820,
+      "sha256": "6ad50526bc3de65a5d374fb4e78850a423fd594074cf583c7f9535742a97e73e",
+      "lfNormalizedSha256": "81b72b61644371f02a1d171d392e45402ab132b6fc07033687d74d039e78fe88"
+    },
+    {
+      "path": "apps/web/tests/public-edge-cache.test.ts",
+      "bytes": 3875,
+      "sha256": "10455ae957efe41d5370e25e50e79a8adb65c5933768038ea93e87f8676ed1cf",
+      "lfNormalizedSha256": "f1d997d4e9a77e714ba0f3a6db876029a49f0ddec68760d2e3e19ed6dbcf3449"
+    },
+    {
+      "path": "apps/web/tests/public-edge-cache-failure.test.ts",
+      "bytes": 5136,
+      "sha256": "e6b54943d23b025fe83d0711c84800eef37daebb39b8743137665554f87ba218",
+      "lfNormalizedSha256": "e6b54943d23b025fe83d0711c84800eef37daebb39b8743137665554f87ba218"
+    },
+    {
+      "path": "apps/web/tests/public-snapshot.test.ts",
+      "bytes": 47413,
+      "sha256": "c001b1a1495c1abf1902b2f265a994490b33197caa85a641b01e3dfd4824f941",
+      "lfNormalizedSha256": "82447bff6fd7768f19685f9d225e587a994eb2a958bf56e686e905c930b4f79d"
+    },
+    {
+      "path": "docs/evidence/public-snapshot-five-minute-2026-10-13/logs/app-build.log",
+      "bytes": 2080,
+      "sha256": "f5e5340ee50a881ea3b22c16e5bd4f0b680db72fd2b2d8c8cbc9e805843a8f6a",
+      "lfNormalizedSha256": "0e09ec1cb608a4c02f10899f0f2979923a427292a0cf3db73365f6dd9c12d13f"
+    },
+    {
+      "path": "docs/evidence/public-snapshot-five-minute-2026-10-13/logs/app-typecheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "lfNormalizedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/evidence/public-snapshot-five-minute-2026-10-13/logs/tests-final.log",
+      "bytes": 16527,
+      "sha256": "2738fdca99e92b80977d0bb7e7d702e26dde26efa0f29ff555bab0aad05cca3b",
+      "lfNormalizedSha256": "e3b58b00eea752a947f117955189afb2ecee484d7ad147e9b78f173fb42e8621"
+    },
+    {
+      "path": "docs/evidence/public-snapshot-five-minute-2026-10-13/logs/tests-initial-52.log",
+      "bytes": 16185,
+      "sha256": "c73bcd168ac8cbccbfc4999cceb68b9f1fbd0dd431d0806344f56a921642631c",
+      "lfNormalizedSha256": "7ed751926cb17efdb32da4c4e325ba9b3373b6eac02fcbcf0fdbf42452a1b0ca"
+    }
+  ]
+}

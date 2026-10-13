@@ -152,7 +152,7 @@ test("one stale snapshot row is served immediately and rebuilt by a single lease
     resetPublicBoardState();
     const pendingAgain: Promise<unknown>[] = [];
     const second = await resolvePublicBoard({
-      now: now + 16 * 60 * 1000,
+      now: now + 4 * 60 * 1000,
       cache: null,
       store: wrapped,
       waitUntil(promise) { pendingAgain.push(promise); },
@@ -206,6 +206,150 @@ test("a warm board does not read D1 again", async () => {
   await resolvePublicBoard({ now, cache: null, store });
   await resolvePublicBoard({ now: now + 1000, cache: null, store });
   expect(reads).toBe(1);
+});
+
+describe("five-minute snapshot freshness", () => {
+  test("a six-minute edge snapshot schedules and promotes the newer durable snapshot", async () => {
+    resetPublicBoardState();
+    const now = Date.parse("2026-10-12T12:06:00.000Z");
+    const old = { generatedAt: new Date(now - 6 * 60_000).toISOString(), jobs: [job({ id: 1, title: "Saved" })], directory: [] };
+    const current = { generatedAt: new Date(now).toISOString(), jobs: [job({ id: 2, title: "New publication" })], directory: [] };
+    let cachedBody = await packBoard(old);
+    let cachedGeneratedAt = old.generatedAt;
+    let edgeWrites = 0;
+    const cache = {
+      async match() { return new Response(cachedBody, { headers: { "x-snapshot-generated-at": cachedGeneratedAt } }); },
+      async put(_request: Request, response: Response) {
+        edgeWrites += 1;
+        cachedBody = await response.text();
+        cachedGeneratedAt = response.headers.get("x-snapshot-generated-at")!;
+      },
+    };
+    let reads = 0;
+    let claims = 0;
+    const currentPayload = await packBoard(current);
+    const store: SnapshotStore = {
+      async read() { reads += 1; return { generatedAt: current.generatedAt, payload: currentPayload }; },
+      async claimRefresh() { claims += 1; return false; },
+      async write() { throw new Error("The newer snapshot is already durable"); },
+      async build() { throw new Error("The newer snapshot needs no source-table scan"); },
+    };
+    const pending: Promise<unknown>[] = [];
+    const options = { cache, store, waitUntil(p: Promise<unknown>) { pending.push(p); } };
+    const saved = await resolvePublicBoard({ ...options, now });
+    await Promise.all(pending);
+    expect(saved.jobs.map((row) => row.id)).toEqual([1]);
+    expect(pending.length).toBe(1);
+    expect(reads).toBe(1);
+    expect(claims).toBe(0);
+    expect(edgeWrites).toBe(1);
+    expect(getPublicSnapshotHealth(now).generatedAt).toBe(current.generatedAt);
+    const recovered = await resolvePublicBoard({ ...options, now: now + 1 });
+    expect(recovered.jobs.map((row) => row.id)).toEqual([2]);
+    expect(reads).toBe(1);
+  });
+
+  test("promotion at minute four cannot extend the board's warm lease beyond minute five", async () => {
+    resetPublicBoardState();
+    const initial = Date.parse("2026-10-12T12:00:00.000Z");
+    const old = { generatedAt: new Date(initial).toISOString(), jobs: [job({ id: 1, title: "Saved" })], directory: [] };
+    const current = { generatedAt: new Date(initial + 4 * 60_000 + 30_000).toISOString(), jobs: [job({ id: 2, title: "New publication" })], directory: [] };
+    expect(promoteSnapshot(old, "d1", initial + 4 * 60_000)).toBe(true);
+    let reads = 0;
+    const currentPayload = await packBoard(current);
+    const store: SnapshotStore = {
+      async read() { reads += 1; return { generatedAt: current.generatedAt, payload: currentPayload }; },
+      async claimRefresh() { return false; },
+      async write() {},
+      async build() { throw new Error("The newer snapshot needs no source-table scan"); },
+    };
+    const pending: Promise<unknown>[] = [];
+    const options = { cache: null, store, waitUntil(p: Promise<unknown>) { pending.push(p); } };
+    const stillWarm = await resolvePublicBoard({ ...options, now: initial + 5 * 60_000 - 1 });
+    expect(stillWarm.jobs.map((row) => row.id)).toEqual([1]);
+    expect(reads).toBe(0);
+    expect(pending.length).toBe(0);
+    const expired = await resolvePublicBoard({ ...options, now: initial + 5 * 60_000 + 1 });
+    await Promise.all(pending);
+    expect(expired.jobs.map((row) => row.id)).toEqual([1]);
+    expect(pending.length).toBe(1);
+    expect(reads).toBe(1);
+    const recovered = await resolvePublicBoard({ ...options, now: initial + 5 * 60_000 + 2 });
+    expect(recovered.jobs.map((row) => row.id)).toEqual([2]);
+    expect(reads).toBe(1);
+  });
+
+  test("the shared SQLite refresh lease is claimable at the exact five-minute deadline", async () => {
+    resetPublicBoardState();
+    const db = sourceDatabase();
+    try {
+      const old = { generatedAt: "2026-10-12T12:00:00.000Z", jobs: [job({ id: 1, title: "Saved" })], directory: [] };
+      const payload = await packBoard(old);
+      db.query("INSERT INTO public_serving_snapshot (id, generated_at, payload) VALUES (1, ?, ?)").run(old.generatedAt, payload);
+      const now = Date.parse(old.generatedAt) + 5 * 60_000;
+      const observedAt = new Date(now).toISOString();
+      const expiredLeaseBefore = new Date(now - 10 * 60_000).toISOString();
+      const first = createD1SnapshotStore(d1Like(db));
+      const second = createD1SnapshotStore(d1Like(db));
+      expect(await first.claimRefresh(observedAt, old.generatedAt, expiredLeaseBefore)).toBe(true);
+      expect(await second.claimRefresh(observedAt, old.generatedAt, expiredLeaseBefore)).toBe(false);
+      expect(db.query("SELECT generated_at, refresh_started_at, payload FROM public_serving_snapshot WHERE id=1").get()).toEqual({
+        generated_at: old.generatedAt, refresh_started_at: observedAt, payload,
+      });
+      expect(promoteSnapshot(old, "memory", now)).toBe(true);
+      expect(getPublicSnapshotHealth(now).status).toBe("stale");
+    } finally {
+      db.close();
+    }
+  });
+
+  test.each(["memory", "edge"] as const)("a stale %s fallback remains usable while concurrent requests share one rebuild", async (fallback) => {
+    resetPublicBoardState();
+    const db = sourceDatabase();
+    try {
+      const now = Date.parse("2026-10-12T12:06:01.000Z");
+      const old = { generatedAt: "2026-10-12T12:00:00.000Z", jobs: [job({ id: 1, title: "Saved" })], directory: [] };
+      let cachedBody = await packBoard(old);
+      let cachedGeneratedAt = old.generatedAt;
+      db.query("INSERT INTO public_serving_snapshot (id, generated_at, payload) VALUES (1, ?, ?)").run(old.generatedAt, cachedBody);
+      if (fallback === "memory") promoteSnapshot(old, "memory", now - 61_000);
+      const cache = fallback === "memory" ? null : {
+        async match() { return new Response(cachedBody, { headers: { "x-snapshot-generated-at": cachedGeneratedAt } }); },
+        async put(_request: Request, response: Response) {
+          cachedBody = await response.text();
+          cachedGeneratedAt = response.headers.get("x-snapshot-generated-at")!;
+        },
+      };
+      let finishBuild!: () => void;
+      const buildGate = new Promise<void>((resolve) => { finishBuild = resolve; });
+      let builds = 0;
+      const store: SnapshotStore = {
+        ...createD1SnapshotStore(d1Like(db)),
+        async build(generatedAt) {
+          builds += 1;
+          await buildGate;
+          return { generatedAt, jobs: [job({ id: 2, title: "New publication" })], directory: [] };
+        },
+      };
+      const pending: Promise<unknown>[] = [];
+      const options = { now, cache, store, waitUntil(p: Promise<unknown>) { pending.push(p); } };
+      const saved = await Promise.all([resolvePublicBoard(options), resolvePublicBoard(options)]);
+      finishBuild();
+      await Promise.all(pending);
+      expect(saved.map((board) => board.jobs[0]?.id)).toEqual([1, 1]);
+      expect(builds).toBe(1);
+      expect(db.query("SELECT generated_at, refresh_started_at FROM public_serving_snapshot WHERE id=1").get()).toEqual({
+        generated_at: new Date(now).toISOString(), refresh_started_at: null,
+      });
+      resetPublicBoardState();
+      const recovered = await resolvePublicBoard({ ...options, now: now + 1, store: createD1SnapshotStore(d1Like(db)) });
+      await Promise.all(pending);
+      expect(recovered.jobs.map((row) => row.id)).toEqual([2]);
+      expect(builds).toBe(1);
+    } finally {
+      db.close();
+    }
+  });
 });
 
 test("quota failure serves the edge snapshot and does not scan D1", async () => {

@@ -1,0 +1,37 @@
+$ bun run --cwd apps/web build
+$ astro build
+(node:40320) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+18:52:06 [build] Waiting for integration "@astrojs/tailwind", hook "astro:config:setup"...
+18:52:07 [content] Syncing content
+18:52:07 [content] Synced content
+18:52:07 [types] Generated 471ms
+18:52:07 [build] output: "server"
+18:52:07 [build] mode: "server"
+18:52:07 [build] directory: C:\Users\admin\Desktop\va-freelance-hub\apps\web\dist\
+18:52:07 [build] adapter: @astrojs/cloudflare
+18:52:07 [build] Collecting build info...
+18:52:07 [build] ✓ Completed in 5.89s.
+18:52:07 [build] Building server entrypoints...
+Browserslist: browsers data (caniuse-lite) is 7 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+18:52:48 [WARN] [vite] [plugin vite:resolve] Automatically externalized node built-in module "node:async_hooks" imported from "..\..\node_modules\.bun\inngest@4.18.1+b54905c3917e77c8\node_modules\inngest\components\execution\als.js". Consider adding it to environments.ssr.external if it is intended.
+18:53:55 [WARN] [vite] [plugin vite:resolve] Automatically externalized node built-in module "node:crypto" imported from "..\..\packages\scraper\greenhouse-item-evidence.ts". Consider adding it to environments.ssr.external if it is intended.
+18:54:48 [vite] ✓ built in 2m 40s
+18:54:48 [build] ✓ Completed in 161.15s.
+
+ building client (vite) 
+18:54:49 [vite] transforming...
+18:54:59 [vite] ✓ 23 modules transformed.
+18:55:02 [vite] rendering chunks...
+18:55:06 [vite] computing gzip size...
+18:55:06 [vite] dist/_astro/client.NSH60KNz.js  194.63 kB │ gzip: 60.99 kB
+18:55:06 [vite] ✓ built in 17.37s
+
+ prerendering static routes 
+18:55:07 ✓ Completed in 724ms.
+
+18:55:07 [build] Rearranging server assets...
+18:55:07 [build] Server built in 186.38s
+18:55:07 [build] Complete!

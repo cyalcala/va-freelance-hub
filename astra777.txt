@@ -1,5 +1,28 @@
 # Astra777 — current incident and continuation contract
 
+## October 13 continuation — dayshift focus
+
+The owner prioritizes dayshift/vetted VA employers now and asks for 100–150 or
+more newly published verified PH-eligible remote jobs every day, smoothly and
+sustainably. Quality, permissions, source cadence and billing limits remain.
+The October 12 count samples below are history, not current October 13 counts.
+
+Checkpoint 09fff133c5b70bd9a50719cc2c1e8d51f54f4c70 is verified on SSM/GitLab.
+The final local five-minute snapshot slice passes 54/0/223, app typecheck and
+broader build, with independent review. It remains undeployed. Read
+docs/operations/PUBLIC_SNAPSHOT_FIVE_MINUTE_CHECKPOINT_2026-10-13.md for exact
+source/verification scope and resource estimate. The isolated 3065/0054 release
+combines permitted Workable rotation, strict original dates at every enabled
+public exposure, actual IDs and deferred-source retry; final native/broader
+acceptance is still in progress. Never deploy later unapplied gateway schema.
+
+Current careers research found Affordable Staff office-only, Hammerjack mixed
+WFH/hybrid/office and EzyVA identity unresolved. Read
+docs/research/DAYSHIFT_PRIORITY_CAREERS_2026-10-13.md. Keep existing identities;
+company labels do not certify every vacancy. NEXT is release acceptance and
+ordinary-clock/public-visibility evidence, followed by complete permitted intake
+for the prioritized employers. MATH remains 0/13; daily certification UNKNOWN.
+
 ## Latest owner steering and reconciled runtime evidence — October 12
 
 The owner explicitly prioritizes all openings at known VA companies, especially
