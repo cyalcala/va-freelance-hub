@@ -1,0 +1,43 @@
+﻿bun.exe : $ bun run --cwd apps/web build
+At C:\Users\admin\AppData\Roaming\npm\bun.ps1:14 char:3
++   & "$basedir/node_modules/bun/bin/bun.exe"   $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ bun run --cwd apps/web build:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+$ astro build
+(node:1748) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative 
+instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+19:47:41 [build] Waiting for integration "@astrojs/tailwind", hook "astro:config:setup"...
+19:47:49 [content] Syncing content
+19:47:49 [content] Synced content
+19:47:49 [types] Generated 6.68s
+19:47:49 [build] output: "server"
+19:47:49 [build] mode: "server"
+19:47:49 [build] directory: C:\Users\admin\Desktop\va-freelance-hub\tmp\pages-snapshot-release-34e3bd1e-v2\apps\web\dist\
+19:47:49 [build] adapter: @astrojs/cloudflare
+19:47:49 [build] Collecting build info...
+19:47:49 [build] ✓ Completed in 10.56s.
+19:47:49 [build] Building server entrypoints...
+Browserslist: browsers data (caniuse-lite) is 7 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+19:47:57 [WARN] [vite] [plugin vite:resolve] Automatically externalized node built-in module "node:async_hooks" imported from "..\..\node_modules\.bun\inngest@4.18.1+b54905c3917e77c8\node_modules\inngest\components\execution\als.js". Consider adding it to environments.ssr.external if it is intended.
+19:48:20 [vite] ✓ built in 30.61s
+19:48:20 [build] ✓ Completed in 30.92s.
+
+ building client (vite) 
+19:48:20 [vite] transforming...
+19:48:23 [vite] ✓ 23 modules transformed.
+19:48:23 [vite] rendering chunks...
+19:48:24 [vite] computing gzip size...
+19:48:24 [vite] dist/_astro/client.NSH60KNz.js  194.63 kB │ gzip: 60.99 kB
+19:48:24 [vite] ✓ built in 3.84s
+
+ prerendering static routes 
+19:48:24 ✓ Completed in 122ms.
+
+19:48:24 [build] Rearranging server assets...
+19:48:24 [build] Server built in 45.58s
+19:48:24 [build] Complete!

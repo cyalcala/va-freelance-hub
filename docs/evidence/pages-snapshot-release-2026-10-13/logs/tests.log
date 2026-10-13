@@ -1,0 +1,193 @@
+﻿bun test v1.3.14 (0d9b296a)
+bun.exe : 
+At C:\Users\admin\AppData\Roaming\npm\bun.ps1:14 char:3
++   & "$basedir/node_modules/bun/bin/bun.exe"   $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+apps\web\tests\public-edge-cache.test.ts:
+(pass) homepage tracking variants share one key while list filters remain distinct [5.29ms]
+(pass) design releases do not reuse HTML entries from previous asset builds [4.38ms]
+(pass) APIs, private requests and unknown routes never share cached HTML [0.51ms]
+(pass) error and explicitly uncacheable responses cannot replace a healthy cache entry [1.28ms]
+(pass) snapshot HTML expires at its data deadline even if its stored status still says fresh [2.02ms]
+
+apps\web\tests\public-edge-cache-failure.test.ts:
+(pass) a throwing cache binding cannot prevent the public route from rendering [3.31ms]
+(pass) a hanging HTML cache lookup falls through to the public route [2163.46ms]
+(pass) a failed cache write is contained even when attached to waitUntil [0.93ms]
+(pass) cache lookup failure returns a miss instead of propagating to middleware [0.45ms]
+(pass) a cached stale HTML page cannot conceal recovered fresh data [0.86ms]
+(pass) a middleware cache hit forwards only the snapshot's remaining lifetime [5.88ms]
+(pass) new fallback HTML stays usable without being stored as a fresh cached page [1.02ms]
+
+apps\web\tests\public-snapshot.test.ts:
+(pass) the snapshot query keeps only public jobs and visible directory rows [14.29ms]
+{"event":"SNAPSHOT_STALE","generatedAt":"2026-10-05T00:00:00.000Z","ageMs":97200000,"jobs":1,"companies":0,"source":"d1"}
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-06T03:00:00.000Z","ageMs":0,"jobs":1,"companies":0,"source":"d1"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":7,"result":"success","errorClass":null}
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-06T03:00:00.000Z","ageMs":240000,"jobs":1,"companies":0,"source":"d1"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":0,"result":"success","errorClass":null}
+(pass) one stale snapshot row is served immediately and rebuilt by a single lease [527.97ms]
+public snapshot read failed d1_quota
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526177803,"jobs":1519,"companies":735,"source":"durable_lkg"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":1,"result":"none","errorClass":null}
+public snapshot read failed d1_quota
+(pass) a cold quota failure serves the durable LKG snapshot and does not scan the jobs table [187.85ms]
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526177990,"jobs":1519,"companies":735,"source":"durable_lkg"}
+(pass) a warm board does not read D1 again [77.67ms]
+{"event":"SNAPSHOT_STALE","generatedAt":"2026-10-12T12:00:00.000Z","ageMs":360000,"jobs":1,"companies":0,"source":"edge"}
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-12T12:06:00.000Z","ageMs":0,"jobs":1,"companies":0,"source":"d1"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":9,"result":"success","errorClass":null}
+(pass) five-minute snapshot freshness > a six-minute edge snapshot schedules and promotes the newer durable snapshot 
+[98.32ms]
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-12T12:00:00.000Z","ageMs":240000,"jobs":1,"companies":0,"source":"d1"}
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-12T12:04:30.000Z","ageMs":30001,"jobs":1,"companies":0,"source":"d1"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":2,"result":"success","errorClass":null}
+(pass) five-minute snapshot freshness > promotion at minute four cannot extend the board's warm lease beyond minute 
+five [6.32ms]
+{"event":"SNAPSHOT_STALE","generatedAt":"2026-10-12T12:00:00.000Z","ageMs":300000,"jobs":1,"companies":0,"source":"memory"}
+(pass) five-minute snapshot freshness > the shared SQLite refresh lease is claimable at the exact five-minute deadline 
+[5.60ms]
+{"event":"SNAPSHOT_STALE","generatedAt":"2026-10-12T12:00:00.000Z","ageMs":300000,"jobs":1,"companies":0,"source":"memory"}
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-12T12:06:01.000Z","ageMs":0,"jobs":1,"companies":0,"source":"d1"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":3,"result":"success","errorClass":null}
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-12T12:06:01.000Z","ageMs":1,"jobs":1,"companies":0,"source":"d1"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":0,"result":"success","errorClass":null}
+(pass) five-minute snapshot freshness > a stale memory fallback remains usable while concurrent requests share one 
+rebuild [235.11ms]
+{"event":"SNAPSHOT_STALE","generatedAt":"2026-10-12T12:00:00.000Z","ageMs":361000,"jobs":1,"companies":0,"source":"edge"}
+{"event":"SNAPSHOT_STALE","generatedAt":"2026-10-12T12:00:00.000Z","ageMs":361000,"jobs":1,"companies":0,"source":"edge"}
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-12T12:06:01.000Z","ageMs":0,"jobs":1,"companies":0,"source":"d1"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":7,"result":"success","errorClass":null}
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-12T12:06:01.000Z","ageMs":1,"jobs":1,"companies":0,"source":"edge"}
+(pass) five-minute snapshot freshness > a stale edge fallback remains usable while concurrent requests share one 
+rebuild [50.60ms]
+{"event":"SNAPSHOT_STALE","generatedAt":"2026-10-06T00:00:00.000Z","ageMs":7200000,"jobs":1,"companies":0,"source":"edge"}
+public snapshot read failed during refresh d1_quota
+{"event":"SNAPSHOT_REFRESH_FAILED","durationMs":1,"result":"failed","errorClass":"d1_quota"}
+(pass) quota failure serves the edge snapshot and does not scan D1 [5.07ms]
+(pass) homepage preview and search use the snapshot without a second eligibility rule [10.98ms]
+(pass) the refresh lease cannot be taken twice inside its window [1.08ms]
+(pass) independent stores share the first missing-row lease and recover an abandoned claim [1.82ms]
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":1446735,"jobs":1519,"companies":735,"source":"durable_lkg"}
+(pass) a cold loser of the missing-row lease serves LKG without scanning tables [70.49ms]
+(pass) a late writer from an expired lease cannot roll back the durable snapshot row [1.02ms]
+[public-snapshot] candidate from d1 rejected: Job at index 0 has invalid tags
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526178555,"jobs":1519,"companies":735,"source":"durable_lkg"}
+[public-snapshot] candidate from d1 rejected: Job at index 0 has invalid tags
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526178698,"jobs":1519,"companies":735,"source":"durable_lkg"}
+[public-snapshot] candidate from d1 rejected: Job at index 0 has invalid postedAt
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526178784,"jobs":1519,"companies":735,"source":"durable_lkg"}
+[public-snapshot] candidate from d1 rejected: Job at index 0 has invalid sourceId
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526178862,"jobs":1519,"companies":735,"source":"durable_lkg"}
+[public-snapshot] candidate from d1 rejected: Job at index 0 has invalid company
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526178959,"jobs":1519,"companies":735,"source":"durable_lkg"}
+[public-snapshot] candidate from d1 rejected: Job at index 0 has invalid description
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526179033,"jobs":1519,"companies":735,"source":"durable_lkg"}
+(pass) Phase 4 — Snapshot Validation > rejects fields that would crash a public renderer or query [562.71ms]
+(pass) Phase 4 — Snapshot Validation > rejects a cold empty job board even if directory rows exist [108.23ms]
+(pass) Phase 4 — Snapshot Validation > a partial rebuild cannot erase an established directory [115.05ms]
+(pass) Phase 4 — Snapshot Validation > accepts a well-formed candidate snapshot [0.33ms]
+(pass) Phase 4 — Snapshot Validation > rejects candidates with invalid or unparseable timestamps [0.24ms]
+(pass) Phase 4 — Snapshot Validation > rejects candidate with invalid job IDs or missing required fields [0.30ms]
+(pass) Phase 4 — Snapshot Validation > rejects candidate with empty jobs array when active board has active listings 
+(anti-collapse) [0.27ms]
+(pass) Phase 4 — Snapshot Validation > rejects severe count collapse when active board has large corpus [2.08ms]
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-07T09:00:00.000Z","ageMs":0,"jobs":1,"companies":0,"source":"memory"}
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-07T11:00:00.000Z","ageMs":0,"jobs":1,"companies":0,"source":"d1"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":2134,"result":"success","errorClass":null}
+(pass) Phase 6 — Failure-Injection Tests (Tests A through I) > waitUntil retains a valid refresh that outlasts the 
+page-serving deadline [2134.64ms]
+{"event":"SNAPSHOT_STALE","generatedAt":"2026-10-07T10:00:00.000Z","ageMs":7200000,"jobs":1,"companies":0,"source":"edge"}
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-07T12:00:00.000Z","ageMs":61000,"jobs":1,"companies":0,"source":"d1"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":4,"result":"success","errorClass":null}
+(pass) Phase 6 — Failure-Injection Tests (Tests A through I) > a stale warm board rechecks recovered D1 after one 
+minute rather than another fifteen [4.59ms]
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526181484,"jobs":1519,"companies":735,"source":"durable_lkg"}
+public snapshot cold load failed; serving durable LKG
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-13T11:45:34.749Z","ageMs":0,"jobs":1519,"companies":735,"source":"d1"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":0,"result":"success","errorClass":null}
+(pass) Phase 6 — Failure-Injection Tests (Tests A through I) > cold serving timeout retains the underlying 
+reconstruction until its verified promotion [337.28ms]
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-06T00:00:00.000Z","ageMs":0,"jobs":1,"companies":0,"source":"memory"}
+public snapshot write failed Error
+{"event":"SNAPSHOT_REFRESH_FAILED","durationMs":562,"result":"failed","errorClass":"snapshot_write_failed"}
+(pass) Phase 6 — Failure-Injection Tests (Tests A through I) > an oversized candidate cannot replace memory, edge, or 
+the durable row [563.25ms]
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526182384,"jobs":1519,"companies":735,"source":"durable_lkg"}
+public snapshot cold load failed; serving durable LKG
+(pass) Phase 6 — Failure-Injection Tests (Tests A through I) > a hanging cold D1 read has a bounded wait before 
+durable failover [53.25ms]
+public snapshot read failed d1_quota
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526182438,"jobs":1519,"companies":735,"source":"durable_lkg"}
+(pass) Phase 6 — Failure-Injection Tests (Tests A through I) > a hanging edge cache cannot prevent durable failover 
+[100.70ms]
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-06T00:00:00.000Z","ageMs":0,"jobs":1,"companies":0,"source":"memory"}
+public snapshot write failed d1_quota
+{"event":"SNAPSHOT_REFRESH_FAILED","durationMs":5,"result":"failed","errorClass":"d1_quota"}
+(pass) Phase 6 — Failure-Injection Tests (Tests A through I) > a failed durable write cannot promote the replacement 
+over the active board [6.53ms]
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-06T10:00:00.000Z","ageMs":0,"jobs":1,"companies":0,"source":"memory"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":0,"result":"success","errorClass":null}
+(pass) Phase 6 — Failure-Injection Tests (Tests A through I) > an older edge copy cannot overwrite a newer active 
+snapshot [4.48ms]
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-06T00:00:00.000Z","ageMs":0,"jobs":1,"companies":0,"source":"memory"}
+public snapshot background context unavailable
+public snapshot read failed during refresh Error
+{"event":"SNAPSHOT_REFRESH_FAILED","durationMs":0,"result":"failed","errorClass":"snapshot_read_failed"}
+(pass) Phase 6 — Failure-Injection Tests (Tests A through I) > a failing waitUntil hook cannot crash a stale public 
+response [0.91ms]
+{"event":"SNAPSHOT_STALE","generatedAt":"2026-10-06T10:00:00.000Z","ageMs":611135816,"jobs":1,"companies":0,"source":"memory"}
+(pass) Phase 6 — Failure-Injection Tests (Tests A through I) > Test A: D1 unavailable + valid in-memory snapshot 
+continues serving without throwing [0.48ms]
+public snapshot read failed d1_quota
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526182551,"jobs":1519,"companies":735,"source":"durable_lkg"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":0,"result":"success","errorClass":null}
+(pass) Phase 6 — Failure-Injection Tests (Tests A through I) > Test B: D1 unavailable + cold runtime serves durable 
+LKG without crashing [37.34ms]
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-06T00:00:00.000Z","ageMs":0,"jobs":1,"companies":0,"source":"memory"}
+public snapshot build failed during refresh Error
+{"event":"SNAPSHOT_REFRESH_FAILED","durationMs":0,"result":"failed","errorClass":"snapshot_build_failed"}
+(pass) Phase 6 — Failure-Injection Tests (Tests A through I) > Test C: snapshot refresh throws exception -> existing 
+snapshot remains available [1.45ms]
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-06T00:00:00.000Z","ageMs":0,"jobs":1,"companies":0,"source":"memory"}
+[public-snapshot] candidate from d1 rejected: Job at index 0 has invalid id
+{"event":"SNAPSHOT_INVALID","durationMs":0,"result":"rejected","errorClass":"Job at index 0 has invalid id"}
+(pass) Phase 6 — Failure-Injection Tests (Tests A through I) > Test D: candidate snapshot malformed -> candidate 
+rejected; previous snapshot retained [0.93ms]
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-06T00:00:00.000Z","ageMs":0,"jobs":2,"companies":0,"source":"memory"}
+[public-snapshot] candidate from d1 rejected: Unexpected empty candidate: 0 jobs vs 2 active jobs
+{"event":"SNAPSHOT_INVALID","durationMs":2,"result":"rejected","errorClass":"Unexpected empty candidate: 0 jobs vs 2 active jobs"}
+(pass) Phase 6 — Failure-Injection Tests (Tests A through I) > Test E: candidate snapshot unexpectedly empty -> 
+candidate rejected; previous retained [2.84ms]
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-06T00:00:00.000Z","ageMs":0,"jobs":1,"companies":0,"source":"memory"}
+public snapshot read failed during refresh d1_quota
+{"event":"SNAPSHOT_REFRESH_FAILED","durationMs":0,"result":"failed","errorClass":"d1_quota"}
+(pass) Phase 6 — Failure-Injection Tests (Tests A through I) > Test F: quota error during refresh -> public board 
+remains operational [2.04ms]
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-13T11:45:35.862Z","ageMs":0,"jobs":1,"companies":0,"source":"d1"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":0,"result":"success","errorClass":null}
+(pass) Phase 6 — Failure-Injection Tests (Tests A through I) > Test G: multiple concurrent requests share single 
+inflight load and do not corrupt state [27.61ms]
+public snapshot read failed Error
+public snapshot build failed Error
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526182628,"jobs":1519,"companies":735,"source":"durable_lkg"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":1,"result":"success","errorClass":null}
+(pass) Phase 6 — Failure-Injection Tests (Tests A through I) > Test H: deployment cold start restores board without 
+requiring upstream availability [41.73ms]
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-06T00:00:00.000Z","ageMs":0,"jobs":1,"companies":0,"source":"memory"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":0,"result":"success","errorClass":null}
+(pass) Phase 6 — Failure-Injection Tests (Tests A through I) > Test I: snapshot cache expired triggers refresh but 
+DOES NOT delete the usable stale snapshot [0.85ms]
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526182667,"jobs":1519,"companies":735,"source":"durable_lkg"}
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-13T11:45:35.932Z","ageMs":0,"jobs":1,"companies":0,"source":"d1"}
+(pass) Phase 7 — Observability & Telemetry > getPublicSnapshotHealth reflects current snapshot lifecycle and status 
+[45.28ms]
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":208,"result":"success","errorClass":null}
+
+ 54 pass
+ 0 fail
+ 223 expect() calls
+Ran 54 tests across 3 files. [12.62s]

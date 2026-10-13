@@ -1,5 +1,34 @@
 # System Savepoint
 
+## 2026-10-13 — Measured agency starvation and cache release preparation
+
+[The current bounded flow report](operations/PUBLICATION_FLOW_2026-10-13.md)
+reconciles five hashed captures and 15 query hashes without new live requests.
+At 11:17 UTC: 1,661 public rows, 22 public first-seen today, one stored verified
+label; ledger 22 reported versus 13 unique IDs and six deficient receipts. Each
+of seven Workable canaries had 0 fetches / 111 rotation skips over 24 hours. A newer
+existing snapshot still omitted public ID 9214, whose detail returned 404.
+These are observed cohorts, not certified daily throughput.
+
+Snapshot checkpoint 269063ac7dc2d660a13ba02607d24404390a2470 and cache-only
+live-base release 34e3bd1efa34dc3a2c31f2cc3e5b6c5b04790e83 are exactly read back
+on SSM/GitLab. The release archive's 1,182 files passed byte verification in a
+separate extraction after an incomplete first extraction was preserved. Frozen
+Bun 1.3.14 dependencies installed; exact-source targeted regression passed 54/0/223 and broader public-route
+regression passed 49/0/197. Typecheck/build and fresh production preflight
+passed; cache-only deployment completed with CLI exit0 at
+https://8c649da0.remotejobs-ph.pages.dev. Independent read-back and normal
+visibility observation are pending. Use the immutable archive,
+never the dirty combined checkout, for this independent visibility repair.
+
+The isolated jobflow candidate's authenticated native intake target passed
+13/0/299, including explicit onsite/hybrid rejection, actual IDs, physical bind
+limits and truthful UNKNOWN after partial writes. The pending/sweep/robots
+changes still need final tests and independent review. No migration, source
+admission, new clock or Pages deployment is claimed by this checkpoint.
+NEXT is cache release and combined jobflow acceptance, then ordinary runtime
+and complete permitted-opening coverage. MATH 0/13; daily certification UNKNOWN.
+
 ## 2026-10-13 — Dayshift focus and verified snapshot source
 
 The owner restates the immediate focus as dayshift/vetted VA agencies and the

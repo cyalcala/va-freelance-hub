@@ -1,0 +1,256 @@
+{
+  "scope": "SELECT_ONLY_AND_ORDINARY_PUBLIC_DETAIL_GETS",
+  "observations": [
+    {
+      "kind": "snapshot-metadata-only",
+      "observedAtUtc": "2026-10-13T11:23:08.044Z",
+      "status": 200,
+      "success": true,
+      "errorCodes": [],
+      "query": "SELECT id,generated_at,refresh_started_at,LENGTH(payload) AS payload_chars,json_valid(payload) AS payload_is_plain_json FROM public_serving_snapshot WHERE id=1",
+      "params": [],
+      "querySha256": "851abe919a837eb2bf0f7b6d74b10358067988fc2e487b0587c1fc9388625d67",
+      "results": [
+        {
+          "success": true,
+          "rowsRead": 1,
+          "rowsWritten": 0,
+          "rows": [
+            {
+              "id": 1,
+              "generated_at": "2026-10-13T10:22:28.616Z",
+              "refresh_started_at": "2026-10-13T11:23:06.080Z",
+              "payload_chars": 685195,
+              "payload_is_plain_json": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "today-ledger-id-records",
+      "observedAtUtc": "2026-10-13T11:23:09.062Z",
+      "status": 200,
+      "success": true,
+      "errorCodes": [],
+      "query": "SELECT DISTINCT l.source_id AS receipt_source_id,j.value AS opportunity_id,o.source_id AS stored_source_id,\n    o.is_active,o.ph_eligibility,o.posted_at,o.scraped_at,o.last_verified_at,o.location_type\n    FROM source_publication_ledger l JOIN json_each(l.published_ids_json) j LEFT JOIN opportunities o ON o.id=j.value\n    WHERE julianday(l.decided_at)>=julianday(?) AND julianday(l.decided_at)<=julianday(?) AND j.type='integer'\n    AND j.value>0 AND j.value<=9007199254740991 ORDER BY j.value,l.source_id",
+      "params": [
+        "2026-10-12T16:00:00.000Z",
+        "2026-10-13T11:17:07.511Z"
+      ],
+      "querySha256": "8bd483201608bc44784a8eb0e1b73b2c752193ed230535dbe8349abefc6e4500",
+      "results": [
+        {
+          "success": true,
+          "rowsRead": 533,
+          "rowsWritten": 0,
+          "rows": [
+            {
+              "receipt_source_id": "breezy:sourcefit",
+              "opportunity_id": 9191,
+              "stored_source_id": "breezy:sourcefit",
+              "is_active": 1,
+              "ph_eligibility": "eligible_verified",
+              "posted_at": "2026-10-13T03:16:03.361Z",
+              "scraped_at": "2026-10-13T03:50:58.977Z",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "receipt_source_id": "we-work-remotely",
+              "opportunity_id": 9193,
+              "stored_source_id": "we-work-remotely",
+              "is_active": 1,
+              "ph_eligibility": "eligible_likely",
+              "posted_at": "2026-10-13T07:30:48.000Z",
+              "scraped_at": "2026-10-13T07:30:58.971Z",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "receipt_source_id": "we-work-remotely",
+              "opportunity_id": 9194,
+              "stored_source_id": "we-work-remotely",
+              "is_active": 1,
+              "ph_eligibility": "eligible_likely",
+              "posted_at": "2026-10-13T07:30:39.000Z",
+              "scraped_at": "2026-10-13T07:30:58.971Z",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "receipt_source_id": "we-work-remotely",
+              "opportunity_id": 9196,
+              "stored_source_id": "we-work-remotely",
+              "is_active": 1,
+              "ph_eligibility": "eligible_likely",
+              "posted_at": "2026-10-13T07:30:48.000Z",
+              "scraped_at": "2026-10-13T07:40:58.968Z",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "receipt_source_id": "we-work-remotely",
+              "opportunity_id": 9197,
+              "stored_source_id": "we-work-remotely",
+              "is_active": 1,
+              "ph_eligibility": "eligible_likely",
+              "posted_at": "2026-10-13T07:30:48.000Z",
+              "scraped_at": "2026-10-13T07:40:58.968Z",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "receipt_source_id": "we-work-remotely",
+              "opportunity_id": 9198,
+              "stored_source_id": "we-work-remotely",
+              "is_active": 1,
+              "ph_eligibility": "eligible_likely",
+              "posted_at": "2026-10-13T07:30:48.000Z",
+              "scraped_at": "2026-10-13T07:40:58.968Z",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "receipt_source_id": "we-work-remotely",
+              "opportunity_id": 9199,
+              "stored_source_id": "we-work-remotely",
+              "is_active": 1,
+              "ph_eligibility": "eligible_likely",
+              "posted_at": "2026-10-13T07:30:59.000Z",
+              "scraped_at": "2026-10-13T07:50:59.051Z",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "receipt_source_id": "we-work-remotely",
+              "opportunity_id": 9200,
+              "stored_source_id": "we-work-remotely",
+              "is_active": 1,
+              "ph_eligibility": "eligible_likely",
+              "posted_at": "2026-10-13T07:30:53.000Z",
+              "scraped_at": "2026-10-13T07:50:59.051Z",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "receipt_source_id": "we-work-remotely",
+              "opportunity_id": 9201,
+              "stored_source_id": "we-work-remotely",
+              "is_active": 1,
+              "ph_eligibility": "eligible_likely",
+              "posted_at": "2026-10-13T07:30:53.000Z",
+              "scraped_at": "2026-10-13T07:50:59.051Z",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "receipt_source_id": "we-work-remotely",
+              "opportunity_id": 9202,
+              "stored_source_id": "we-work-remotely",
+              "is_active": 1,
+              "ph_eligibility": "eligible_likely",
+              "posted_at": "2026-10-13T07:30:53.000Z",
+              "scraped_at": "2026-10-13T07:50:59.051Z",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "receipt_source_id": "we-work-remotely",
+              "opportunity_id": 9203,
+              "stored_source_id": "we-work-remotely",
+              "is_active": 1,
+              "ph_eligibility": "eligible_likely",
+              "posted_at": "2026-10-13T07:30:53.000Z",
+              "scraped_at": "2026-10-13T07:50:59.051Z",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "receipt_source_id": "we-work-remotely",
+              "opportunity_id": 9207,
+              "stored_source_id": "we-work-remotely",
+              "is_active": 1,
+              "ph_eligibility": "eligible_likely",
+              "posted_at": "2026-10-13T07:31:00.000Z",
+              "scraped_at": "2026-10-13T08:00:58.970Z",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "receipt_source_id": "real-work-from-anywhere",
+              "opportunity_id": 9214,
+              "stored_source_id": "real-work-from-anywhere",
+              "is_active": 1,
+              "ph_eligibility": "eligible_likely",
+              "posted_at": "2026-10-12T00:00:00.000Z",
+              "scraped_at": "2026-10-13T10:20:59.039Z",
+              "last_verified_at": null,
+              "location_type": "remote"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "public-detail",
+      "path": "/jobs/9191",
+      "observedAtUtc": "2026-10-13T11:23:10.169Z",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "date": "Tue, 13 Oct 2026 11:23:09 GMT",
+        "x-public-snapshot": "stale",
+        "x-public-snapshot-age-seconds": "3640",
+        "x-public-snapshot-companies": "735",
+        "x-public-snapshot-generated-at": "2026-10-13T10:22:28.616Z",
+        "x-public-snapshot-jobs": "1660",
+        "x-public-snapshot-source": "edge"
+      },
+      "snapshotMeta": [
+        {
+          "name": "va-hub:snapshot-status",
+          "content": "stale"
+        },
+        {
+          "name": "va-hub:snapshot-generated-at",
+          "content": "2026-10-13T10:22:28.616Z"
+        },
+        {
+          "name": "va-hub:snapshot-source",
+          "content": "edge"
+        },
+        {
+          "name": "va-hub:snapshot-age-seconds",
+          "content": "3640"
+        },
+        {
+          "name": "va-hub:snapshot-jobs",
+          "content": "1660"
+        },
+        {
+          "name": "va-hub:snapshot-companies",
+          "content": "735"
+        }
+      ],
+      "jsonLdDatePosted": [
+        "2026-10-13T03:16:03.361Z"
+      ],
+      "bodySha256": "d1faa200529fc51bf8cf6596bd05f59075525edbe8d48d4c053fb98ecd04fd7a",
+      "rawBodyRetained": false
+    },
+    {
+      "kind": "public-detail",
+      "path": "/jobs/9214",
+      "observedAtUtc": "2026-10-13T11:23:11.328Z",
+      "status": 404,
+      "headers": {
+        "date": "Tue, 13 Oct 2026 11:23:10 GMT"
+      },
+      "snapshotMeta": [],
+      "jsonLdDatePosted": [],
+      "bodySha256": "e3ebaa16dd9d9b9fc107c42183fb6cf9d22927e1af03dbbdfa0ccc38e4e4ac31",
+      "rawBodyRetained": false
+    }
+  ]
+}

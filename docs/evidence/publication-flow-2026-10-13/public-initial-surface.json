@@ -1,0 +1,299 @@
+{
+  "scope": "ORDINARY_PUBLIC_GETS_NOT_PROVIDER_OR_VACANCY_VERIFICATION",
+  "observedStart": "2026-10-13T11:14:08.418Z",
+  "observations": [
+    {
+      "path": "/",
+      "observedAtUtc": "2026-10-13T11:14:11.971Z",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "date": "Tue, 13 Oct 2026 11:14:11 GMT",
+        "x-public-snapshot": "stale",
+        "x-public-snapshot-age-seconds": "32756",
+        "x-public-snapshot-companies": "735",
+        "x-public-snapshot-generated-at": "2026-10-13T02:08:14.626Z",
+        "x-public-snapshot-jobs": "1644",
+        "x-public-snapshot-source": "edge"
+      },
+      "snapshotMeta": [
+        {
+          "name": "va-hub:snapshot-status",
+          "content": "stale"
+        },
+        {
+          "name": "va-hub:snapshot-generated-at",
+          "content": "2026-10-13T02:08:14.626Z"
+        },
+        {
+          "name": "va-hub:snapshot-source",
+          "content": "edge"
+        },
+        {
+          "name": "va-hub:snapshot-age-seconds",
+          "content": "32756"
+        },
+        {
+          "name": "va-hub:snapshot-jobs",
+          "content": "1644"
+        },
+        {
+          "name": "va-hub:snapshot-companies",
+          "content": "735"
+        }
+      ],
+      "counts": [],
+      "renderedJobIds": [
+        9188,
+        9187,
+        9186,
+        9182,
+        9181,
+        9180,
+        9178,
+        9159,
+        9151,
+        9126,
+        9118,
+        9117,
+        9096,
+        8379,
+        8294,
+        6577,
+        6512,
+        3749,
+        9162,
+        9163,
+        9164,
+        9171,
+        9170,
+        9175,
+        9174,
+        9166,
+        9189,
+        9149,
+        9146,
+        9142,
+        9124,
+        9086,
+        9179,
+        9177,
+        9167,
+        9153,
+        9140,
+        9136,
+        9091,
+        9070,
+        9172,
+        9131,
+        9115,
+        9114,
+        9034
+      ],
+      "renderedTimeDates": [],
+      "october13DateLabelOccurrences": 11,
+      "bodySha256": "fe6409b5ecc4099a293e17a6e186c76a8cedf57ec92df29191fbac46a74ab81a",
+      "bodyBytes": 78355,
+      "rawBodyRetained": false
+    },
+    {
+      "path": "/opportunities",
+      "observedAtUtc": "2026-10-13T11:14:11.975Z",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "date": "Tue, 13 Oct 2026 11:14:11 GMT",
+        "x-public-snapshot": "stale",
+        "x-public-snapshot-age-seconds": "32756",
+        "x-public-snapshot-companies": "735",
+        "x-public-snapshot-generated-at": "2026-10-13T02:08:14.626Z",
+        "x-public-snapshot-jobs": "1644",
+        "x-public-snapshot-source": "edge"
+      },
+      "snapshotMeta": [
+        {
+          "name": "va-hub:snapshot-status",
+          "content": "stale"
+        },
+        {
+          "name": "va-hub:snapshot-generated-at",
+          "content": "2026-10-13T02:08:14.626Z"
+        },
+        {
+          "name": "va-hub:snapshot-source",
+          "content": "edge"
+        },
+        {
+          "name": "va-hub:snapshot-age-seconds",
+          "content": "32756"
+        },
+        {
+          "name": "va-hub:snapshot-jobs",
+          "content": "1644"
+        },
+        {
+          "name": "va-hub:snapshot-companies",
+          "content": "735"
+        }
+      ],
+      "counts": [
+        1644
+      ],
+      "renderedJobIds": [
+        9188,
+        9187,
+        9186,
+        9182,
+        9181,
+        9180,
+        9179,
+        9178,
+        9177,
+        9159,
+        9170,
+        9171,
+        9175,
+        9174,
+        9172,
+        9167,
+        9166,
+        9169,
+        9168,
+        9162,
+        9163,
+        9164,
+        9165,
+        9161,
+        9160,
+        9153,
+        9189,
+        9176,
+        9149,
+        9152
+      ],
+      "renderedTimeDates": [],
+      "october13DateLabelOccurrences": 4,
+      "bodySha256": "0bace38e1f3c4366e2ffee0b3d3d8048699f291dcb7b28c828b6b77c60ea4204",
+      "bodyBytes": 44079,
+      "rawBodyRetained": false
+    },
+    {
+      "path": "/opportunities?fresh=today",
+      "observedAtUtc": "2026-10-13T11:14:11.973Z",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "date": "Tue, 13 Oct 2026 11:14:11 GMT",
+        "x-public-snapshot": "stale",
+        "x-public-snapshot-age-seconds": "32756",
+        "x-public-snapshot-companies": "735",
+        "x-public-snapshot-generated-at": "2026-10-13T02:08:14.626Z",
+        "x-public-snapshot-jobs": "1644",
+        "x-public-snapshot-source": "edge"
+      },
+      "snapshotMeta": [
+        {
+          "name": "va-hub:snapshot-status",
+          "content": "stale"
+        },
+        {
+          "name": "va-hub:snapshot-generated-at",
+          "content": "2026-10-13T02:08:14.626Z"
+        },
+        {
+          "name": "va-hub:snapshot-source",
+          "content": "edge"
+        },
+        {
+          "name": "va-hub:snapshot-age-seconds",
+          "content": "32756"
+        },
+        {
+          "name": "va-hub:snapshot-jobs",
+          "content": "1644"
+        },
+        {
+          "name": "va-hub:snapshot-companies",
+          "content": "735"
+        }
+      ],
+      "counts": [
+        5
+      ],
+      "renderedJobIds": [
+        9189,
+        9188,
+        9187,
+        9186,
+        9182
+      ],
+      "renderedTimeDates": [],
+      "october13DateLabelOccurrences": 4,
+      "bodySha256": "68092a81212774e7aaa7fd4b0a11c0130036a02be29774ad1da0b08c6fb6f028",
+      "bodyBytes": 18275,
+      "rawBodyRetained": false
+    },
+    {
+      "path": "/opportunities?fresh=24h",
+      "observedAtUtc": "2026-10-13T11:14:11.601Z",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "date": "Tue, 13 Oct 2026 11:14:11 GMT",
+        "x-public-snapshot": "stale",
+        "x-public-snapshot-age-seconds": "32756",
+        "x-public-snapshot-companies": "735",
+        "x-public-snapshot-generated-at": "2026-10-13T02:08:14.626Z",
+        "x-public-snapshot-jobs": "1644",
+        "x-public-snapshot-source": "edge"
+      },
+      "snapshotMeta": [
+        {
+          "name": "va-hub:snapshot-status",
+          "content": "stale"
+        },
+        {
+          "name": "va-hub:snapshot-generated-at",
+          "content": "2026-10-13T02:08:14.626Z"
+        },
+        {
+          "name": "va-hub:snapshot-source",
+          "content": "edge"
+        },
+        {
+          "name": "va-hub:snapshot-age-seconds",
+          "content": "32756"
+        },
+        {
+          "name": "va-hub:snapshot-jobs",
+          "content": "1644"
+        },
+        {
+          "name": "va-hub:snapshot-companies",
+          "content": "735"
+        }
+      ],
+      "counts": [
+        11
+      ],
+      "renderedJobIds": [
+        9189,
+        9188,
+        9187,
+        9186,
+        9182,
+        9181,
+        9180,
+        9179,
+        9178,
+        9177,
+        9176
+      ],
+      "renderedTimeDates": [],
+      "october13DateLabelOccurrences": 4,
+      "bodySha256": "da497500a1b5503053d79cff518c75437afc5180558e2536bd37487a3a5ba64d",
+      "bodyBytes": 24965,
+      "rawBodyRetained": false
+    }
+  ]
+}

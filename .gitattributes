@@ -1,3 +1,6 @@
 # Preserve verbatim owner-source and historical snapshot bytes across platforms.
 docs/directives/2026-10-04-PH-VA-FRESHNESS-GCP-CANONICAL-UPGRADE.md -text whitespace=-blank-at-eof,cr-at-eol
 docs/architecture/CURRENT_STATE_2026-10-01_SNAPSHOT.md -text whitespace=-blank-at-eof,cr-at-eol
+# Preserve hashed operational captures and build logs exactly on restoration.
+docs/evidence/publication-flow-2026-10-13/** -text whitespace=-blank-at-eof,cr-at-eol
+docs/evidence/pages-snapshot-release-2026-10-13/** -text whitespace=-blank-at-eof,cr-at-eol

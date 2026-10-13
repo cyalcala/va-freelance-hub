@@ -1,5 +1,46 @@
 # Astra777 — current incident and continuation contract
 
+## October 13 live evidence and immutable release preparation
+
+Read docs/operations/PUBLICATION_FLOW_2026-10-13.md and its offline-verifiable
+capture bundle before interpreting current counts. At 11:17 UTC D1 held 1,661
+public rows, 22 public first-seen today and one stored verified label among
+those arrivals. The ledger reported 22 publications but retained 13 unique IDs;
+six receipts had count/ID disagreement. Each of seven admitted Workable
+canaries had zero fetches and 111 rotation skips in the preceding 24 hours.
+These counts do not certify independently verified new daily publications.
+
+The public sample first lagged by nine hours, then promoted an existing 10:22
+snapshot without deployment. That sample still omitted public ID 9214 and its
+detail returned 404. Old runtime called a 54-minute snapshot fresh. Runtime
+metadata remained Pages e1b0ff66-8a93-41b0-b9c7-6de8346c81c7 / reported 3065,
+schema 0054. Do not call this a five-minute freshness repair or restored agency
+coverage.
+
+Main snapshot/evidence checkpoint 269063ac7dc2d660a13ba02607d24404390a2470 and
+isolated cache-only release source 34e3bd1efa34dc3a2c31f2cc3e5b6c5b04790e83
+are exactly read back on canonical SSM and GitLab. The latter uses the old live
+base and contains none of the dirty jobflow candidates. Its immutable archive
+SHA256 is 11f1403cf75b9efa8cd5b2644f2bb40861daf2996fec5091b0c65ffb22347968.
+An incomplete first extraction is preserved; a separate extraction verified all
+1,182 files against that archive. Frozen Bun 1.3.14 install completed; the exact
+archive passed 54 tests/223 assertions, zero failures, plus 49 public-route
+regressions/197 assertions. Typecheck and build passed; fresh deployment
+preflight matched production, with a supported rollback target retained.
+The cache-only deployment completed with CLI exit0 at
+https://8c649da0.remotejobs-ph.pages.dev. Independent production read-back and
+ordinary visibility observation are pending; upload success is not acceptance.
+
+The separate 0054 jobflow candidate now has actual authenticated native direct
+intake evidence: 13 tests/299 assertions, zero failures. Explicit onsite/hybrid
+inputs remain hidden, remote positives retain actual IDs, 3/4/10 inputs respect
+the 100-bind ceiling, and later partial failures return UNKNOWN with only the
+prior confirmed-source lower bound. Remaining sweep/pending/robots guards and
+combined broader acceptance are in progress. NEXT: release the independently
+verified cache artifact, complete the jobflow release and observe normal clocks;
+then preserve every permitted opening durably before publication caps. MATH 0/13,
+certified daily throughput UNKNOWN; the continuous goal remains active.
+
 ## October 13 continuation — dayshift focus
 
 The owner prioritizes dayshift/vetted VA employers now and asks for 100–150 or

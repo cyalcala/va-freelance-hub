@@ -1,0 +1,493 @@
+{
+  "capturedAtUtc": "2026-10-13T11:51:12.295246+00:00",
+  "scope": "LOCAL_IMMUTABLE_SOURCE_BUILD_NOT_RUNTIME_ACCEPTANCE",
+  "sourceSha": "34e3bd1efa34dc3a2c31f2cc3e5b6c5b04790e83",
+  "sourceArchiveSha256": "11f1403cf75b9efa8cd5b2644f2bb40861daf2996fec5091b0c65ffb22347968",
+  "archiveFiles": 1182,
+  "postBuildGeneratedSourceChanges": [
+    "apps/web/.astro/types.d.ts"
+  ],
+  "freshExtractionFilesMatched": 1182,
+  "runtime": "Bun 1.3.14",
+  "wrangler": "4.143.0",
+  "frozenInstallExit": 0,
+  "targeted": {
+    "pass": 54,
+    "fail": 0,
+    "assertions": 223,
+    "files": 3,
+    "seconds": 12.62
+  },
+  "publicRegression": {
+    "pass": 49,
+    "fail": 0,
+    "assertions": 197,
+    "files": 8,
+    "seconds": 2.12
+  },
+  "typecheckExit": 0,
+  "buildExit": 0,
+  "astroBuildSeconds": 45.58,
+  "audits": {
+    "guardrails": 0,
+    "parameters": 0,
+    "orchestrator": 0,
+    "constitution": 0,
+    "receipt": "tool128505; baseline orchestrator and measurement limitations retained; archive discovers parent Git worktree"
+  },
+  "logs": [
+    {
+      "path": "docs/evidence/pages-snapshot-release-2026-10-13/logs/install.log",
+      "bytes": 186,
+      "sha256": "aa6f3f46a99b3b59bcb0e764e426a009a3e03d41066daaaac585db458c9a8c69"
+    },
+    {
+      "path": "docs/evidence/pages-snapshot-release-2026-10-13/logs/tests.log",
+      "bytes": 16864,
+      "sha256": "cc8a47630b75decfd322f4966e0d9e1965c678f2b99ad70730daefdb992bf1c8"
+    },
+    {
+      "path": "docs/evidence/pages-snapshot-release-2026-10-13/logs/type.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/evidence/pages-snapshot-release-2026-10-13/logs/build.log",
+      "bytes": 2213,
+      "sha256": "8a99bbc8064f0f7b2e108ea223504230a1c3fc2f0188b7cd44bc500f02ea59db"
+    },
+    {
+      "path": "docs/evidence/pages-snapshot-release-2026-10-13/logs/public-regression.log",
+      "bytes": 10350,
+      "sha256": "8b68e3ea06bba65f743d13abdb3640aacce3c2cea5a4e7fedda3f598e7ab6465"
+    }
+  ],
+  "distributionManifestSha256": "48aa37dca7a780443145d8383939e0a530c9ffd883ec09b45ece8741e7bb918c",
+  "distribution": [
+    {
+      "path": "_astro/_category_.C9vtekGX.css",
+      "bytes": 42214,
+      "sha256": "b361f6e872b604d8c1554e09ada3ca4c97b0db3758a5bc8575f33e75e64a14e3"
+    },
+    {
+      "path": "_astro/client.NSH60KNz.js",
+      "bytes": 194632,
+      "sha256": "61951787f15844e3ab866cc2b4340b18510123f5145b6294e18d241534046613"
+    },
+    {
+      "path": "_astro/index.BNDLxgYU.css",
+      "bytes": 7709,
+      "sha256": "cbd68cea1fa031456aa238d7cfa232839e4495ef3afb411232923feccc80fd76"
+    },
+    {
+      "path": "_headers",
+      "bytes": 640,
+      "sha256": "0b39104e4c6a3efff2137c783dd78f28473a6639d22c3708d259b625fde1aaea"
+    },
+    {
+      "path": "_routes.json",
+      "bytes": 178,
+      "sha256": "99986a82a8a1ef179f938c928230cf5aa8ecd2c4b2da3d9d060afc5160a1be3b"
+    },
+    {
+      "path": "_worker.js/_@astrojs-ssr-adapter.mjs",
+      "bytes": 427,
+      "sha256": "c1c5c75adac525f2e50bc7d6f19398d9ecf95ae24543481f3e0f0ba50308116c"
+    },
+    {
+      "path": "_worker.js/_astro-internal_middleware.mjs",
+      "bytes": 3379,
+      "sha256": "8f1aabbd5b33ccdde308daa265df956bc7a9a83bb2cf82e6c88f030f30c23d93"
+    },
+    {
+      "path": "_worker.js/chunks/_@astro-renderers_DVUOdqDv.mjs",
+      "bytes": 553028,
+      "sha256": "2121870e1ba2af630c874b24ca8a93aa1cc63a3b78d6451843f5b7320c5e1114"
+    },
+    {
+      "path": "_worker.js/chunks/_@astrojs-ssr-adapter_EdwF5y9q.mjs",
+      "bytes": 40511,
+      "sha256": "009a8079743d05d3088e02fc97ca7ce689875a17f47eac442a82c16a1f5d7c6e"
+    },
+    {
+      "path": "_worker.js/chunks/admission-evidence_DyCIFGQf.mjs",
+      "bytes": 54976,
+      "sha256": "55638a30aaaf2a6caab628ed144d5c7cc51964c8d55eef489f89bd3143ab8045"
+    },
+    {
+      "path": "_worker.js/chunks/astro/server_CCLX9Iwp.mjs",
+      "bytes": 255999,
+      "sha256": "974b758f18d52170cfbb7adc483fea89c89cc911981a4c82ead7a3bbef3616dc"
+    },
+    {
+      "path": "_worker.js/chunks/astro-designed-error-pages_DFg4Gv7Q.mjs",
+      "bytes": 47484,
+      "sha256": "8112ff2b58cc0fb4ef1323cade2c604c64e17ee7a74f4b8f87dcc388bbce5ee1"
+    },
+    {
+      "path": "_worker.js/chunks/auth_19nEt09J.mjs",
+      "bytes": 1114,
+      "sha256": "38badee36b3dd0668ae4b4b372de090c93e124496c867d4456f32c71cee4d06a"
+    },
+    {
+      "path": "_worker.js/chunks/batch_CxdPD57_.mjs",
+      "bytes": 1012,
+      "sha256": "4281582240b066a2dd3812c5cfc19efeede8aee8def6599dbc1b256797203d7b"
+    },
+    {
+      "path": "_worker.js/chunks/capability-registry_B6nkSs0w.mjs",
+      "bytes": 253277,
+      "sha256": "f07c5f6dc09be895d7a7786dc62eb17ff6a7340afb2d01c7bf94e0171a869044"
+    },
+    {
+      "path": "_worker.js/chunks/categories_B4AiSVIf.mjs",
+      "bytes": 1401,
+      "sha256": "06653a03475b955227229c25f9f363cdfa1e243861a75382851bc194ac6eeeb0"
+    },
+    {
+      "path": "_worker.js/chunks/company-identity_BW5VU5ci.mjs",
+      "bytes": 2282,
+      "sha256": "e124be4b953124bb469f1cfbac2cbdc486636dae8d4747bafc740ba9a956f642"
+    },
+    {
+      "path": "_worker.js/chunks/d1-result_C57zWxY3.mjs",
+      "bytes": 546,
+      "sha256": "0dedc1155f014f3f3002c3f72effe4758b072c3d3b0f7c57e746eb3477e964a1"
+    },
+    {
+      "path": "_worker.js/chunks/directory-visibility_CKSIjd_2.mjs",
+      "bytes": 605,
+      "sha256": "7b5362fda72facb84220f38c572fe2a7d99e09d84255dd7b97de69ab70f00edc"
+    },
+    {
+      "path": "_worker.js/chunks/generic_xLLCzejo.mjs",
+      "bytes": 71890,
+      "sha256": "ce1ac42787a42b184fbc527e1ae5e676a5877260fedfebb1dbadd367fb392f98"
+    },
+    {
+      "path": "_worker.js/chunks/geoGate_dXm2oZGJ.mjs",
+      "bytes": 16528,
+      "sha256": "7cf49a36b2ca7e58b3e8f00d7719d6e5bafec9668670d76e4d3c3c75f54df46d"
+    },
+    {
+      "path": "_worker.js/chunks/index.esm_BnX6jXGk.mjs",
+      "bytes": 2944,
+      "sha256": "1deefbcbb1e996a4ffa8d21012fc6862a32a03cf9b6182a7e7d68a8970df6ddf"
+    },
+    {
+      "path": "_worker.js/chunks/index_DtV5XUbs.mjs",
+      "bytes": 70440,
+      "sha256": "ef4c1472eddc8dd20b6b889da5a3e84de0bda17c2332c19a695451b3990e5ee3"
+    },
+    {
+      "path": "_worker.js/chunks/Layout_0rCCkvn3.mjs",
+      "bytes": 9447,
+      "sha256": "cdc12c97b19bb1086fddddc0d4da43a0353245b7d97fa6d7964c65af3846fa8f"
+    },
+    {
+      "path": "_worker.js/chunks/linkHealth_cQYh1jCp.mjs",
+      "bytes": 5359,
+      "sha256": "2b5314dfee8cabc1ff8cfc46a067039370e891b9114d59e41f1adbf4b951f683"
+    },
+    {
+      "path": "_worker.js/chunks/memory_DYjVIWa3.mjs",
+      "bytes": 1106,
+      "sha256": "4a790a930bf0b5e710dbe57e7c5df3779b3aa49f89bf627ca6c35f32840a3755"
+    },
+    {
+      "path": "_worker.js/chunks/noop-middleware_uRbi9mgc.mjs",
+      "bytes": 620,
+      "sha256": "4ecf097b5cdd254e9b22363c0c8924ade14e01a17df16201b4ef832409486503"
+    },
+    {
+      "path": "_worker.js/chunks/noop_CoOp33MF.mjs",
+      "bytes": 970,
+      "sha256": "4c13488595ac85a69759d9e14bc6046f5528dd3dc210f58e49fc7e385efaef5f"
+    },
+    {
+      "path": "_worker.js/chunks/opportunity-card_BQrFBOii.mjs",
+      "bytes": 9872,
+      "sha256": "697a6794b1342c2750f17cf0b927f1be171716fb95306640cd11c14f8a4a8aff"
+    },
+    {
+      "path": "_worker.js/chunks/path_CPfUyqb6.mjs",
+      "bytes": 3370,
+      "sha256": "77820d0095e7160f185fae55c526e3e50dc08c1b76a66377083d9fc96278f6ff"
+    },
+    {
+      "path": "_worker.js/chunks/primary-evidence_CRwmQK1U.mjs",
+      "bytes": 1966,
+      "sha256": "56e3062b1114dfb32fca5e3562d6d6d7b0bc0f655d36ac035def0c66110cf59c"
+    },
+    {
+      "path": "_worker.js/chunks/prospector_BXq5EbHF.mjs",
+      "bytes": 6017,
+      "sha256": "eef9b65f04b88f2eae0736724f37c136222b02f32f42c94e1dba5851282df4a1"
+    },
+    {
+      "path": "_worker.js/chunks/public-edge-cache_DQvNSfRF.mjs",
+      "bytes": 2507,
+      "sha256": "3f277dc340cd5d362e461240238fe1eaa8bb24580354177500c3f7ab3c19a61c"
+    },
+    {
+      "path": "_worker.js/chunks/public-query_eqYw3MWd.mjs",
+      "bytes": 2017,
+      "sha256": "b43974bcc3a9e875e9c2551f5f7d3a981d40751132c3793ceadff31f0e05dc22"
+    },
+    {
+      "path": "_worker.js/chunks/public-route-load_pMnwEnXI.mjs",
+      "bytes": 1817,
+      "sha256": "5e32585cead3bc5fd1c8b321d77e1a7304f4ee5a53a317869c00ee6bf352cf27"
+    },
+    {
+      "path": "_worker.js/chunks/public-serving-snapshot_YyDFUHsP.mjs",
+      "bytes": 1318489,
+      "sha256": "0b3f468a7e532016fc0ae750764ed3e92e2a59034b8f54bb2a053534b5a06f35"
+    },
+    {
+      "path": "_worker.js/chunks/publication-gateway_BdlLyVTU.mjs",
+      "bytes": 32853,
+      "sha256": "14443db3930631d23a424c68258c4bb87789c72a67658acee2d83967b4c180b0"
+    },
+    {
+      "path": "_worker.js/chunks/publish-opportunities_ZpRSl4Ml.mjs",
+      "bytes": 3513,
+      "sha256": "39374b2a005dbcc238277f811de8fa839c8133572d76581effc9230bcd2e5539"
+    },
+    {
+      "path": "_worker.js/chunks/remote_CVXTZJrr.mjs",
+      "bytes": 2624,
+      "sha256": "71e7913867e2dddac4e0d95e0821c68a3f4756c07a559aeff95f452377bae56f"
+    },
+    {
+      "path": "_worker.js/chunks/render-context_Drxz3kX0.mjs",
+      "bytes": 123014,
+      "sha256": "fd72fdd7af504a7b0a4d3063137609b0f26b03a8ffe284a2c3c5908a556872bc"
+    },
+    {
+      "path": "_worker.js/chunks/request-body_CRd5A6xu.mjs",
+      "bytes": 1768,
+      "sha256": "f6cfeaff84f25afbc5597c7eb87268e65e3cfbd99c8f0f70746667f9401a79cc"
+    },
+    {
+      "path": "_worker.js/chunks/robots-store_BiPt83Yj.mjs",
+      "bytes": 1882,
+      "sha256": "051c2c8ff818b3cde8a21eed8a73ec3404d7a8be3e10bf5ab2de61b0bf97f978"
+    },
+    {
+      "path": "_worker.js/chunks/run-diagnostics_CjVt2fKy.mjs",
+      "bytes": 4980,
+      "sha256": "e33ca160280af118b4848b0f705d2b8a5cc5f1719289af98aa496579e8fdaccc"
+    },
+    {
+      "path": "_worker.js/chunks/schema_jidXRP5z.mjs",
+      "bytes": 105587,
+      "sha256": "22daac20419eedc0d502366657c122cc312d3c6b45b5adaf927efa144ac67ba9"
+    },
+    {
+      "path": "_worker.js/chunks/ServiceUnavailable_Cg7fWzqd.mjs",
+      "bytes": 1033,
+      "sha256": "00ede11d72a1b459fefd7a6ef84c9fddf9bda3cba12710b56994198226f54967"
+    },
+    {
+      "path": "_worker.js/chunks/shadow-dispatcher_CfpNxqHG.mjs",
+      "bytes": 21441,
+      "sha256": "202c92cbe0bad4f39c4081709245d3c6d8b4edeaaf1d24192703fc205499cab7"
+    },
+    {
+      "path": "_worker.js/chunks/source-lifecycle_7HCZ-qYy.mjs",
+      "bytes": 3213,
+      "sha256": "a3de67c021c59ccd5ec7def8d70708d6f0866a6fc10f42cb7a0226d050480566"
+    },
+    {
+      "path": "_worker.js/chunks/time_DWrgJL0T.mjs",
+      "bytes": 991,
+      "sha256": "c4ddb5081e0206b689293ecf0b807ca0aaad1130140dc9dd016a63cb2853c257"
+    },
+    {
+      "path": "_worker.js/chunks/triage-decision_CX72F2Df.mjs",
+      "bytes": 24796,
+      "sha256": "529516a4069669ba857bed5c1bef9ed5d3524b5271a397c88f196d50891d8f4a"
+    },
+    {
+      "path": "_worker.js/chunks/urls_RTd1RDss.mjs",
+      "bytes": 4746,
+      "sha256": "f296065ce99ea711004973264a942482be7d9802fb734f31528a37031ebbc63a"
+    },
+    {
+      "path": "_worker.js/index.js",
+      "bytes": 4001,
+      "sha256": "b3cc2385f815a35459b0ef0e110f5175fdfbfb5ef83d800f36d9bb253cb3ecb6"
+    },
+    {
+      "path": "_worker.js/manifest_B1bGWUIz.mjs",
+      "bytes": 37859,
+      "sha256": "f047f659ce491051f3ba62a317c99317f173830eb4f560aff2fccc5e980c2444"
+    },
+    {
+      "path": "_worker.js/noop-entrypoint.mjs",
+      "bytes": 384,
+      "sha256": "0e633d66a32350da2905fee0829fb6379d1301a8219ec4f0ea81f8905c69d601"
+    },
+    {
+      "path": "_worker.js/pages/_image.astro.mjs",
+      "bytes": 480,
+      "sha256": "2045963e660cb055563b7beabb793d41c2e9a2ebe3ecbf384813948332dbcd8e"
+    },
+    {
+      "path": "_worker.js/pages/api/click/_id_.astro.mjs",
+      "bytes": 4401,
+      "sha256": "a5e9ffa697f7d761535983367b9f5d44827d7b2644ff1651c9541139d06294cb"
+    },
+    {
+      "path": "_worker.js/pages/api/company-logo.astro.mjs",
+      "bytes": 3630,
+      "sha256": "ff0e57aa68c026d9cc354e338f556bcda20f4eb5d74d43089d365982dbacf1c1"
+    },
+    {
+      "path": "_worker.js/pages/api/cron/directory-audit.astro.mjs",
+      "bytes": 7993,
+      "sha256": "1599a153ba37d0df2c825cf99d5013f52915ea9ce22a6d929f38acc5e09cd027"
+    },
+    {
+      "path": "_worker.js/pages/api/cron/directory-enrich.astro.mjs",
+      "bytes": 7492,
+      "sha256": "8fcb1b364d521b76a48f009430fc49d493d5c98a9bf305b5bc327862829055f9"
+    },
+    {
+      "path": "_worker.js/pages/api/cron/directory-seed.astro.mjs",
+      "bytes": 14488,
+      "sha256": "95e36e3887be5e172080c76b205798fed2cb9dbff60b7bbc5699fc7b9d6fc128"
+    },
+    {
+      "path": "_worker.js/pages/api/cron/employer-intake.astro.mjs",
+      "bytes": 11052,
+      "sha256": "42f473c06cbf39f08e86e9b2d6259fd298d3a12c9df9c22ca504dcd7e2909ec6"
+    },
+    {
+      "path": "_worker.js/pages/api/cron/prospect.astro.mjs",
+      "bytes": 23125,
+      "sha256": "de7582894f5b084febc5f4efb38d9d1cced5306d51c806512cdbaad8705c54f7"
+    },
+    {
+      "path": "_worker.js/pages/api/cron/prune.astro.mjs",
+      "bytes": 3720,
+      "sha256": "9c578c546109c1232237fe2102cc659024240292a19b39327fba2c4379ae41d7"
+    },
+    {
+      "path": "_worker.js/pages/api/cron/scrape.astro.mjs",
+      "bytes": 92774,
+      "sha256": "ab8afc36cea0f5e2cfecddfb2a9522fd2f587f183f22efcab1b5abb0e33e2355"
+    },
+    {
+      "path": "_worker.js/pages/api/cron/shadow-dispatch.astro.mjs",
+      "bytes": 29749,
+      "sha256": "d97e43177e2c6a1543efecbfa318f99b938c7344b6167455a131af3feff72104"
+    },
+    {
+      "path": "_worker.js/pages/api/cron/source-admit.astro.mjs",
+      "bytes": 37802,
+      "sha256": "55744444e7e57ae7b0053bce561fd2b17096c864ef378f64b9b920f0f032cf5f"
+    },
+    {
+      "path": "_worker.js/pages/api/cron/source-promote.astro.mjs",
+      "bytes": 6669,
+      "sha256": "feaf988fdd7c969b6236ae2c929f9a1a62d21ec918bb93436a852e1cd1bd9ed9"
+    },
+    {
+      "path": "_worker.js/pages/api/cron/source-renew.astro.mjs",
+      "bytes": 14122,
+      "sha256": "0d545be2557bb1aedef0ac7caeb4b3ed7f7f49543b45312e8692de3ece054fed"
+    },
+    {
+      "path": "_worker.js/pages/api/cron/verify-links.astro.mjs",
+      "bytes": 12860,
+      "sha256": "bc197d4c21f2f7bd924d0102a721edd5ce7f1315fcfa859e7f7c54fa6e574ac1"
+    },
+    {
+      "path": "_worker.js/pages/api/ingest-digest.astro.mjs",
+      "bytes": 7414,
+      "sha256": "e44a20f386cca13cb7f1486cc36b5bb874ab17cbe23aee156713085dadbeccf7"
+    },
+    {
+      "path": "_worker.js/pages/api/ingest.astro.mjs",
+      "bytes": 8172,
+      "sha256": "1c1713db3ff47d6fd0a96b9383449c598c8f6003947b4cdbc39e1e0d73d164ab"
+    },
+    {
+      "path": "_worker.js/pages/api/inngest.astro.mjs",
+      "bytes": 652764,
+      "sha256": "6171c30658260eced75131639f91d47fe7bae26359a65518b2d22ff7c2721627"
+    },
+    {
+      "path": "_worker.js/pages/categories/_category_.astro.mjs",
+      "bytes": 7739,
+      "sha256": "2633d1b0c5670d671e0d10ffc7252cf50af2c1c57f199bd72dd61e87c8db79c4"
+    },
+    {
+      "path": "_worker.js/pages/data-policy.astro.mjs",
+      "bytes": 5075,
+      "sha256": "890d5f960d52d2fdbd5b92492455255c31c02e78dcc4ab7708b973d3742b8370"
+    },
+    {
+      "path": "_worker.js/pages/directory.astro.mjs",
+      "bytes": 15744,
+      "sha256": "8aed533644a2942f5352a08a89aeac85e6f794969efc6bab3febce772ee206de"
+    },
+    {
+      "path": "_worker.js/pages/index.astro.mjs",
+      "bytes": 13926,
+      "sha256": "5c7ac78c3bf6f92e92e2fad68a8f4491ccfcff91214e03540fc32b1d32826a4e"
+    },
+    {
+      "path": "_worker.js/pages/jobs/_id_.astro.mjs",
+      "bytes": 16168,
+      "sha256": "a40c036d189684fea85e6a909b48afd9e2fdea1e6872764b3b4969e74fed557d"
+    },
+    {
+      "path": "_worker.js/pages/opportunities.astro.mjs",
+      "bytes": 13333,
+      "sha256": "55a718037f5689d1dd188d457ace4c094af59499b0f805cd099aacfc29d9eee4"
+    },
+    {
+      "path": "_worker.js/pages/privacy.astro.mjs",
+      "bytes": 4686,
+      "sha256": "3578d920c2962bf409845f2eca37319526b1dfe433a7adbff6d607bbeb18f16c"
+    },
+    {
+      "path": "_worker.js/pages/sitemap.xml.astro.mjs",
+      "bytes": 2898,
+      "sha256": "32ed2e25bf1a6d0761e8ec2804c523ee3c2dad09114b53cc573e7929310ba050"
+    },
+    {
+      "path": "_worker.js/renderers.mjs",
+      "bytes": 419,
+      "sha256": "772091a51247a695c6d0a6d03cef5b054e9e649524edf2550af5a9c56296fba3"
+    },
+    {
+      "path": "favicon.ico",
+      "bytes": 655,
+      "sha256": "09d2ac08d8cca9b6e1f90221f345a8c4dd0371c64a0dc52b6f96fc589b1e3d67"
+    },
+    {
+      "path": "favicon.svg",
+      "bytes": 748,
+      "sha256": "170892481f660d5741509bdd9d2038e844b197574c00fc5b9083597cf4ff2008"
+    },
+    {
+      "path": "robots.txt",
+      "bytes": 81,
+      "sha256": "e827abb1bc9b468f81ce929335ccd0ca7940688da86bf6938e1929a1ada8a844"
+    },
+    {
+      "path": "textures/pigment-paper.webp",
+      "bytes": 164434,
+      "sha256": "cbd974146a5c215ac90e68fad9ba468abb59f1552bfc6c04ccf6562bf0db9416"
+    }
+  ],
+  "limitations": [
+    "Local distribution digests do not attest remote Pages worker bytes.",
+    "Prior partial extraction preserved; only verified v2 directory is eligible to deploy.",
+    "No migration, source-policy, scheduler, new jobflow code or MATH acceptance."
+  ]
+}

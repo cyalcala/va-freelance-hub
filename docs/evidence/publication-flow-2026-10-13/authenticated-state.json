@@ -1,0 +1,1474 @@
+{
+  "scope": "READ_ONLY_METADATA_AND_SELECT_NOT_CERTIFIED_FLOW",
+  "observedStart": "2026-10-13T11:17:07.511Z",
+  "dayStartManilaUtc": "2026-10-12T16:00:00.000Z",
+  "since60Utc": "2026-10-13T10:17:07.512Z",
+  "since24Utc": "2026-10-12T11:17:07.512Z",
+  "observations": [
+    {
+      "kind": "pages-production",
+      "observedAtUtc": "2026-10-13T11:17:14.521Z",
+      "status": 200,
+      "success": true,
+      "errorCodes": [],
+      "project": "remotejobs-ph",
+      "subdomain": "remotejobs-ph.pages.dev",
+      "deployment": {
+        "id": "e1b0ff66-8a93-41b0-b9c7-6de8346c81c7",
+        "createdOn": "2026-10-08T10:37:48.410888Z",
+        "environment": "production",
+        "commitHash": "3065f0d709d5a1950c247d5a11df542b07721bcb",
+        "latestStage": {
+          "name": "deploy",
+          "status": "success",
+          "startedOn": null,
+          "endedOn": "2026-10-08T10:37:52.81332Z"
+        }
+      }
+    },
+    {
+      "kind": "schema-floor",
+      "observedAtUtc": "2026-10-13T11:17:15.677Z",
+      "status": 200,
+      "success": true,
+      "errorCodes": [],
+      "query": "SELECT id,name,applied_at FROM d1_migrations ORDER BY id DESC LIMIT 6",
+      "params": [],
+      "querySha256": "1c9c4399848d5dadc0a9a6f87eb53639fa278397001652a8464561609e3eb60e",
+      "results": [
+        {
+          "success": true,
+          "rowsWritten": 0,
+          "rowsRead": 6,
+          "rows": [
+            {
+              "id": 2062,
+              "name": "0054_public_serving_snapshot.sql",
+              "applied_at": "2026-10-07 08:31:02"
+            },
+            {
+              "id": 1613,
+              "name": "0053_align_shadow_bytes_budget.sql",
+              "applied_at": "2026-09-29 13:22:44"
+            },
+            {
+              "id": 1556,
+              "name": "0052_founder_fast_track_canary_graduation.sql",
+              "applied_at": "2026-09-27 11:08:47"
+            },
+            {
+              "id": 1539,
+              "name": "0051_shadow_host_backoff.sql",
+              "applied_at": "2026-09-27 10:06:27"
+            },
+            {
+              "id": 1490,
+              "name": "0050_adjudication_audit_samples.sql",
+              "applied_at": "2026-09-26 14:54:23"
+            },
+            {
+              "id": 1465,
+              "name": "0049_backfill_remaining_source_registry_risk_tiers.sql",
+              "applied_at": "2026-09-26 04:51:33"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "publication-control-tables",
+      "observedAtUtc": "2026-10-13T11:17:16.366Z",
+      "status": 200,
+      "success": true,
+      "errorCodes": [],
+      "query": "SELECT name FROM sqlite_schema WHERE type='table' AND (name LIKE 'publication_%' OR name LIKE 'source_publication%' OR name LIKE 'source_admission%' OR name='public_serving_snapshot') ORDER BY name",
+      "params": [],
+      "querySha256": "4db36475ec3870e8f3ad805d36a2b8ca43b609c4a4b036b4dd1270d91565e081",
+      "results": [
+        {
+          "success": true,
+          "rowsWritten": 0,
+          "rowsRead": 123,
+          "rows": [
+            {
+              "name": "public_serving_snapshot"
+            },
+            {
+              "name": "source_admission_evidence"
+            },
+            {
+              "name": "source_publication_ledger"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "inventory",
+      "observedAtUtc": "2026-10-13T11:17:16.810Z",
+      "status": 200,
+      "success": true,
+      "errorCodes": [],
+      "query": "SELECT COUNT(*) AS stored_total,\n    SUM(CASE WHEN is_active=1 AND ph_eligibility IN ('eligible_verified','eligible_likely') THEN 1 ELSE 0 END) AS public_total,\n    SUM(CASE WHEN julianday(scraped_at)>=julianday(?) AND julianday(scraped_at)<=julianday(?) THEN 1 ELSE 0 END) AS stored_firstseen_today,\n    SUM(CASE WHEN is_active=1 AND ph_eligibility IN ('eligible_verified','eligible_likely') AND julianday(scraped_at)>=julianday(?) AND julianday(scraped_at)<=julianday(?) THEN 1 ELSE 0 END) AS public_firstseen_today,\n    SUM(CASE WHEN is_active=1 AND ph_eligibility='eligible_verified' AND julianday(scraped_at)>=julianday(?) AND julianday(scraped_at)<=julianday(?) THEN 1 ELSE 0 END) AS public_verified_label_firstseen_today,\n    SUM(CASE WHEN is_active=1 AND ph_eligibility IN ('eligible_verified','eligible_likely') AND julianday(posted_at)>=julianday(?) AND julianday(posted_at)<=julianday(?) THEN 1 ELSE 0 END) AS public_sourceposted_today,\n    SUM(CASE WHEN is_active=1 AND ph_eligibility IN ('eligible_verified','eligible_likely') AND julianday(posted_at)>julianday(?) THEN 1 ELSE 0 END) AS public_future_sourceposted,\n    MAX(scraped_at) AS latest_firstseen FROM opportunities",
+      "params": [
+        "2026-10-12T16:00:00.000Z",
+        "2026-10-13T11:17:07.511Z",
+        "2026-10-12T16:00:00.000Z",
+        "2026-10-13T11:17:07.511Z",
+        "2026-10-12T16:00:00.000Z",
+        "2026-10-13T11:17:07.511Z",
+        "2026-10-12T16:00:00.000Z",
+        "2026-10-13T11:17:07.511Z",
+        "2026-10-13T11:17:07.511Z"
+      ],
+      "querySha256": "cf9599ce61f78887c8946b7eeddc7d6a1b11dd9f248051d5a3dd6afd68bea3db",
+      "results": [
+        {
+          "success": true,
+          "rowsWritten": 0,
+          "rowsRead": 7257,
+          "rows": [
+            {
+              "stored_total": 7257,
+              "public_total": 1661,
+              "stored_firstseen_today": 33,
+              "public_firstseen_today": 22,
+              "public_verified_label_firstseen_today": 1,
+              "public_sourceposted_today": 20,
+              "public_future_sourceposted": 0,
+              "latest_firstseen": "2026-10-13T10:20:59.039Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "today-source-cohorts",
+      "observedAtUtc": "2026-10-13T11:17:17.838Z",
+      "status": 200,
+      "success": true,
+      "errorCodes": [],
+      "query": "SELECT source_id,is_active,ph_eligibility,inactive_reason,COUNT(*) AS stored,\n    MIN(scraped_at) AS earliest_firstseen,MAX(scraped_at) AS latest_firstseen,MAX(posted_at) AS latest_sourceposted\n    FROM opportunities WHERE julianday(scraped_at)>=julianday(?) AND julianday(scraped_at)<=julianday(?)\n    GROUP BY source_id,is_active,ph_eligibility,inactive_reason ORDER BY source_id",
+      "params": [
+        "2026-10-12T16:00:00.000Z",
+        "2026-10-13T11:17:07.511Z"
+      ],
+      "querySha256": "79652f6dd872a67f98fb0fe8cda61dda27241f1227957fab96aea93cdf810ccc",
+      "results": [
+        {
+          "success": true,
+          "rowsWritten": 0,
+          "rowsRead": 7301,
+          "rows": [
+            {
+              "source_id": "breezy:20four7va",
+              "is_active": 1,
+              "ph_eligibility": "eligible_likely",
+              "inactive_reason": null,
+              "stored": 3,
+              "earliest_firstseen": "2026-10-12T20:10:59.286Z",
+              "latest_firstseen": "2026-10-12T21:20:58.979Z",
+              "latest_sourceposted": "2026-10-12T21:07:49.167Z"
+            },
+            {
+              "source_id": "breezy:sourcefit",
+              "is_active": 0,
+              "ph_eligibility": "ineligible",
+              "inactive_reason": "policy-rejected",
+              "stored": 1,
+              "earliest_firstseen": "2026-10-13T04:50:59.027Z",
+              "latest_firstseen": "2026-10-13T04:50:59.027Z",
+              "latest_sourceposted": "2026-10-13T04:08:39.311Z"
+            },
+            {
+              "source_id": "breezy:sourcefit",
+              "is_active": 1,
+              "ph_eligibility": "eligible_verified",
+              "inactive_reason": null,
+              "stored": 1,
+              "earliest_firstseen": "2026-10-13T03:50:58.977Z",
+              "latest_firstseen": "2026-10-13T03:50:58.977Z",
+              "latest_sourceposted": "2026-10-13T03:16:03.361Z"
+            },
+            {
+              "source_id": "greenhouse:gitlab",
+              "is_active": 0,
+              "ph_eligibility": "ineligible",
+              "inactive_reason": "policy-rejected",
+              "stored": 1,
+              "earliest_firstseen": "2026-10-13T09:20:58.981Z",
+              "latest_firstseen": "2026-10-13T09:20:58.981Z",
+              "latest_sourceposted": "2026-10-13T08:22:36.000Z"
+            },
+            {
+              "source_id": "greenhouse:grafanalabs",
+              "is_active": 0,
+              "ph_eligibility": "ineligible",
+              "inactive_reason": "policy-rejected",
+              "stored": 4,
+              "earliest_firstseen": "2026-10-13T08:20:58.969Z",
+              "latest_firstseen": "2026-10-13T08:20:58.969Z",
+              "latest_sourceposted": "2026-10-13T08:11:55.000Z"
+            },
+            {
+              "source_id": "real-work-from-anywhere",
+              "is_active": 0,
+              "ph_eligibility": "unclear",
+              "inactive_reason": "policy-rejected",
+              "stored": 1,
+              "earliest_firstseen": "2026-10-13T03:50:58.977Z",
+              "latest_firstseen": "2026-10-13T03:50:58.977Z",
+              "latest_sourceposted": "2026-10-12T21:54:16.000Z"
+            },
+            {
+              "source_id": "real-work-from-anywhere",
+              "is_active": 1,
+              "ph_eligibility": "eligible_likely",
+              "inactive_reason": null,
+              "stored": 1,
+              "earliest_firstseen": "2026-10-13T10:20:59.039Z",
+              "latest_firstseen": "2026-10-13T10:20:59.039Z",
+              "latest_sourceposted": "2026-10-12T00:00:00.000Z"
+            },
+            {
+              "source_id": "remote-ok",
+              "is_active": 0,
+              "ph_eligibility": "ineligible",
+              "inactive_reason": "policy-rejected",
+              "stored": 1,
+              "earliest_firstseen": "2026-10-12T16:40:59.067Z",
+              "latest_firstseen": "2026-10-12T16:40:59.067Z",
+              "latest_sourceposted": "2026-10-11T16:00:03.000Z"
+            },
+            {
+              "source_id": "remote-ok",
+              "is_active": 1,
+              "ph_eligibility": "eligible_likely",
+              "inactive_reason": null,
+              "stored": 1,
+              "earliest_firstseen": "2026-10-13T00:30:58.998Z",
+              "latest_firstseen": "2026-10-13T00:30:58.998Z",
+              "latest_sourceposted": "2026-10-12T00:00:04.000Z"
+            },
+            {
+              "source_id": "we-work-remotely",
+              "is_active": 0,
+              "ph_eligibility": "ineligible",
+              "inactive_reason": "policy-rejected",
+              "stored": 3,
+              "earliest_firstseen": "2026-10-12T16:30:58.987Z",
+              "latest_firstseen": "2026-10-13T07:40:58.968Z",
+              "latest_sourceposted": "2026-10-13T07:30:53.000Z"
+            },
+            {
+              "source_id": "we-work-remotely",
+              "is_active": 1,
+              "ph_eligibility": "eligible_likely",
+              "inactive_reason": null,
+              "stored": 16,
+              "earliest_firstseen": "2026-10-12T16:30:58.987Z",
+              "latest_firstseen": "2026-10-13T09:00:59.171Z",
+              "latest_sourceposted": "2026-10-13T08:59:20.000Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "workable-authority",
+      "observedAtUtc": "2026-10-13T11:17:18.291Z",
+      "status": 200,
+      "success": true,
+      "errorCodes": [],
+      "query": "SELECT r.source_id,r.compliance_state,r.operational_state,r.policy_expiry,r.canary_max_new_items_per_tick,r.opt_out,\n    EXISTS(SELECT 1 FROM source_opt_outs o WHERE o.source_id=r.source_id) AS durable_opt_out,\n    p.mechanism,p.auth_class,p.cadence_min_minutes,p.cadence_max_minutes,e.id AS admission_id,e.policy_version,e.captured_at,e.expires_at,\n    e.source_governance_revision,e.provider_governance_revision FROM source_registry r JOIN provider_profiles p ON p.id=r.provider_id\n    LEFT JOIN source_admission_evidence e ON e.id=(SELECT MAX(id) FROM source_admission_evidence WHERE source_id=r.source_id)\n    WHERE r.provider_id='workable' AND r.operational_state IN ('active','canary') ORDER BY r.source_id",
+      "params": [],
+      "querySha256": "db3290a45acd79d7bfc4d5d9e979f268309ccf4c5319edf6d457b35e9616007e",
+      "results": [
+        {
+          "success": true,
+          "rowsWritten": 0,
+          "rowsRead": 36,
+          "rows": [
+            {
+              "source_id": "workable:coconutva",
+              "compliance_state": "conditional",
+              "operational_state": "canary",
+              "policy_expiry": "2027-03-10T21:31:09.551Z",
+              "canary_max_new_items_per_tick": 2,
+              "opt_out": 0,
+              "durable_opt_out": 0,
+              "mechanism": "ats_api",
+              "auth_class": "none",
+              "cadence_min_minutes": 60,
+              "cadence_max_minutes": 1440,
+              "admission_id": 17,
+              "policy_version": "sp23-shadow-7d-v1",
+              "captured_at": "2026-09-11T21:31:09.551Z",
+              "expires_at": "2027-03-10T21:31:09.551Z",
+              "source_governance_revision": 1,
+              "provider_governance_revision": 2
+            },
+            {
+              "source_id": "workable:crewbloom",
+              "compliance_state": "conditional",
+              "operational_state": "canary",
+              "policy_expiry": "2027-03-10T21:31:09.551Z",
+              "canary_max_new_items_per_tick": 2,
+              "opt_out": 0,
+              "durable_opt_out": 0,
+              "mechanism": "ats_api",
+              "auth_class": "none",
+              "cadence_min_minutes": 60,
+              "cadence_max_minutes": 1440,
+              "admission_id": 18,
+              "policy_version": "sp23-shadow-7d-v1",
+              "captured_at": "2026-09-11T21:31:51.692Z",
+              "expires_at": "2027-03-10T21:31:09.551Z",
+              "source_governance_revision": 1,
+              "provider_governance_revision": 2
+            },
+            {
+              "source_id": "workable:hello-rache",
+              "compliance_state": "conditional",
+              "operational_state": "canary",
+              "policy_expiry": "2027-03-10T21:31:09.551Z",
+              "canary_max_new_items_per_tick": 2,
+              "opt_out": 0,
+              "durable_opt_out": 0,
+              "mechanism": "ats_api",
+              "auth_class": "none",
+              "cadence_min_minutes": 60,
+              "cadence_max_minutes": 1440,
+              "admission_id": 22,
+              "policy_version": "sp23-shadow-7d-v1",
+              "captured_at": "2026-09-11T23:41:55.923Z",
+              "expires_at": "2027-03-10T21:31:09.551Z",
+              "source_governance_revision": 1,
+              "provider_governance_revision": 2
+            },
+            {
+              "source_id": "workable:hunt-st",
+              "compliance_state": "conditional",
+              "operational_state": "canary",
+              "policy_expiry": "2027-03-10T21:31:09.551Z",
+              "canary_max_new_items_per_tick": 2,
+              "opt_out": 0,
+              "durable_opt_out": 0,
+              "mechanism": "ats_api",
+              "auth_class": "none",
+              "cadence_min_minutes": 60,
+              "cadence_max_minutes": 1440,
+              "admission_id": 20,
+              "policy_version": "sp23-shadow-7d-v1",
+              "captured_at": "2026-09-11T23:34:34.199Z",
+              "expires_at": "2027-03-10T21:31:09.551Z",
+              "source_governance_revision": 4,
+              "provider_governance_revision": 2
+            },
+            {
+              "source_id": "workable:pearltalent",
+              "compliance_state": "conditional",
+              "operational_state": "canary",
+              "policy_expiry": "2027-03-10T21:31:09.551Z",
+              "canary_max_new_items_per_tick": 2,
+              "opt_out": 0,
+              "durable_opt_out": 0,
+              "mechanism": "ats_api",
+              "auth_class": "none",
+              "cadence_min_minutes": 60,
+              "cadence_max_minutes": 1440,
+              "admission_id": 19,
+              "policy_version": "sp23-shadow-7d-v1",
+              "captured_at": "2026-09-11T23:24:27.778Z",
+              "expires_at": "2027-03-10T21:31:09.551Z",
+              "source_governance_revision": 1,
+              "provider_governance_revision": 2
+            },
+            {
+              "source_id": "workable:pineapple-staffing",
+              "compliance_state": "conditional",
+              "operational_state": "canary",
+              "policy_expiry": "2027-03-10T21:31:09.551Z",
+              "canary_max_new_items_per_tick": 2,
+              "opt_out": 0,
+              "durable_opt_out": 0,
+              "mechanism": "ats_api",
+              "auth_class": "none",
+              "cadence_min_minutes": 60,
+              "cadence_max_minutes": 1440,
+              "admission_id": 23,
+              "policy_version": "sp23-shadow-7d-v1",
+              "captured_at": "2026-09-12T23:19:49.946Z",
+              "expires_at": "2027-03-10T21:31:09.551Z",
+              "source_governance_revision": 1,
+              "provider_governance_revision": 2
+            },
+            {
+              "source_id": "workable:rocketams",
+              "compliance_state": "conditional",
+              "operational_state": "canary",
+              "policy_expiry": "2027-03-10T21:31:09.551Z",
+              "canary_max_new_items_per_tick": 2,
+              "opt_out": 0,
+              "durable_opt_out": 0,
+              "mechanism": "ats_api",
+              "auth_class": "none",
+              "cadence_min_minutes": 60,
+              "cadence_max_minutes": 1440,
+              "admission_id": 21,
+              "policy_version": "sp23-shadow-7d-v1",
+              "captured_at": "2026-09-11T23:41:11.026Z",
+              "expires_at": "2027-03-10T21:31:09.551Z",
+              "source_governance_revision": 4,
+              "provider_governance_revision": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "workable-and-diagnostic-states",
+      "observedAtUtc": "2026-10-13T11:17:18.547Z",
+      "status": 200,
+      "success": true,
+      "errorCodes": [],
+      "query": "SELECT source_id,last_attempt_at,last_success_at,last_count,\n    CASE WHEN last_error IS NULL THEN 0 ELSE 1 END AS has_error,updated_at FROM source_fetch_state\n    WHERE source_id LIKE 'workable:%' OR source_id IN ('__scrape_run_lock__','__ingest_diag__') ORDER BY source_id",
+      "params": [],
+      "querySha256": "c09d90dda528d3afef3af63273b6ff7f4d8811763c0c1fcde8a6253dd9589fda",
+      "results": [
+        {
+          "success": true,
+          "rowsWritten": 0,
+          "rowsRead": 32,
+          "rows": [
+            {
+              "source_id": "__ingest_diag__",
+              "last_attempt_at": "2026-10-13T11:10:58.996Z",
+              "last_success_at": "2026-10-13T11:10:58.996Z",
+              "last_count": 0,
+              "has_error": 0,
+              "updated_at": "2026-10-13T11:10:58.996Z"
+            },
+            {
+              "source_id": "__scrape_run_lock__",
+              "last_attempt_at": "1970-01-01T00:00:00.000Z",
+              "last_success_at": null,
+              "last_count": 0,
+              "has_error": 0,
+              "updated_at": "2026-10-13T11:11:06.672Z"
+            },
+            {
+              "source_id": "workable:hunt-st",
+              "last_attempt_at": "2026-09-27T11:10:33.138Z",
+              "last_success_at": "2026-09-27T11:10:33.138Z",
+              "last_count": 146,
+              "has_error": 0,
+              "updated_at": "2026-09-27T11:10:33.138Z"
+            },
+            {
+              "source_id": "workable:rocketams",
+              "last_attempt_at": "2026-09-27T11:10:33.138Z",
+              "last_success_at": "2026-09-27T11:10:33.138Z",
+              "last_count": 9,
+              "has_error": 0,
+              "updated_at": "2026-09-27T11:10:33.138Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "source-events-60min",
+      "observedAtUtc": "2026-10-13T11:17:19.457Z",
+      "status": 200,
+      "success": true,
+      "errorCodes": [],
+      "query": "SELECT source_id,COUNT(*) AS events,\n    MAX(timestamp) AS latest_event,MAX(CASE WHEN skipped=0 THEN timestamp END) AS latest_fetch,\n    SUM(CASE WHEN skipped=0 THEN 1 ELSE 0 END) AS fetched_events,SUM(CASE WHEN skipped=1 THEN 1 ELSE 0 END) AS skipped_events,\n    SUM(CASE WHEN ok=0 THEN 1 ELSE 0 END) AS failed_events,SUM(CASE WHEN not_modified=1 THEN 1 ELSE 0 END) AS unchanged_events,\n    SUM(CASE WHEN skipped=0 AND COALESCE(not_modified,0)=0 THEN count ELSE 0 END) AS changed_feed_item_observations,\n    SUM(CASE WHEN skipped=1 AND LOWER(skip_reason) LIKE '%rotation%' THEN 1 ELSE 0 END) AS rotation_skips,\n    SUM(CASE WHEN skipped=1 AND LOWER(skip_reason) LIKE '%cadence%' THEN 1 ELSE 0 END) AS cadence_skips\n    FROM source_fetch_events WHERE julianday(timestamp)>=julianday(?) AND julianday(timestamp)<=julianday(?)\n    AND (source_id LIKE 'workable:%' OR source_id IN ('we-work-remotely','remotive','remote-ok','real-work-from-anywhere','jobicy-admin-support-apac','jobicy-supporting-apac'))\n    GROUP BY source_id ORDER BY source_id",
+      "params": [
+        "2026-10-13T10:17:07.512Z",
+        "2026-10-13T11:17:07.511Z"
+      ],
+      "querySha256": "a3cf3c938f911a4f307728c5117273b87a17309f59076363cb87ad49fa5298c5",
+      "results": [
+        {
+          "success": true,
+          "rowsWritten": 0,
+          "rowsRead": 88253,
+          "rows": [
+            {
+              "source_id": "jobicy-admin-support-apac",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": "2026-10-13T10:30:58.995Z",
+              "fetched_events": 1,
+              "skipped_events": 5,
+              "failed_events": 0,
+              "unchanged_events": 1,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 5
+            },
+            {
+              "source_id": "jobicy-supporting-apac",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": "2026-10-13T10:20:59.039Z",
+              "fetched_events": 1,
+              "skipped_events": 5,
+              "failed_events": 0,
+              "unchanged_events": 1,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 5
+            },
+            {
+              "source_id": "real-work-from-anywhere",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": "2026-10-13T10:20:59.039Z",
+              "fetched_events": 1,
+              "skipped_events": 5,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 50,
+              "rotation_skips": 0,
+              "cadence_skips": 5
+            },
+            {
+              "source_id": "remote-ok",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": "2026-10-13T10:20:59.039Z",
+              "fetched_events": 1,
+              "skipped_events": 5,
+              "failed_events": 0,
+              "unchanged_events": 1,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 5
+            },
+            {
+              "source_id": "remotive",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": "2026-10-13T11:10:58.996Z",
+              "fetched_events": 6,
+              "skipped_events": 0,
+              "failed_events": 0,
+              "unchanged_events": 5,
+              "changed_feed_item_observations": 16,
+              "rotation_skips": 0,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "we-work-remotely",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": "2026-10-13T11:10:58.996Z",
+              "fetched_events": 6,
+              "skipped_events": 0,
+              "failed_events": 0,
+              "unchanged_events": 6,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:coconutva",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 6,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 6,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:connectos",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 6,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:crewbloom",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 6,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 6,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:global-strategic",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 6,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:hello-rache",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 6,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 6,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:hunt-st",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 6,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 6,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:myoutdesk",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 6,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:outsource-access",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 6,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:pearltalent",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 6,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 6,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:pineapple-staffing",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 6,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 6,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:rocketams",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 6,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 6,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:staff-domain-inc",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 6,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:superstaff",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 6,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:virtualstaff365",
+              "events": 6,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 6,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "source-events-24h",
+      "observedAtUtc": "2026-10-13T11:17:19.916Z",
+      "status": 200,
+      "success": true,
+      "errorCodes": [],
+      "query": "SELECT source_id,COUNT(*) AS events,\n    MAX(timestamp) AS latest_event,MAX(CASE WHEN skipped=0 THEN timestamp END) AS latest_fetch,\n    SUM(CASE WHEN skipped=0 THEN 1 ELSE 0 END) AS fetched_events,SUM(CASE WHEN skipped=1 THEN 1 ELSE 0 END) AS skipped_events,\n    SUM(CASE WHEN ok=0 THEN 1 ELSE 0 END) AS failed_events,SUM(CASE WHEN not_modified=1 THEN 1 ELSE 0 END) AS unchanged_events,\n    SUM(CASE WHEN skipped=0 AND COALESCE(not_modified,0)=0 THEN count ELSE 0 END) AS changed_feed_item_observations,\n    SUM(CASE WHEN skipped=1 AND LOWER(skip_reason) LIKE '%rotation%' THEN 1 ELSE 0 END) AS rotation_skips,\n    SUM(CASE WHEN skipped=1 AND LOWER(skip_reason) LIKE '%cadence%' THEN 1 ELSE 0 END) AS cadence_skips\n    FROM source_fetch_events WHERE julianday(timestamp)>=julianday(?) AND julianday(timestamp)<=julianday(?)\n    AND (source_id LIKE 'workable:%' OR source_id IN ('we-work-remotely','remotive','remote-ok','real-work-from-anywhere','jobicy-admin-support-apac','jobicy-supporting-apac'))\n    GROUP BY source_id ORDER BY source_id",
+      "params": [
+        "2026-10-12T11:17:07.512Z",
+        "2026-10-13T11:17:07.511Z"
+      ],
+      "querySha256": "3022c19106db5e2c615e1edccf7cff8462fe67d38b88c50a74317f251d1e8ea1",
+      "results": [
+        {
+          "success": true,
+          "rowsWritten": 0,
+          "rowsRead": 88253,
+          "rows": [
+            {
+              "source_id": "jobicy-admin-support-apac",
+              "events": 112,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": "2026-10-13T10:30:58.995Z",
+              "fetched_events": 19,
+              "skipped_events": 93,
+              "failed_events": 0,
+              "unchanged_events": 19,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 93
+            },
+            {
+              "source_id": "jobicy-supporting-apac",
+              "events": 112,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": "2026-10-13T10:20:59.039Z",
+              "fetched_events": 17,
+              "skipped_events": 95,
+              "failed_events": 0,
+              "unchanged_events": 15,
+              "changed_feed_item_observations": 80,
+              "rotation_skips": 0,
+              "cadence_skips": 95
+            },
+            {
+              "source_id": "real-work-from-anywhere",
+              "events": 112,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": "2026-10-13T10:20:59.039Z",
+              "fetched_events": 19,
+              "skipped_events": 93,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 950,
+              "rotation_skips": 0,
+              "cadence_skips": 93
+            },
+            {
+              "source_id": "remote-ok",
+              "events": 112,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": "2026-10-13T10:20:59.039Z",
+              "fetched_events": 19,
+              "skipped_events": 93,
+              "failed_events": 0,
+              "unchanged_events": 14,
+              "changed_feed_item_observations": 210,
+              "rotation_skips": 0,
+              "cadence_skips": 93
+            },
+            {
+              "source_id": "remotive",
+              "events": 112,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": "2026-10-13T11:10:58.996Z",
+              "fetched_events": 112,
+              "skipped_events": 0,
+              "failed_events": 0,
+              "unchanged_events": 91,
+              "changed_feed_item_observations": 336,
+              "rotation_skips": 0,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "we-work-remotely",
+              "events": 112,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": "2026-10-13T11:10:58.996Z",
+              "fetched_events": 112,
+              "skipped_events": 0,
+              "failed_events": 0,
+              "unchanged_events": 101,
+              "changed_feed_item_observations": 979,
+              "rotation_skips": 0,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:coconutva",
+              "events": 111,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 111,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 111,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:connectos",
+              "events": 111,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 111,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:crewbloom",
+              "events": 111,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 111,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 111,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:global-strategic",
+              "events": 111,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 111,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:hello-rache",
+              "events": 111,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 111,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 111,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:hunt-st",
+              "events": 111,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 111,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 111,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:myoutdesk",
+              "events": 111,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 111,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:outsource-access",
+              "events": 111,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 111,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:pearltalent",
+              "events": 111,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 111,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 111,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:pineapple-staffing",
+              "events": 111,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 111,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 111,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:rocketams",
+              "events": 111,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 111,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 111,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:staff-domain-inc",
+              "events": 111,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 111,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:superstaff",
+              "events": 111,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 111,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 0
+            },
+            {
+              "source_id": "workable:virtualstaff365",
+              "events": 111,
+              "latest_event": "2026-10-13T11:10:58.996Z",
+              "latest_fetch": null,
+              "fetched_events": 0,
+              "skipped_events": 111,
+              "failed_events": 0,
+              "unchanged_events": 0,
+              "changed_feed_item_observations": 0,
+              "rotation_skips": 0,
+              "cadence_skips": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "recent-normal-ticks",
+      "observedAtUtc": "2026-10-13T11:17:20.349Z",
+      "status": 200,
+      "success": true,
+      "errorCodes": [],
+      "query": "SELECT timestamp,COUNT(*) AS events,SUM(CASE WHEN ok=0 THEN 1 ELSE 0 END) AS failed,\n    SUM(CASE WHEN skipped=1 THEN 1 ELSE 0 END) AS skipped FROM source_fetch_events\n    WHERE julianday(timestamp)>=julianday(?) GROUP BY timestamp ORDER BY timestamp DESC LIMIT 8",
+      "params": [
+        "2026-10-13T10:17:07.512Z"
+      ],
+      "querySha256": "b42e4173e7debb49d95a4706289205827cd98a393fd687ce5ee8c99fe11a88c5",
+      "results": [
+        {
+          "success": true,
+          "rowsWritten": 0,
+          "rowsRead": 88253,
+          "rows": [
+            {
+              "timestamp": "2026-10-13T11:10:58.996Z",
+              "events": 62,
+              "failed": 0,
+              "skipped": 60
+            },
+            {
+              "timestamp": "2026-10-13T11:00:58.985Z",
+              "events": 62,
+              "failed": 0,
+              "skipped": 60
+            },
+            {
+              "timestamp": "2026-10-13T10:50:58.978Z",
+              "events": 62,
+              "failed": 0,
+              "skipped": 60
+            },
+            {
+              "timestamp": "2026-10-13T10:40:58.981Z",
+              "events": 62,
+              "failed": 0,
+              "skipped": 60
+            },
+            {
+              "timestamp": "2026-10-13T10:30:58.995Z",
+              "events": 62,
+              "failed": 0,
+              "skipped": 59
+            },
+            {
+              "timestamp": "2026-10-13T10:20:59.039Z",
+              "events": 62,
+              "failed": 0,
+              "skipped": 44
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "today-ledger-shape",
+      "observedAtUtc": "2026-10-13T11:17:20.666Z",
+      "status": 200,
+      "success": true,
+      "errorCodes": [],
+      "query": "SELECT source_id,mode,COUNT(*) AS receipts,SUM(proposed_count) AS proposed,SUM(published_count) AS reported_published,\n    SUM(json_array_length(published_ids_json)) AS id_occurrences,\n    SUM(CASE WHEN published_count<>json_array_length(published_ids_json) THEN 1 ELSE 0 END) AS count_id_disagreement_receipts,\n    SUM(CASE WHEN EXISTS(SELECT 1 FROM json_each(published_ids_json) j WHERE j.type<>'integer' OR j.value<=0) THEN 1 ELSE 0 END) AS invalid_id_receipts,\n    MIN(decided_at) AS earliest_receipt,MAX(decided_at) AS latest_receipt FROM source_publication_ledger\n    WHERE julianday(decided_at)>=julianday(?) AND julianday(decided_at)<=julianday(?) GROUP BY source_id,mode ORDER BY source_id,mode",
+      "params": [
+        "2026-10-12T16:00:00.000Z",
+        "2026-10-13T11:17:07.511Z"
+      ],
+      "querySha256": "f04cda10aae89b08cc2f29b857fa335104b8aa11ea9209bab7679ac2eeb21634",
+      "results": [
+        {
+          "success": true,
+          "rowsWritten": 0,
+          "rowsRead": 526,
+          "rows": [
+            {
+              "source_id": "breezy:20four7va",
+              "mode": "unlimited",
+              "receipts": 2,
+              "proposed": 3,
+              "reported_published": 3,
+              "id_occurrences": 0,
+              "count_id_disagreement_receipts": 2,
+              "invalid_id_receipts": 0,
+              "earliest_receipt": "2026-10-12T20:10:59.286Z",
+              "latest_receipt": "2026-10-12T21:20:58.979Z"
+            },
+            {
+              "source_id": "breezy:sourcefit",
+              "mode": "unlimited",
+              "receipts": 1,
+              "proposed": 1,
+              "reported_published": 1,
+              "id_occurrences": 1,
+              "count_id_disagreement_receipts": 0,
+              "invalid_id_receipts": 0,
+              "earliest_receipt": "2026-10-13T04:00:25.915Z",
+              "latest_receipt": "2026-10-13T04:00:25.915Z"
+            },
+            {
+              "source_id": "real-work-from-anywhere",
+              "mode": "unlimited",
+              "receipts": 1,
+              "proposed": 1,
+              "reported_published": 1,
+              "id_occurrences": 1,
+              "count_id_disagreement_receipts": 0,
+              "invalid_id_receipts": 0,
+              "earliest_receipt": "2026-10-13T10:30:03.554Z",
+              "latest_receipt": "2026-10-13T10:30:03.554Z"
+            },
+            {
+              "source_id": "remote-ok",
+              "mode": "unlimited",
+              "receipts": 1,
+              "proposed": 1,
+              "reported_published": 1,
+              "id_occurrences": 0,
+              "count_id_disagreement_receipts": 1,
+              "invalid_id_receipts": 0,
+              "earliest_receipt": "2026-10-13T00:30:58.998Z",
+              "latest_receipt": "2026-10-13T00:30:58.998Z"
+            },
+            {
+              "source_id": "we-work-remotely",
+              "mode": "unlimited",
+              "receipts": 14,
+              "proposed": 16,
+              "reported_published": 16,
+              "id_occurrences": 11,
+              "count_id_disagreement_receipts": 3,
+              "invalid_id_receipts": 0,
+              "earliest_receipt": "2026-10-12T16:30:58.987Z",
+              "latest_receipt": "2026-10-13T09:00:59.171Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "today-ledger-unique-ids",
+      "observedAtUtc": "2026-10-13T11:17:20.930Z",
+      "status": 200,
+      "success": true,
+      "errorCodes": [],
+      "query": "WITH receipt_ids AS (SELECT l.source_id,j.value AS opportunity_id FROM source_publication_ledger l\n    JOIN json_each(l.published_ids_json) j WHERE julianday(l.decided_at)>=julianday(?) AND julianday(l.decided_at)<=julianday(?) AND j.type='integer' AND j.value>0),\n    unique_ids AS (SELECT DISTINCT source_id,opportunity_id FROM receipt_ids)\n    SELECT r.source_id,COUNT(*) AS unique_ids,SUM(CASE WHEN o.id IS NULL THEN 1 ELSE 0 END) AS missing_ids,\n    SUM(CASE WHEN o.id IS NOT NULL AND COALESCE(o.source_id,'unattributed')<>r.source_id THEN 1 ELSE 0 END) AS source_mismatch_ids,\n    SUM(CASE WHEN o.is_active=1 AND o.ph_eligibility IN ('eligible_verified','eligible_likely') THEN 1 ELSE 0 END) AS currently_public_ids,\n    SUM(CASE WHEN o.is_active=1 AND o.ph_eligibility='eligible_verified' THEN 1 ELSE 0 END) AS currently_verified_label_ids,\n    SUM(CASE WHEN julianday(o.scraped_at)>=julianday(?) AND julianday(o.scraped_at)<=julianday(?) THEN 1 ELSE 0 END) AS firstseen_today_ids,\n    MIN(o.scraped_at) AS oldest_firstseen,MAX(o.scraped_at) AS newest_firstseen FROM unique_ids r LEFT JOIN opportunities o ON o.id=r.opportunity_id GROUP BY r.source_id ORDER BY r.source_id",
+      "params": [
+        "2026-10-12T16:00:00.000Z",
+        "2026-10-13T11:17:07.511Z",
+        "2026-10-12T16:00:00.000Z",
+        "2026-10-13T11:17:07.511Z"
+      ],
+      "querySha256": "c748b18df195f0aeefeff038d74afdf7c88602fc2e0b3f39d4cf6846fc79d0e1",
+      "results": [
+        {
+          "success": true,
+          "rowsWritten": 0,
+          "rowsRead": 533,
+          "rows": [
+            {
+              "source_id": "breezy:sourcefit",
+              "unique_ids": 1,
+              "missing_ids": 0,
+              "source_mismatch_ids": 0,
+              "currently_public_ids": 1,
+              "currently_verified_label_ids": 1,
+              "firstseen_today_ids": 1,
+              "oldest_firstseen": "2026-10-13T03:50:58.977Z",
+              "newest_firstseen": "2026-10-13T03:50:58.977Z"
+            },
+            {
+              "source_id": "real-work-from-anywhere",
+              "unique_ids": 1,
+              "missing_ids": 0,
+              "source_mismatch_ids": 0,
+              "currently_public_ids": 1,
+              "currently_verified_label_ids": 0,
+              "firstseen_today_ids": 1,
+              "oldest_firstseen": "2026-10-13T10:20:59.039Z",
+              "newest_firstseen": "2026-10-13T10:20:59.039Z"
+            },
+            {
+              "source_id": "we-work-remotely",
+              "unique_ids": 11,
+              "missing_ids": 0,
+              "source_mismatch_ids": 0,
+              "currently_public_ids": 11,
+              "currently_verified_label_ids": 0,
+              "firstseen_today_ids": 11,
+              "oldest_firstseen": "2026-10-13T07:30:58.971Z",
+              "newest_firstseen": "2026-10-13T08:00:58.970Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "snapshot-state",
+      "observedAtUtc": "2026-10-13T11:17:21.314Z",
+      "status": 400,
+      "success": false,
+      "errorCodes": [
+        7500
+      ],
+      "query": "SELECT id,generated_at,refresh_started_at,LENGTH(payload) AS payload_chars,json_array_length(payload,'$.jobs') AS jobs_array_count,json_array_length(payload,'$.opportunities') AS opportunities_array_count,json_array_length(payload,'$.companies') AS companies_array_count FROM public_serving_snapshot WHERE id=1",
+      "params": [],
+      "querySha256": "810d7b324b2d34b8075f5f019402f78e6da2ba5596fad8b9c07180ae7c2b95e1"
+    },
+    {
+      "kind": "today-public-ids",
+      "observedAtUtc": "2026-10-13T11:17:21.586Z",
+      "status": 200,
+      "success": true,
+      "errorCodes": [],
+      "query": "SELECT id,source_id,posted_at,scraped_at,ph_eligibility,last_verified_at,location_type FROM opportunities\n    WHERE is_active=1 AND ph_eligibility IN ('eligible_verified','eligible_likely') AND julianday(scraped_at)>=julianday(?) AND julianday(scraped_at)<=julianday(?) ORDER BY id",
+      "params": [
+        "2026-10-12T16:00:00.000Z",
+        "2026-10-13T11:17:07.511Z"
+      ],
+      "querySha256": "33e0bc2d4452660907adf0bb892b2c61689936926ee6bf613e19f11113ad4893",
+      "results": [
+        {
+          "success": true,
+          "rowsWritten": 0,
+          "rowsRead": 1686,
+          "rows": [
+            {
+              "id": 9182,
+              "source_id": "we-work-remotely",
+              "posted_at": "2026-10-12T16:28:34.000Z",
+              "scraped_at": "2026-10-12T16:30:58.987Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9186,
+              "source_id": "breezy:20four7va",
+              "posted_at": "2026-10-12T19:47:13.194Z",
+              "scraped_at": "2026-10-12T20:10:59.286Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9187,
+              "source_id": "breezy:20four7va",
+              "posted_at": "2026-10-12T20:36:35.225Z",
+              "scraped_at": "2026-10-12T21:20:58.979Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9188,
+              "source_id": "breezy:20four7va",
+              "posted_at": "2026-10-12T21:07:49.167Z",
+              "scraped_at": "2026-10-12T21:20:58.979Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9189,
+              "source_id": "remote-ok",
+              "posted_at": "2026-10-12T00:00:04.000Z",
+              "scraped_at": "2026-10-13T00:30:58.998Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9191,
+              "source_id": "breezy:sourcefit",
+              "posted_at": "2026-10-13T03:16:03.361Z",
+              "scraped_at": "2026-10-13T03:50:58.977Z",
+              "ph_eligibility": "eligible_verified",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9193,
+              "source_id": "we-work-remotely",
+              "posted_at": "2026-10-13T07:30:48.000Z",
+              "scraped_at": "2026-10-13T07:30:58.971Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9194,
+              "source_id": "we-work-remotely",
+              "posted_at": "2026-10-13T07:30:39.000Z",
+              "scraped_at": "2026-10-13T07:30:58.971Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9196,
+              "source_id": "we-work-remotely",
+              "posted_at": "2026-10-13T07:30:48.000Z",
+              "scraped_at": "2026-10-13T07:40:58.968Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9197,
+              "source_id": "we-work-remotely",
+              "posted_at": "2026-10-13T07:30:48.000Z",
+              "scraped_at": "2026-10-13T07:40:58.968Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9198,
+              "source_id": "we-work-remotely",
+              "posted_at": "2026-10-13T07:30:48.000Z",
+              "scraped_at": "2026-10-13T07:40:58.968Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9199,
+              "source_id": "we-work-remotely",
+              "posted_at": "2026-10-13T07:30:59.000Z",
+              "scraped_at": "2026-10-13T07:50:59.051Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9200,
+              "source_id": "we-work-remotely",
+              "posted_at": "2026-10-13T07:30:53.000Z",
+              "scraped_at": "2026-10-13T07:50:59.051Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9201,
+              "source_id": "we-work-remotely",
+              "posted_at": "2026-10-13T07:30:53.000Z",
+              "scraped_at": "2026-10-13T07:50:59.051Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9202,
+              "source_id": "we-work-remotely",
+              "posted_at": "2026-10-13T07:30:53.000Z",
+              "scraped_at": "2026-10-13T07:50:59.051Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9203,
+              "source_id": "we-work-remotely",
+              "posted_at": "2026-10-13T07:30:53.000Z",
+              "scraped_at": "2026-10-13T07:50:59.051Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9204,
+              "source_id": "we-work-remotely",
+              "posted_at": "2026-10-13T07:31:00.000Z",
+              "scraped_at": "2026-10-13T08:00:58.970Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9205,
+              "source_id": "we-work-remotely",
+              "posted_at": "2026-10-13T07:31:00.000Z",
+              "scraped_at": "2026-10-13T08:00:58.970Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9206,
+              "source_id": "we-work-remotely",
+              "posted_at": "2026-10-13T07:31:00.000Z",
+              "scraped_at": "2026-10-13T08:00:58.970Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9207,
+              "source_id": "we-work-remotely",
+              "posted_at": "2026-10-13T07:31:00.000Z",
+              "scraped_at": "2026-10-13T08:00:58.970Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9212,
+              "source_id": "we-work-remotely",
+              "posted_at": "2026-10-13T08:59:20.000Z",
+              "scraped_at": "2026-10-13T09:00:59.171Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            },
+            {
+              "id": 9214,
+              "source_id": "real-work-from-anywhere",
+              "posted_at": "2026-10-12T00:00:00.000Z",
+              "scraped_at": "2026-10-13T10:20:59.039Z",
+              "ph_eligibility": "eligible_likely",
+              "last_verified_at": null,
+              "location_type": "remote"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "observedEnd": "2026-10-13T11:17:21.586Z"
+}

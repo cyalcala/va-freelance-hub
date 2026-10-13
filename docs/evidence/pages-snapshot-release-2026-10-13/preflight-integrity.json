@@ -1,0 +1,21 @@
+{
+  "algorithm": "SHA-256",
+  "scope": "sanitized preflight projection, executed helper, bounded review and rollback documentation; no mutation",
+  "files": [
+    {
+      "file": "preflight-readonly.ts",
+      "sha256": "faca86f93686b059ac3196d121d3db56882fb128eb0fde5b691dd5a1fb14d93e",
+      "bytes": 6788
+    },
+    {
+      "file": "preflight.json",
+      "sha256": "7c4e7c4c4f736cd1c79ea2afcdf6ae149c41a568315709362e1444a822de16d2",
+      "bytes": 5181
+    },
+    {
+      "file": "PREFLIGHT_AND_ROLLBACK.md",
+      "sha256": "17e6d9e1a253e158b82f550d659b997bd7ea1ffdcf6c2cb690e31cea99f5ca43",
+      "bytes": 6640
+    }
+  ]
+}

@@ -1,0 +1,137 @@
+﻿bun test v1.3.14 (0d9b296a)
+bun.exe : 
+At C:\Users\admin\AppData\Roaming\npm\bun.ps1:14 char:3
++   & "$basedir/node_modules/bun/bin/bun.exe"   $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+apps\web\tests\public-route-load.test.ts:
+(pass) returns loaded data without changing a successful public response [4.20ms]
+(pass) classifies nested D1 failures without exposing query parameters or secrets [0.52ms]
+(pass) turns an unexpected data failure into a non-cacheable 503 [1.50ms]
+
+apps\web\tests\public-query.test.ts:
+(pass) parseJobBoardRequest > normalizes a small FTS query and strict positive page [3.11ms]
+(pass) parseJobBoardRequest > parses the fresh-arrivals filter as an allowlist [0.22ms]
+(pass) parseJobBoardRequest > unknown fresh values fall back to the default board without a 400 [0.09ms]
+(pass) parseJobBoardRequest > rejects oversized and high-cardinality queries before FTS [0.17ms]
+(pass) parseJobBoardRequest > rejects malformed and unbounded pages [0.13ms]
+(pass) parseFreshFilter > accepts only the allowlisted windows [0.13ms]
+(pass) parseFreshFilter > freshFtsCondition stays bound-free and Manila-anchored [0.14ms]
+(pass) parsePageRequest > accepts the default page and rejects numeric aliases [0.12ms]
+(pass) parseJobIdRequest > accepts the smallest and largest ids a real row can have [0.24ms]
+(pass) parseJobIdRequest > rejects every numeric alias parseInt would have accepted [0.23ms]
+(pass) parseJobIdRequest > rejects ids outside the autoincrement range SQLite can hold [0.09ms]
+(pass) parseJobIdRequest > rejects an id outside the safe-integer range rather than rounding it [0.09ms]
+(pass) parseJobIdRequest > rejects absent and non-string ids without throwing [0.09ms]
+(pass) parseJobIdRequest > the validated id is the exact integer that gets bound into the query [0.09ms]
+(pass) escapes SQL LIKE wildcards in user-provided directory searches [0.18ms]
+
+apps\web\tests\public-opportunities.test.ts:
+(pass) public cards/counts and full-text search share detail-page eligibility [34.30ms]
+(pass) homepage previews stay under D1's 100-bind ceiling when stored categories exceed 100 preview IDs [11.64ms]
+
+apps\web\tests\public-eligibility-parity.test.ts:
+(pass) the shared predicate compiles to is_active + both eligibilities [0.49ms]
+(pass) the FTS search path embeds the same eligibility contract [0.12ms]
+(pass) every public route surface references the shared predicate [2.11ms]
+(pass) public pages render from the snapshot instead of scanning D1 [126.81ms]
+
+apps\web\tests\sitemap-read-cache.test.ts:
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-13T11:50:01.417Z","ageMs":0,"jobs":2,"companies":2,"source":"d1"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":1,"result":"success","errorClass":null}
+(pass) repeated sitemap renders do not re-read the whole eligible corpus > a second render inside the cache window 
+costs zero additional D1 reads [52.97ms]
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-13T11:50:01.469Z","ageMs":0,"jobs":1,"companies":1,"source":"d1"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":0,"result":"success","errorClass":null}
+(pass) repeated sitemap renders do not re-read the whole eligible corpus > the cached document is identical to the 
+freshly read one, headers included [4.26ms]
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-13T11:50:01.473Z","ageMs":0,"jobs":1,"companies":1,"source":"d1"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":0,"result":"success","errorClass":null}
+(pass) repeated sitemap renders do not re-read the whole eligible corpus > a warm isolate does not scan opportunities 
+again for another binding [3.37ms]
+public snapshot read failed d1_quota
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526448211,"jobs":1519,"companies":735,"source":"durable_lkg"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":12,"result":"success","errorClass":null}
+(pass) repeated sitemap renders do not re-read the whole eligible corpus > a D1 quota failure serves the durable board 
+and the next render does not scan again [62.10ms]
+(pass) the cache bounds itself: window, payload and failures > the window ends, so a newly published job URL still 
+reaches crawlers [1.10ms]
+(pass) the cache bounds itself: window, payload and failures > the window never outlives what this app already serves 
+from cache [0.45ms]
+(pass) the cache bounds itself: window, payload and failures > a payload past the bound is served correctly but never 
+retained [0.55ms]
+(pass) the cache bounds itself: window, payload and failures > a failed read stores nothing, so the outage is never 
+replayed as data [0.98ms]
+(pass) the cache bounds itself: window, payload and failures > each binding keeps its own entry and neither is dropped 
+while retained [0.63ms]
+
+apps\web\tests\sitemap-failure-honesty.test.ts:
+public snapshot read failed d1_quota
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526448308,"jobs":1519,"companies":735,"source":"durable_lkg"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":3,"result":"success","errorClass":null}
+(pass) a D1 failure serves the last-known-good board, not a partial sitemap > a total D1 failure answers 200 with the 
+complete durable URL list [44.17ms]
+public snapshot read failed d1_quota
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526448353,"jobs":1519,"companies":735,"source":"durable_lkg"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":3,"result":"success","errorClass":null}
+(pass) a D1 failure serves the last-known-good board, not a partial sitemap > the last-known-good sitemap stays 
+cacheable because it is a complete document [22.16ms]
+public snapshot build failed Error
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526448375,"jobs":1519,"companies":735,"source":"durable_lkg"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":3,"result":"success","errorClass":null}
+(pass) a D1 failure serves the last-known-good board, not a partial sitemap > a failure while materializing rows 
+serves the durable board, not an empty sitemap [50.16ms]
+public snapshot build failed Error
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526448425,"jobs":1519,"companies":735,"source":"durable_lkg"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":3,"result":"success","errorClass":null}
+(pass) a D1 failure serves the last-known-good board, not a partial sitemap > a throw while reading rows does not 
+publish a truncated job list [52.73ms]
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526448478,"jobs":1519,"companies":735,"source":"durable_lkg"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":5,"result":"success","errorClass":null}
+(pass) a D1 failure serves the last-known-good board, not a partial sitemap > the failure log keeps the D1 
+classification and drops the raw upstream text [33.06ms]
+{"event":"SNAPSHOT_FRESH","generatedAt":"2026-10-13T11:50:01.776Z","ageMs":0,"jobs":2,"companies":2,"source":"d1"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":0,"result":"success","errorClass":null}
+(pass) the healthy sitemap path is untouched by the failure contract > a successful read still answers 200, cacheable, 
+with every job URL [9.76ms]
+[public-snapshot] candidate from d1 rejected: Candidate snapshot has 0 jobs
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526448521,"jobs":1519,"companies":735,"source":"durable_lkg"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":2,"result":"success","errorClass":null}
+(pass) the healthy sitemap path is untouched by the failure contract > an empty upstream result does not replace the 
+durable board with a static-only sitemap [43.99ms]
+
+apps\web\tests\sitemap-date-evidence.test.ts:
+{"event":"SNAPSHOT_STALE","generatedAt":"2026-09-30T12:00:00.000Z","ageMs":1122601857,"jobs":3,"companies":1,"source":"memory"}
+(pass) sitemap job URLs survive an unusable source date > a malformed date does not drop the remaining job URLs 
+[0.71ms]
+{"event":"SNAPSHOT_STALE","generatedAt":"2026-09-30T12:00:00.000Z","ageMs":1122601858,"jobs":8,"companies":1,"source":"memory"}
+(pass) sitemap job URLs survive an unusable source date > every unusable date shape is tolerated and still emits the 
+job URL [0.51ms]
+{"event":"SNAPSHOT_STALE","generatedAt":"2026-09-30T12:00:00.000Z","ageMs":1122601859,"jobs":2,"companies":1,"source":"memory"}
+(pass) sitemap job URLs survive an unusable source date > a null date emits the job URL with no lastmod, rather than a 
+fabricated one [1.22ms]
+{"event":"SNAPSHOT_STALE","generatedAt":"2026-09-30T12:00:00.000Z","ageMs":1122601860,"jobs":2,"companies":1,"source":"memory"}
+(pass) sitemap lastmod stays truthful for usable dates > a usable date keeps its real calendar day, in UTC [0.45ms]
+{"event":"SNAPSHOT_STALE","generatedAt":"2026-09-30T12:00:00.000Z","ageMs":1122601860,"jobs":3,"companies":1,"source":"memory"}
+(pass) sitemap lastmod stays truthful for usable dates > the emitted lastmod is exactly the shared safe binder's day 
+[0.43ms]
+(pass) the sitemap is rendered from the shared snapshot query > the snapshot query applies the public eligibility 
+predicate and never writes [0.74ms]
+(pass) the sitemap is rendered from the shared snapshot query > lastmod prefers the real update clock, then the posted 
+date, then first-seen [0.39ms]
+public snapshot read failed Error
+public snapshot build failed Error
+{"event":"SNAPSHOT_LKG_FALLBACK","generatedAt":"2026-10-07T09:35:53.265Z","ageMs":526448597,"jobs":1519,"companies":735,"source":"durable_lkg"}
+{"event":"SNAPSHOT_REFRESH_FINISHED","durationMs":5,"result":"success","errorClass":null}
+(pass) the sitemap is rendered from the shared snapshot query > a total D1 failure serves the durable board rather 
+than a static-only sitemap [49.24ms]
+
+apps\web\tests\security-headers.test.ts:
+(pass) applies production security headers without overwriting route cache policy [3.13ms]
+
+ 49 pass
+ 0 fail
+ 197 expect() calls
+Ran 49 tests across 8 files. [2.12s]

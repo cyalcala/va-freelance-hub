@@ -1,0 +1,30 @@
+{
+  "algorithm": "SHA-256",
+  "files": [
+    {
+      "file": "authenticated-initial-denial.json",
+      "sha256": "7fa46b8a64b9ab5525c5d8c1f3d65e254acf919c6d187b5a1ad092d334a5c053",
+      "utf8Bytes": 508
+    },
+    {
+      "file": "public-initial-surface.json",
+      "sha256": "5e6c55b2cf73560862af116e5c8f7fd446def929a1f0b9071451a7ace2428bad",
+      "utf8Bytes": 7145
+    },
+    {
+      "file": "authenticated-state.json",
+      "sha256": "3f7521e70d178aa9b8dda3aba1f5a9b4a988d9e58a23228dee44a83c2c910620",
+      "utf8Bytes": 59433
+    },
+    {
+      "file": "public-surface.json",
+      "sha256": "b62a734f3737cb35634f3e69a8e6162bfc2728621925e975affcdd82dee36d0a",
+      "utf8Bytes": 7840
+    },
+    {
+      "file": "followup.json",
+      "sha256": "62847d93b35e3490a1764fd806d233849f95bd2dc7282f738bdd78be18ddf037",
+      "utf8Bytes": 9599
+    }
+  ]
+}
