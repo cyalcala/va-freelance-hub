@@ -5,11 +5,11 @@ Philippines openings from employers that are clearly hiring. Read `astra777.txt`
 first. The public board was HTTP 200, fresh, 1697 jobs at 2026-10-14T14:18:26Z.
 Do not make the October snapshot outage the majority task unless a new probe
 shows it returned. NEXT is deploy the fair-intake handler, including
-source id hammerjack, then re-count Hunt St, Coconut VA, CrewBloom's
-Bookkeeper (QuickBooks Online), eight Pearl Talent titles, and five fresh
-Hammerjack remote Philippines titles. Hybrid and onsite Hammerjack rows
-stay unpublished. MATH 0/13. Certified daily throughput UNKNOWN.
-SSM origin does not yet contain these commits: gcloud has no credentialed account.
+source id hammerjack. A 2026-10-14T15:17:16Z recount found 57 fresh
+misses (Hunt 28, Coconut 7, CrewBloom 1, Pearl 16, Hammerjack 5). The
+local follow-up pass admits the 20 the first cap defers. The live board
+does not have commit 887b1f29. MATH 0/13. Certified daily throughput
+UNKNOWN. SSM origin lacks these commits: gcloud has no credentialed account.
 
 Historical owner priority (2026-10-12 Manila): repair the verified website shortfall
 and sustain trustworthy ten-minute/hourly flow. Read

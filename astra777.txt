@@ -113,6 +113,21 @@ fully becomes remote. hybrid stays hybrid. onsite and none stay onsite.
 A region-only item is unchanged. Jobs appear only after the Pages cron
 runs this source. Dayshift is not claimed: the titles do not say it.
 
+Recount at 2026-10-14T15:17:16.699Z through fetchATSFeed, fetchRSSFeed,
+geoGate, assessPostingFreshness, and selectIntakeBatch. The live board
+has not loaded this handler. Commit 887b1f29 is not published.
+Hunt St: 135 discovered, 79 qualified, 51 of those on Philippines cards,
+28 fresh misses. Coconut VA: 30 discovered, 11 qualified, 4 on the board,
+7 fresh misses. CrewBloom: 149 discovered, 7 qualified, 6 on the board,
+1 fresh miss. Pearl Talent: 292 discovered, 27 qualified, 11 on the board,
+16 fresh misses. Duplicate titles are separate URLs. Hammerjack: 53
+parsed, 5 qualified, search Showing 0–0 of 0. The 57 fresh misses together
+with 50 RSS items: the first cap admits 37 and defers 20. The follow-up
+pass, a new 50 RSS items plus only those 20, admits all 20. Across the
+five fetches, 298 country-locked rows, 386 stale rows, 37 hybrid rows,
+and 4 onsite rows were not publishable. That count of publishable rows
+inside those four classes was 0.
+
 ## Dayshift
 
 q=day+shift on the live board returned 3 titles that state Day Shift:
@@ -132,8 +147,9 @@ Affordable Staff office-only remains a precision counterexample.
   selectIntakeBatch does not. A later pass admits every ATS URL the first
   shared cap deferred when those URLs are still new beside a fresh RSS head.
   Adversarial tests cover that, dedup, the US, Japan, and Australia
-  country locks, the onsite reject, the stale reject, and the single
-  Workable clock.
+  country locks, the hybrid and onsite rejects, the stale reject, and
+  the single Workable clock. The 15:17 recount's 20 deferred fresh
+  misses were admitted by the follow-up selectIntakeBatch call.
 - CPT-11528 is already public. Pineapple's three roles must stay off.
 - RocketAMS and HelloRache absences above are country locks, not misses
   the intake cap can fix.
@@ -151,15 +167,13 @@ Affordable Staff office-only remains a precision counterexample.
 ## NEXT
 
 Deploy the committed handler, including source id hammerjack, to the Pages
-cron. Then re-count Hunt St, Coconut VA, the one CrewBloom title, the
-eight Pearl Talent titles, and the five fresh Hammerjack remote Philippines
-titles. Do not publish a miss whose geoGate result is ineligible or whose
-freshness is outside the window. RocketAMS Japan and Australia, HelloRache
-United States, and Hammerjack hybrid or onsite rows stay unpublished.
-Locally, the six Hunt titles deferred by one fair pass are selected on the
-next pass. Rotation remains two Workable tenants per hour; measure visit
-age before raising it. Canonical SSM still has no credentialed gcloud
-account, so origin does not yet have these commits.
+cron. Then re-count the 57 fresh misses from the 15:17 recount: Hunt 28,
+Coconut 7, CrewBloom 1, Pearl Talent 16, Hammerjack 5. Locally the
+follow-up pass admits the 20 the first cap defers. Do not publish a
+country-locked, stale, hybrid, or onsite row. Rotation remains two
+Workable tenants per hour; measure visit age before raising it.
+Canonical SSM still has no credentialed gcloud account, so origin does
+not yet have these commits. 887b1f29 is not on the live board.
 
 ## Historical record
 
