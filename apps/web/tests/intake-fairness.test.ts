@@ -38,6 +38,32 @@ test("a full RSS head does not consume the intake cap ahead of a fresh PH ATS op
   expect(new Set([...intake.selected, ...intake.deferred]).size).toBe(52);
 });
 
+test("the next pass admits every ATS url the shared cap deferred beside a new RSS head", () => {
+  const rss = (generation: string) => Array.from({ length: 50 }, (_, index) => ({
+    sourceId: "we-work-remotely",
+    sourceUrl: `https://weworkremotely.com/jobs/${generation}/${index}`,
+  }));
+  const hunt = Array.from({ length: 27 }, (_, index) => ({
+    sourceId: "workable:hunt-st",
+    sourceUrl: `https://apply.workable.com/j/HUNT-${index}`,
+  }));
+  const coconut = Array.from({ length: 7 }, (_, index) => ({
+    sourceId: "workable:coconutva",
+    sourceUrl: `https://apply.workable.com/j/COCONUT-${index}`,
+  }));
+  const first = selectIntakeBatch([...rss("first"), ...hunt, ...coconut], 50);
+  const deferredHunt = first.deferred.filter((item) => item.sourceId === "workable:hunt-st");
+  expect(first.selected.some((item) => item.sourceId === "workable:hunt-st")).toBe(true);
+  expect(first.selected.some((item) => item.sourceId === "workable:coconutva")).toBe(true);
+  expect(deferredHunt.length).toBeGreaterThan(0);
+
+  const second = selectIntakeBatch([...rss("second"), ...deferredHunt], 50);
+  const deferredUrls = new Set(deferredHunt.map((item) => item.sourceUrl));
+  expect(second.selected.filter((item) => deferredUrls.has(item.sourceUrl))).toHaveLength(deferredHunt.length);
+  expect(second.deferred.every((item) => item.sourceId === "we-work-remotely")).toBe(true);
+  expect(second.selected.length + second.deferred.length).toBe(50 + deferredHunt.length);
+});
+
 test("deferred ATS urls are attributed to their source so overflow is visible", () => {
   const sourceIdsByUrl = buildSourceIdsByUrl([
     { sourceId: "we-work-remotely", items: [{ sourceUrl: "https://weworkremotely.com/jobs/1" }] },
@@ -92,7 +118,23 @@ test("employer confidence does not publish a US, onsite, or stale opening", () =
   });
   expect(phRemote.phEligibility).toBe("eligible_verified");
   expect(phRemote.geoScope).toBe("ph_only");
+  const japanRemote = geoGate({
+    title: "Performance Marketer, Japan (client-facing) - Amazon Ads",
+    description: null,
+    locationRaw: "Japan",
+    locationType: "remote",
+  });
+  const australiaRemote = geoGate({
+    title: "Performance Marketing Manager, Ecommerce",
+    description: null,
+    locationRaw: "Australia",
+    locationType: "remote",
+  });
   expect(usRemote.phEligibility).toBe("ineligible");
+  expect(japanRemote.phEligibility).toBe("ineligible");
+  expect(japanRemote.geoScope).toBe("country_locked");
+  expect(australiaRemote.phEligibility).toBe("ineligible");
+  expect(australiaRemote.geoScope).toBe("country_locked");
   expect(phOnsite.phEligibility).toBe("ineligible");
   expect(dayShiftPh.phEligibility).toBe("eligible_verified");
   expect(dayShiftUs.phEligibility).toBe("ineligible");

@@ -14,6 +14,9 @@ Question for each layer: what decision does it add, and what fails if it goes?
    Before: 50 RSS items plus a Hunt URL and a Coconut URL produced no ATS
    item. After: both ATS URLs are in the 50. A full RSS head still defers
    some of a large ATS backlog to the next run. Those URLs stay new.
+   The following pass, given a new RSS head plus only the deferred ATS
+   URLs, selects every deferred URL. Nothing in the selector drops them
+   on the second visit.
    Test: `apps/web/tests/intake-fairness.test.ts`.
 
 2. Second Workable 60-minute clock in the ATS loop.
@@ -52,6 +55,10 @@ Question for each layer: what decision does it add, and what fails if it goes?
 - Workable `jobs` array fallback to `[]` on a 200. It can hide a bad payload
   as an empty board. It is not why these inventories, which returned jobs,
   are missing. Left in place.
+- Date-only Workable `published_on` stays on `new Date(raw).toISOString()`
+  in the lake extractor. `normalizeSourcePostingDate` returns null for a
+  date-only string. Using it there would mark fresh widget dates unknown
+  and increase false negatives. That edit was not kept.
 
 ## Not a recall bypass
 

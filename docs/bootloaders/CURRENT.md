@@ -5,7 +5,10 @@ Philippines openings from employers that are clearly hiring. Read `astra777.txt`
 first. The public board was HTTP 200, fresh, 1697 jobs at 2026-10-14T14:18:26Z.
 Do not make the October snapshot outage the majority task unless a new probe
 shows it returned. NEXT is deploy the fair-intake handler and re-count Hunt St
-and Coconut VA. MATH 0/13. Certified daily throughput UNKNOWN.
+and Coconut VA. RocketAMS Japan and Australia, and HelloRache United States,
+are PH eligibility holds. The six cap-deferred Hunt titles are selected on
+the next local pass. MATH 0/13. Certified daily throughput UNKNOWN.
+SSM origin does not yet contain 1a484bcd: gcloud has no credentialed account.
 
 Historical owner priority (2026-10-12 Manila): repair the verified website shortfall
 and sustain trustworthy ten-minute/hourly flow. Read
