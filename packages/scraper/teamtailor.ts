@@ -87,6 +87,21 @@ interface RawTeamtailorItem {
   };
 }
 
+/** Teamtailor `remoteStatus` owns the workplace. `fully` is remote.
+ * `hybrid` stays hybrid. `onsite` and `none` are not remote. A feed with
+ * none of these values is not a Teamtailor workplace record. */
+export function teamtailorWorkplace(item: {
+  remoteStatus?: unknown;
+  "tt:locations"?: RawTeamtailorItem["tt:locations"];
+}): { locationType: "remote" | "hybrid" | "onsite"; locationRaw: string | null } | null {
+  const status = textOrNull(item.remoteStatus);
+  if (status !== "fully" && status !== "hybrid" && status !== "onsite" && status !== "none") return null;
+  return {
+    locationType: status === "fully" ? "remote" : status === "hybrid" ? "hybrid" : "onsite",
+    locationRaw: summarizeLocations(item["tt:locations"]),
+  };
+}
+
 function summarizeLocations(raw: RawTeamtailorItem["tt:locations"]): string | null {
   const locs = asArray(raw?.["tt:location"]);
   const parts = locs

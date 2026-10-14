@@ -91,6 +91,27 @@ them. No intake change applies to those four.
 The live Pages cron has not loaded selectIntakeBatch. The 34 Hunt and
 Coconut misses remain unpublished for that reason. This is not a claim
 that one deploy produces 100–150/day.
+CrewBloom, compared 2026-10-14T15:06:25Z: 35 public Philippines cards,
+7 fresh telecommuting Philippines widget jobs, 1 title absent:
+Bookkeeper (QuickBooks Online), posted 2026-10-14. Same undeployed
+intake cause. Pearl Talent: 18 public Philippines cards, 25 fresh
+telecommuting Philippines widget rows, 8 titles absent (People
+Operations Lead, Business Immigration Paralegal, Executive Assistant /
+Legal Operations Generalist, Healthcare Credentialing, IT & Clinical
+Systems Support B093, Public Accountant, Senior Director Clinician
+Operations, Senior Graphic Designer). Same cause. Country variants that
+are not Philippines stay on their own geoGate result.
+Hammerjack public search at that time was Showing 0–0 of 0. Stage was
+SOURCE: the scrape loop did not fetch https://careers.hammerjack.com.au/jobs.rss.
+That feed parsed as 53 Teamtailor items. 5 were fresh, remoteStatus
+fully, location Philippines, geoGate eligible_verified (AU Intermediate
+Bookkeeper, AU Junior Tax Accountant, AU Senior Tax Accountant,
+Project-Based AU Intermediate/Senior Tax Accountant, Senior Managed
+Services Consultant). Hybrid and onsite rows are ineligible. The feed
+is now static source id hammerjack. fetchRSSFeed reads remoteStatus.
+fully becomes remote. hybrid stays hybrid. onsite and none stay onsite.
+A region-only item is unchanged. Jobs appear only after the Pages cron
+runs this source. Dayshift is not claimed: the titles do not say it.
 
 ## Dayshift
 
@@ -129,15 +150,16 @@ Affordable Staff office-only remains a precision counterexample.
 
 ## NEXT
 
-Deploy the committed handler to the Pages cron, then repeat the Hunt St and
-Coconut VA expected-to-published count. Do not publish a miss whose geoGate
-result is ineligible or whose freshness is outside the window. RocketAMS
-Japan and Australia, and HelloRache United States, stay unpublished.
+Deploy the committed handler, including source id hammerjack, to the Pages
+cron. Then re-count Hunt St, Coconut VA, the one CrewBloom title, the
+eight Pearl Talent titles, and the five fresh Hammerjack remote Philippines
+titles. Do not publish a miss whose geoGate result is ineligible or whose
+freshness is outside the window. RocketAMS Japan and Australia, HelloRache
+United States, and Hammerjack hybrid or onsite rows stay unpublished.
 Locally, the six Hunt titles deferred by one fair pass are selected on the
-next pass; after deploy, the public count must show them or the report
-must name a new stage. Rotation remains two Workable tenants per hour;
-measure visit age before raising it. Canonical SSM still has no
-credentialed gcloud account, so origin does not yet have commit 1a484bcd.
+next pass. Rotation remains two Workable tenants per hour; measure visit
+age before raising it. Canonical SSM still has no credentialed gcloud
+account, so origin does not yet have these commits.
 
 ## Historical record
 

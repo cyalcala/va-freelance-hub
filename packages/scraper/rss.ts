@@ -6,6 +6,7 @@ import { toContentHash } from "./contentHash";
 import { conditionalFetchText, unchangedOutput, type ConditionalState, type SourceFetchOutput, type SourceTransport } from "./conditional";
 import { collectionHeaders } from "./userAgent";
 import { normalizeSourcePostingDate } from "./source-posting-date";
+import { teamtailorWorkplace } from "./teamtailor";
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -36,6 +37,10 @@ interface RawRSSItem {
   "job_listing:company"?: unknown;
   "job_listing:job_type"?: unknown;
   "job_listing:category"?: unknown;
+  remoteStatus?: unknown;
+  "tt:locations"?: {
+    "tt:location"?: { "tt:city"?: string; "tt:country"?: string } | Array<{ "tt:city"?: string; "tt:country"?: string }>;
+  };
 }
 
 function normalizeText(raw: string | undefined): string {
@@ -128,6 +133,8 @@ export async function fetchRSSFeed(source: Source, state?: ConditionalState, tra
           finalTitle = parts.slice(1).join(":").trim();
         }
       }
+      const workplace = teamtailorWorkplace(item);
+      if (!extractedCompany && workplace) extractedCompany = source.name;
 
       return [{
         title: finalTitle,
@@ -136,13 +143,13 @@ export async function fetchRSSFeed(source: Source, state?: ConditionalState, tra
         sourceUrl,
         sourcePlatform: source.platform,
         tags,
-        locationType: "remote" as const,
-        locationRaw: normalizeText(
+        locationType: workplace?.locationType ?? "remote",
+        locationRaw: workplace?.locationRaw ?? (normalizeText(
           xmlNodeText(item.region) ??
           xmlNodeText(item.location) ??
           xmlNodeText(item["job_listing:location"]) ??
           undefined
-        ) || null,
+        ) || null),
         payRange: null,
         description: normalizeText(xmlNodeText(item.description) ?? undefined).slice(0, 1500) || null,
         postedAt: normalizeSourcePostingDate(rawDate),
