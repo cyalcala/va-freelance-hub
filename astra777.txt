@@ -128,6 +128,30 @@ five fetches, 298 country-locked rows, 386 stale rows, 37 hybrid rows,
 and 4 onsite rows were not publishable. That count of publishable rows
 inside those four classes was 0.
 
+Admitted Breezy boards, fetched through fetchBreezy at 2026-10-14T15:40Z
+and checked against the live search: 20Four7VA 112 open, 86 fresh remote
+PH-eligible, and the fresh titles are on the board. Sourcefit 88 open,
+34 fresh remote PH-eligible, 0 absent. Yokly 11 open, 5 fresh, 0 absent.
+VALUE Virtual Assistants 11 open, 3 fresh, 0 absent. A search longer than
+8 terms returns HTTP 400 "Search supports up to 8 terms." That is the
+query limit, not a missing row. A short code query finds the same title.
+Time Etc has one opening, Birmingham onsite and stale. Hold. VAA
+Philippines returned an empty array. Remote Craft's Philippines rows are
+stale, so fresh qualified count is 0. Sourcefit's Eastwood rows are
+onsite and stay ineligible. The hardcoded Breezy pause remains the
+empty-registry fallback. These openings are already public, so that
+fallback is not what is hiding them. Do not delete the pause without a
+permission decision. Production registry rows were not read.
+MultiplyMii, fetchAshby at 2026-10-14T15:42:05Z: 57 listed, 32 fresh
+remote Philippines, 25 stale. 31 of the 32 match a public card. The
+absent one is "Implementation Specialist (Quickbooks / NetSuite)",
+Ashby id d3b62dba-ed2b-48cf-a912-53d16ad0f44c, location Remote
+Philippines, isRemote true, publishedAt 2026-09-23. Local geoGate and
+freshness accept it. A published sibling has the same location shape.
+Search for NetSuite is Showing 0–0 of 0. The stage is after parse.
+D1 was not read, so dedup, triage, and publication state are unknown.
+Do not add a title exception.
+
 ## Dayshift
 
 q=day+shift on the live board returned 3 titles that state Day Shift:
@@ -193,6 +217,10 @@ is the cap, and the next pass selects it. The public board cannot tell
 those apart until attempt age is read. Do not raise the two-slot limit
 before that measurement. Do not publish a country-locked, stale, hybrid,
 or onsite row. Local proof is apps/web/tests/rotation-vs-intake.test.ts.
+When D1 is readable, trace MultiplyMii Ashby id
+d3b62dba-ed2b-48cf-a912-53d16ad0f44c before adding any rule for it.
+Admitted Breezy fresh remote openings checked the same day are already
+public. Do not unpause the empty-registry Breezy fallback for them.
 Canonical SSM still has no credentialed gcloud account, so origin does
 not yet have these commits. The live cron has not loaded this handler.
 

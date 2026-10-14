@@ -10,7 +10,10 @@ source id hammerjack, then re-count the 57 fresh misses from
 Hammerjack 5) and read Workable lastAttemptAt before changing the
 two-slot limit. Rotation starvation and intake-cap deferral are different
 stages; the local test is apps/web/tests/rotation-vs-intake.test.ts.
-The live board has not loaded this handler. MATH 0/13. Certified daily
+The live board has not loaded this handler. Admitted Breezy fresh remote
+openings checked 2026-10-14 are already public. One MultiplyMii opening,
+Ashby id d3b62dba-ed2b-48cf-a912-53d16ad0f44c, passes local geo and
+freshness and is absent from search. MATH 0/13. Certified daily
 throughput UNKNOWN. SSM origin lacks these commits: gcloud has no
 credentialed account.
 
