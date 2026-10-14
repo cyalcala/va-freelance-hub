@@ -2901,7 +2901,9 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
             // carries the subrequest-budget-wrapped AI binding, so per-run budget
             // accounting is unchanged. The model ladder, the L2 consensus skeptic
             // (only for gate-`unknown` positives), and fail-closed behavior are
-            // all preserved inside `decideTriage`.
+            // all preserved inside `decideTriage`. A structured geo scope
+            // (ph_only, apac_incl_ph, worldwide) is not unpublished when the
+            // model disagrees or AI is down. Unknown scope still fails closed.
             const decision = await decideTriage(
               {
                 title: item.title,

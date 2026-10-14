@@ -17,8 +17,7 @@ import { SQLiteSyncDialect } from "drizzle-orm/sqlite-core";
 
 const OBSERVED = "2026-08-20T00:00:00.000Z";
 
-// The row shape decideTriage/geoGate see is identical to the sweep's, so the
-// same fixtures produce the same gate verdict (geoScope "unknown" → skeptic runs).
+// "open worldwide" is a structured geoGate scope. A model vote does not hide it.
 const pendingRow = (id: number) => ({
   id,
   title: `Job ${id}`,
@@ -131,15 +130,28 @@ describe("drainPendingTriageInline", () => {
     expect(calls.updates[0].inactiveReason).toBeNull();
   });
 
-  it("rejects an ineligible pending row (policy-rejected, stays hidden)", async () => {
+  it("publishes a worldwide row when the model says ineligible", async () => {
     const { db, calls } = makeFakeDb([pendingRow(1)]);
     const { env } = makeEnv([INELIGIBLE]);
 
     const stats = await drainPendingTriageInline(db, env, makeBudget(), OBSERVED);
 
+    expect(stats).toMatchObject({ claimed: 1, published: 1, rejected: 0, deferred: 0 });
+    expect(calls.updates[0].isActive).toBe(true);
+  });
+
+  it("rejects a US-citizens phrase even on a pending row (policy-rejected, stays hidden)", async () => {
+    const { db, calls } = makeFakeDb([{
+      ...pendingRow(1),
+      description: "US citizens only",
+    }]);
+    const { env } = makeEnv([ELIGIBLE]);
+
+    const stats = await drainPendingTriageInline(db, env, makeBudget(), OBSERVED);
+
     expect(stats).toMatchObject({ claimed: 1, published: 0, rejected: 1 });
     expect(calls.updates[0].inactiveReason).toBe("policy-rejected");
-    expect(calls.updates[0].isActive).toBeUndefined(); // never flipped active
+    expect(calls.updates[0].isActive).toBeUndefined();
   });
 
   it("quarantines on a consensus split rather than publishing", async () => {
@@ -153,14 +165,24 @@ describe("drainPendingTriageInline", () => {
     expect(calls.updates[0].phEligibility).toBe("unclear");
   });
 
-  it("FAILS CLOSED on AI-unavailable: row left pending, no write", async () => {
+  it("publishes a worldwide row when AI is unavailable", async () => {
     const { db, calls } = makeFakeDb([pendingRow(1)]);
-    const { env } = makeEnv([]); // AI throws immediately
+    const { env } = makeEnv([]);
+
+    const stats = await drainPendingTriageInline(db, env, makeBudget(), OBSERVED);
+
+    expect(stats).toMatchObject({ claimed: 1, published: 1, rejected: 0, deferred: 0 });
+    expect(calls.updates[0].isActive).toBe(true);
+  });
+
+  it("FAILS CLOSED on AI-unavailable for an unknown scope: row left pending, no write", async () => {
+    const { db, calls } = makeFakeDb([neutralRow(1)]);
+    const { env } = makeEnv([]);
 
     const stats = await drainPendingTriageInline(db, env, makeBudget(), OBSERVED);
 
     expect(stats).toMatchObject({ claimed: 1, published: 0, rejected: 0, deferred: 1 });
-    expect(calls.updates.length).toBe(0); // nothing published or rejected
+    expect(calls.updates.length).toBe(0);
   });
 
   it("does nothing (no query) when the AI budget is already exhausted", async () => {

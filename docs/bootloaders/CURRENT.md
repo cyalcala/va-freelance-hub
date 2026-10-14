@@ -13,7 +13,10 @@ stages; the local test is apps/web/tests/rotation-vs-intake.test.ts.
 The live board has not loaded this handler. Admitted Breezy fresh remote
 openings checked 2026-10-14 are already public. One MultiplyMii opening,
 Ashby id d3b62dba-ed2b-48cf-a912-53d16ad0f44c, passes local geo and
-freshness and is absent from search. MATH 0/13. Certified daily
+freshness and is absent from search. `decideTriage` no longer lets a model
+vote or an AI outage unpublish geo scopes ph_only, apac_incl_ph, or
+worldwide. A deterministic "US citizens only" phrase still rejects. That
+change is not deployed. MATH 0/13. Certified daily
 throughput UNKNOWN. SSM origin lacks these commits: gcloud has no
 credentialed account.
 

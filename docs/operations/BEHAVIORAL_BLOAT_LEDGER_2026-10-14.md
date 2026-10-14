@@ -40,6 +40,17 @@ Question for each layer: what decision does it add, and what fails if it goes?
    ATS does not send If-None-Match. The merge makes the overflow visible.
    It does not publish by itself.
 
+4. Model eligibility veto on a structured geo pass.
+   `geoGate` already returns `ph_only`, `apac_incl_ph`, or `worldwide`.
+   `decideTriage` asked the model the same question and could store the
+   opening inactive, or withhold it when AI was down. That is one decision
+   made twice. The model vote no longer changes the kind for those scopes.
+   A deterministic phrase still does: `US citizens only` on a Philippines
+   scope stays `ineligible`. Unknown scope still fails closed, and a
+   country-locked or stale row never reaches this function. Category from
+   the model, or the no-AI title heuristic, is still kept.
+   Test: `packages/scraper/triage-decision.test.ts`.
+
 ## Kept, with the evidence
 
 - `geoGate`. Removing it would publish United States and onsite rows from

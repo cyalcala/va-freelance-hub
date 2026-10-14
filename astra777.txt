@@ -63,6 +63,12 @@ created_at).toISOString(). The workable-observation payload wrapper was
 reverted with it. It added failure states and did not publish a job.
 RSS and JSON take an optional transport. Omitting it still uses global fetch.
 An HTTP error still throws once. No retry was added.
+`decideTriage` no longer lets a model `eligibleForFilipinos: false`, or a
+missing AI binding, unpublish `ph_only`, `apac_incl_ph`, or `worldwide`.
+Those scopes already came from `geoGate`. The same text can still reject
+when `isObviousGeoRestriction` or `isObviousNonEnglishOrLocalOnly` matches,
+including "US citizens only" on a Philippines scope. `unknown` still fails
+closed. Country-locked and stale rows are removed before `decideTriage`.
 
 ## False negatives (authoritative ATS vs public board, 2026-10-14)
 
@@ -193,6 +199,11 @@ Affordable Staff office-only remains a precision counterexample.
   Coconut are the oldest due attempts, they take the two slots. The other
   five tenants contribute no items. Coconut's 7 are all selected. The Hunt
   URLs the cap defers are selected on the next pass. The slot limit stays 2.
+- A model rejection does not hide a geoGate scope of ph_only, apac_incl_ph,
+  or worldwide. AI being down does not hide those either. "US citizens only"
+  on a Philippines scope stays ineligible. An unknown scope with no AI stays
+  ai-unavailable. Proof is packages/scraper/triage-decision.test.ts calling
+  geoGate and decideTriage. The live cron has not loaded this change.
 
 ## Unproven
 
@@ -204,6 +215,10 @@ Affordable Staff office-only remains a precision counterexample.
   was not read. The public board still cannot classify a live absence.
 - Description-only dayshift on Workable, because the widget description is null.
 - Turso to D1 reconciliation for this slice. Not run.
+- That the absent MultiplyMii opening was rejected by the model. The local
+  rule would publish a structured-geo row the model or an AI outage had
+  hidden. It does not insert a URL that never reached triage. D1 was not
+  read.
 
 ## NEXT
 
@@ -221,6 +236,10 @@ When D1 is readable, trace MultiplyMii Ashby id
 d3b62dba-ed2b-48cf-a912-53d16ad0f44c before adding any rule for it.
 Admitted Breezy fresh remote openings checked the same day are already
 public. Do not unpause the empty-registry Breezy fallback for them.
+The structured-geo triage change is local only. Deploy it with the handler
+above. It does not publish a country-locked, stale, hybrid, onsite, or
+"US citizens only" row, and it does not explain the MultiplyMii absence
+until that Ashby id is read from D1.
 Canonical SSM still has no credentialed gcloud account, so origin does
 not yet have these commits. The live cron has not loaded this handler.
 

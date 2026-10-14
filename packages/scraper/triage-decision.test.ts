@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { decideTriage, mapTriageCategoryToUiCategory } from "./triage-decision";
+import { geoGate } from "./geoGate";
 
 // decideTriage is the single verdict shared by the inline scrape loop and the
 // Inngest durable-triage worker. These cover the branch table so the two paths
@@ -54,6 +55,71 @@ describe("decideTriage", () => {
     expect(d.kind).toBe("ineligible");
     if (d.kind === "ineligible") expect(d.reason).toContain("US");
     expect(skepticCalls).toBe(0); // ineligible short-circuits before the second vote
+  });
+
+  test("a model rejection does not hide a structured Philippines opening", async () => {
+    const input = {
+      title: "Bookkeeper",
+      description: "Remote accounting for a distributed team",
+      company: "Hunt St",
+      tags: ["bookkeeping"],
+      locationRaw: "Philippines",
+    };
+    const gate = geoGate({
+      title: input.title,
+      description: input.description,
+      locationRaw: input.locationRaw,
+      locationType: "remote",
+      tags: input.tags,
+    });
+    expect(gate.geoScope).toBe("ph_only");
+    expect(gate.phEligibility).toBe("eligible_verified");
+
+    let skepticCalls = 0;
+    const env = makeEnv({
+      triage: { eligibleForFilipinos: false, reason: "model unsure", category: "finance", tags: ["xero"] },
+      onSkeptic: () => { skepticCalls++; },
+    });
+    for (const geoScope of ["ph_only", "apac_incl_ph", "worldwide"] as const) {
+      const decision = await decideTriage(input, { geoScope }, env);
+      expect(decision.kind).toBe("eligible");
+      if (decision.kind === "eligible") {
+        expect(decision.skeptic).toBeNull();
+        expect(decision.triage.category).toBe("finance");
+        expect(decision.triage.eligibleForFilipinos).toBe(true);
+      }
+    }
+    expect(skepticCalls).toBe(0);
+  });
+
+  test("a US-citizens phrase still rejects a Philippines-scoped opening", async () => {
+    const input = {
+      title: "Bookkeeper",
+      description: "US citizens only",
+      company: "Hunt St",
+      tags: ["bookkeeping"],
+      locationRaw: "Philippines",
+    };
+    const env = makeEnv({
+      triage: { eligibleForFilipinos: true, reason: "should not be asked", category: "finance", tags: [] },
+    });
+    const decision = await decideTriage(input, { geoScope: "ph_only" }, env);
+    expect(decision.kind).toBe("ineligible");
+  });
+
+  test("a structured opening publishes when AI is unavailable", async () => {
+    const decision = await decideTriage(
+      { ...baseInput, title: "Bookkeeper", description: "Remote accounting for a distributed team" },
+      { geoScope: "ph_only" },
+      {},
+    );
+    expect(decision.kind).toBe("eligible");
+    if (decision.kind === "eligible") expect(decision.triage.category).toBe("finance");
+  });
+
+  test("an unknown opening still fails closed when AI is unavailable", async () => {
+    const decision = await decideTriage(baseInput, { geoScope: "unknown" }, {});
+    expect(decision.kind).toBe("ai-unavailable");
   });
 
   test("gate-verified positives publish without a second vote", async () => {

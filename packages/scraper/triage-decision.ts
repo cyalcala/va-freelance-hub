@@ -1,6 +1,8 @@
 import {
   triageJob,
   skepticEligibilityCheck,
+  isObviousGeoRestriction,
+  isObviousNonEnglishOrLocalOnly,
   type TriageResult,
   type SkepticVerdict,
   type TriageContext,
@@ -75,13 +77,46 @@ export async function decideTriage(
     return { kind: "error", error: err instanceof Error ? err.message : String(err) };
   }
 
-  // FAIL CLOSED: an item the AI never actually classified is not published; it
-  // is left to retry when AI recovers. An AI outage must never fill the board.
+  // geoGate already decided these scopes. A model vote is the same question
+  // and must not hide the opening. A keyword lock still can: that is a
+  // contradiction in the text, not a model opinion. Unknown scope stays
+  // fail-closed, including when AI is down.
+  const structuredGeo =
+    gate.geoScope === "ph_only" ||
+    gate.geoScope === "apac_incl_ph" ||
+    gate.geoScope === "worldwide";
+  const deterministicReject =
+    isObviousGeoRestriction(input.title, input.description || "") ||
+    isObviousNonEnglishOrLocalOnly(input.title, input.description || "");
+
   if (triage.aiUnavailable) {
+    if (structuredGeo && !deterministicReject) {
+      return {
+        kind: "eligible",
+        triage: {
+          ...triage,
+          eligibleForFilipinos: true,
+          aiUnavailable: false,
+          reason: `Structured ${gate.geoScope} stands; AI unavailable`,
+        },
+        skeptic: null,
+      };
+    }
     return { kind: "ai-unavailable", triage };
   }
 
   if (!triage.eligibleForFilipinos) {
+    if (structuredGeo && !deterministicReject) {
+      return {
+        kind: "eligible",
+        triage: {
+          ...triage,
+          eligibleForFilipinos: true,
+          reason: `Structured ${gate.geoScope} stands over model: ${(triage.reason || "ineligible").slice(0, 300)}`,
+        },
+        skeptic: null,
+      };
+    }
     return { kind: "ineligible", reason: triage.reason || "ineligible", triage };
   }
 
