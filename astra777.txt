@@ -69,6 +69,13 @@ Those scopes already came from `geoGate`. The same text can still reject
 when `isObviousGeoRestriction` or `isObviousNonEnglishOrLocalOnly` matches,
 including "US citizens only" on a Philippines scope. `unknown` still fails
 closed. Country-locked and stale rows are removed before `decideTriage`.
+A title token `APAC` no longer overrides a structured country, state, or
+city. Jobicy "Director of Customer Success, APAC" is location Australia,
+does not mention the Philippines, and was `eligible_verified` only because
+the title contained APAC. `geoGate` now returns `country_locked` for that
+row. Location `APAC` and a title APAC token with no place pin stay eligible.
+Known URLs skip the gate, so this does not unpublish the live UpGuard card.
+The live cron has not loaded it.
 
 ## False negatives (authoritative ATS vs public board, 2026-10-14)
 
@@ -212,6 +219,18 @@ Affordable Staff office-only remains a precision counterexample.
   on a Philippines scope stays ineligible. An unknown scope with no AI stays
   ai-unavailable. Proof is packages/scraper/triage-decision.test.ts calling
   geoGate and decideTriage. The live cron has not loaded this change.
+- RemoteOK `date` is an ISO string with a numeric offset. A fetch on
+  2026-10-14 parsed 40 of the first 50 and stored zero null postedAt values.
+  The parsed row that names the Philippines is already public. Platform
+  RemoteOK showed 62 jobs. Do not add an epoch converter for this source.
+- A title APAC token does not beat a structured country location.
+  `packages/scraper/geoGate.test.ts` calls `geoGate`. The live Jobicy row
+  "Director of Customer Success, APAC" / Australia re-traced to
+  `country_locked` after the change. The public card was still
+  "APAC incl. PH" on the 2026-10-14 probe (HTTP 200, 1701 jobs, snapshot
+  age 380 seconds, source edge), because known URLs are not re-gated
+  and the cron has not loaded the change. Jobicy "Sales Assistant" in the
+  Philippines was already public. Platform Jobicy showed 54 jobs.
 
 ## Unproven
 
@@ -248,6 +267,12 @@ The structured-geo triage change is local only. Deploy it with the handler
 above. It does not publish a country-locked, stale, hybrid, onsite, or
 "US citizens only" row, and it does not explain the MultiplyMii absence
 until that Ashby id is read from D1.
+The title-APAC country pin is local only. Deploy it with that handler.
+It does not remove the already published UpGuard card. StackAdapt
+"Director, Client Services- APAC" was also public as APAC incl. PH.
+Its location string was not in the measured Jobicy page, so do not treat
+it as the same Australia pin until the source location is read.
+Do not add a RemoteOK epoch converter. The live date is an ISO string.
 Canonical SSM still has no credentialed gcloud account, so origin does
 not yet have these commits. The live cron has not loaded this handler.
 

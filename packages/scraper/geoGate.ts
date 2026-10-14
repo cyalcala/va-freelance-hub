@@ -7,7 +7,8 @@
 // Design rules (see docs/geo-eligibility-masterplan-2026-07.md):
 // - PH/APAC positives are checked FIRST: "for our Philippines team, must
 //   reside in the Philippines" must be eligible, not tripped by the
-//   residence-lock pattern.
+//   residence-lock pattern. A title "APAC" token does not beat a structured
+//   country, state, or city already in the location string.
 // - Timezone-OVERLAP requirements ("must overlap 4h with EST") stay eligible —
 //   that is normal VA reality. Only hard residence/authorization locks reject.
 // - onsite/hybrid counts in structured workplace type, title or location, never
@@ -238,6 +239,20 @@ function firstMatch(regex: RegExp, text: string): string | null {
   return m ? m[1] ?? m[0] : null;
 }
 
+/** Same place pins as the structured-location step. A title token must not
+ * outrank them. Empty location is not a pin. */
+function structuredLocationPin(locationRaw: string): boolean {
+  if (!locationRaw) return false;
+  return Boolean(
+    firstMatch(REGION_EXCL_PH_REGEX, locationRaw) ||
+    STRUCTURED_US_LOCATION_REGEX.test(locationRaw) ||
+    firstMatch(US_STATE_CODE_LOCATION_REGEX, locationRaw) ||
+    firstMatch(US_STATE_REGEX, locationRaw) ||
+    firstMatch(COUNTRY_REGEX, locationRaw) ||
+    firstMatch(CITY_REGEX, locationRaw),
+  );
+}
+
 function verdict(geoScope: GeoScope, phEligibility: PhEligibility, evidence: string): GeoVerdict {
   return { geoScope, phEligibility, evidence };
 }
@@ -277,9 +292,15 @@ export function geoGate(input: GeoGateInput): GeoVerdict {
     }
     return verdict("apac_incl_ph", "eligible_verified", `Philippines named: ${where}`);
   }
-  const apacHit = firstMatch(APAC_POSITIVE_REGEX, locationRaw) ?? firstMatch(APAC_POSITIVE_REGEX, title);
-  if (apacHit) {
-    return verdict("apac_incl_ph", "eligible_verified", `APAC region named: "${apacHit}"`);
+  // Location "APAC" is the region signal. A title token such as "Director, APAC"
+  // is weaker and must not hide a structured country, state, or city.
+  const apacInLocation = firstMatch(APAC_POSITIVE_REGEX, locationRaw);
+  if (apacInLocation) {
+    return verdict("apac_incl_ph", "eligible_verified", `APAC region named: "${apacInLocation}"`);
+  }
+  const apacInTitle = firstMatch(APAC_POSITIVE_REGEX, title);
+  if (apacInTitle && !structuredLocationPin(locationRaw)) {
+    return verdict("apac_incl_ph", "eligible_verified", `APAC region named: "${apacInTitle}"`);
   }
 
   // 2. Non-English posting → targets a domestic market, not PH applicants.

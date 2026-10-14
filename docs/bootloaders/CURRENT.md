@@ -15,8 +15,12 @@ openings checked 2026-10-14 are already public. One MultiplyMii opening,
 Ashby id d3b62dba-ed2b-48cf-a912-53d16ad0f44c, passes local geo and
 freshness and is absent from search. `decideTriage` no longer lets a model
 vote or an AI outage unpublish geo scopes ph_only, apac_incl_ph, or
-worldwide. A deterministic "US citizens only" phrase still rejects. That
-change is not deployed. MATH 0/13. Certified daily
+worldwide. A deterministic "US citizens only" phrase still rejects. A title
+APAC token no longer overrides a structured country location. Jobicy
+UpGuard "Director of Customer Success, APAC" is location Australia and is
+country_locked locally. The public card was still APAC incl. PH, because
+known URLs skip the gate. RemoteOK dates are ISO strings, not epochs.
+Those changes are not deployed. MATH 0/13. Certified daily
 throughput UNKNOWN. SSM origin lacks these commits: gcloud has no
 credentialed account.
 

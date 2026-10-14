@@ -97,6 +97,36 @@ describe("geoGate — golden fixtures", () => {
     expect(v.phEligibility).toBe("eligible_verified");
   });
 
+  it("a title APAC token does not override a structured country location", () => {
+    const australia = geoGate({
+      title: "Director of Customer Success, APAC",
+      description: "Lead the regional customer team.",
+      locationRaw: "Australia",
+      locationType: "remote",
+    });
+    expect(australia.geoScope).toBe("country_locked");
+    expect(australia.phEligibility).toBe("ineligible");
+    expect(australia.evidence).toContain("Australia");
+
+    const titleOnly = geoGate({
+      title: "Product Support Specialist – APAC",
+      description: "Support customers in the region.",
+      locationRaw: null,
+      locationType: "remote",
+    });
+    expect(titleOnly.geoScope).toBe("apac_incl_ph");
+    expect(titleOnly.phEligibility).toBe("eligible_verified");
+
+    const locationApac = geoGate({
+      title: "Customer Support (APAC)",
+      description: "Based in Australia and open across the region.",
+      locationRaw: "APAC, Australia",
+      locationType: "remote",
+    });
+    expect(locationApac.geoScope).toBe("apac_incl_ph");
+    expect(locationApac.phEligibility).toBe("eligible_verified");
+  });
+
   it("#7 Timezone-OVERLAP requirement stays eligible (VA reality)", () => {
     const v = geoGate({
       title: "Virtual Assistant",

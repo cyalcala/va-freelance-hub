@@ -51,6 +51,18 @@ Question for each layer: what decision does it add, and what fails if it goes?
    the model, or the no-AI title heuristic, is still kept.
    Test: `packages/scraper/triage-decision.test.ts`.
 
+5. Title token `APAC` overriding a structured country location.
+   `geoGate` returned `apac_incl_ph` / `eligible_verified` when the title
+   contained APAC, before it read the location pin. Jobicy
+   "Director of Customer Success, APAC" is location `Australia`, and the
+   text does not name the Philippines. Evidence was `APAC region named`.
+   A title token is now ignored when the location already names a country,
+   state, or city. The same row is `country_locked`. Location `APAC` and
+   `APAC, Australia` stay `apac_incl_ph`. A title APAC token with no place
+   pin stays eligible. Known URLs skip this gate, so the live UpGuard card
+   is not unpublished by the change. The live cron has not loaded it.
+   Test: `packages/scraper/geoGate.test.ts`.
+
 ## Kept, with the evidence
 
 - `geoGate`. Removing it would publish United States and onsite rows from
@@ -72,6 +84,13 @@ Question for each layer: what decision does it add, and what fails if it goes?
 - Workable `jobs` array fallback to `[]` on a 200. It can hide a bad payload
   as an empty board. It is not why these inventories, which returned jobs,
   are missing. Left in place.
+- RemoteOK `job.date`. On 2026-10-14 the live API sent ISO strings such as
+  `2026-10-13T08:00:11+00:00`, not unix numbers. `fetchJSONSource` stored an
+  instant for all 40 parsed rows. An epoch converter would not publish a
+  missing Philippines opening. The one parsed row whose text names the
+  Philippines, "Marketing and Sales Administrator", is already on the public
+  board. The description word `delivery` drops some software titles before
+  geo. The measured ones were `unknown` or Kansas, not a Philippines miss.
 - Workable `locations[]`. On 2026-10-14 the widget rows carried that array
   with `hidden: true`, and the scalar country already matched. The only
   Philippines name outside the scalar country was a hidden row on Coconut's
