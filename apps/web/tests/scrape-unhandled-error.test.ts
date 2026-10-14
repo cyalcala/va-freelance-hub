@@ -66,6 +66,10 @@ function crashingDb(uncertainPublication = false) {
               };
               return { then: (resolve: any, reject: any) => execute().then(resolve, reject),
                 returning: async () => {
+                  if (!lockClaimed) {
+                    lockClaimed = true;
+                    return [{ sourceId: "__scrape_run_lock__", lastAttemptAt: values.lastAttemptAt }];
+                  }
                   if (uncertainPublication) throw new Error("private database acknowledgement diagnostic");
                   return [];
                 } };

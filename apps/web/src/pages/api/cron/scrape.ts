@@ -7,10 +7,13 @@ import {
   attachSourceIdentity,
   buildSourceIdsByUrl,
   conditionalValidatorsForPersistence,
+  mergeSourceIdsByUrl,
+  selectIntakeBatch,
   sourceIdsForUrls,
 } from "@/lib/conditional-state";
 import { isFeedRecoverableInactiveReason, RECOVERABLE_INACTIVE_REASONS } from "@/lib/inactive-reason";
 import { runLockOutcome } from "@/lib/run-lock";
+import { selectWorkableRotation } from "@/lib/workable-rotation";
 import { d1Changes } from "@/lib/d1-result";
 import { normalizePersistedOpportunityIds, publicationDbFromEnv, publishGroupedActivations, publishGroupedInserts, PublicationOutcomeUnknownError } from "@/lib/publish-opportunities";
 import { publicationRetryKey, snapshotPublicationUpdate } from "@/lib/publication-retry-key";
@@ -1117,10 +1120,11 @@ async function acquireRunLock(db: AppDb, observedAt: string): Promise<RunLockRes
     // Atomic claim: only succeeds if the current lock is stale (or first run).
     const result: unknown = await db.update(sourceFetchState)
       .set({ lastAttemptAt: observedAt, updatedAt: observedAt })
-      .where(and(eq(sourceFetchState.sourceId, RUN_LOCK_ID), lt(sourceFetchState.lastAttemptAt, cutoff)));
-    const outcome = runLockOutcome(result);
+      .where(and(eq(sourceFetchState.sourceId, RUN_LOCK_ID), lt(sourceFetchState.lastAttemptAt, cutoff)))
+      .returning({ sourceId: sourceFetchState.sourceId, lastAttemptAt: sourceFetchState.lastAttemptAt });
+    const outcome = runLockOutcome(result, RUN_LOCK_ID, observedAt);
     if (outcome === "unavailable") {
-      return { state: "unavailable", error: "D1 lock update returned no mutation count" };
+      return { state: "unavailable", error: "D1 lock update returned no matching owner acknowledgement" };
     }
     return { state: outcome };
   } catch (error) {
@@ -1767,6 +1771,33 @@ async function loadRecentAttemptErrors(
   return errorsBySourceId;
 }
 
+/**
+ * Non-Workable ATS boards keep the 60-minute fetch clock here.
+ * Workable already spent that same clock inside selectWorkableRotation, so a
+ * second comparison cannot change a tenant the rotation admitted or deferred.
+ */
+export function atsFetchCadenceSkip(
+  platform: string | null,
+  lastAttemptAt: string | null | undefined,
+  observedAt: string,
+  minIntervalMs: number,
+): string | null {
+  if (platform === "workable" || !lastAttemptAt) return null;
+  const elapsed = Date.parse(observedAt) - Date.parse(lastAttemptAt);
+  if (Number.isFinite(elapsed) && elapsed < minIntervalMs) {
+    return `Cadence guard: last fetched ${lastAttemptAt}; 60-min minimum.`;
+  }
+  return null;
+}
+
+/** Drop URLs already stored. A repeated listing must not be triaged again. */
+export function omitKnownSourceUrls<T extends { sourceUrl?: string | null }>(
+  items: readonly T[],
+  knownUrls: ReadonlySet<string>,
+): T[] {
+  return items.filter((item) => typeof item.sourceUrl === "string" && item.sourceUrl.length > 0 && !knownUrls.has(item.sourceUrl));
+}
+
 function sourceCadenceSkipReason(
   source: Source,
   state: Pick<SourceFetchState, "lastAttemptAt"> | undefined,
@@ -2303,15 +2334,15 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       a.companyName.localeCompare(b.companyName)
     );
 
-    // Staggered Workable Polling: Select only the 2 oldest/unscraped Workable agencies
-    const workableAgencies = sortedAtsAgencies.filter(a => a.atsPlatform === "workable");
-    workableAgencies.sort((a, b) => {
-      if (!a.verifiedAt && b.verifiedAt) return -1;
-      if (a.verifiedAt && !b.verifiedAt) return 1;
-      if (!a.verifiedAt && !b.verifiedAt) return 0;
-      return a.verifiedAt!.localeCompare(b.verifiedAt!);
+    // Spend the two slots on permitted, due tenants; directory dates cannot advance registry-only sources.
+    const workableRotation = selectWorkableRotation({
+      agencies: sortedAtsAgencies,
+      sourceKey: atsSourceKey,
+      isPolicyEnabled: agency => atsPlatformPolicy(agency, registryPolicies).enabled,
+      states: sourceFetchStates,
+      statesAvailable: fetchStateLoad.available,
+      observedAt,
     });
-    const allowedWorkableTokens = new Set(workableAgencies.slice(0, 2).map(a => a.atsToken));
 
     const primaryAtsCompanies = new Map<string, string>();
     const uniqueAtsAgencies: AtsAgency[] = [];
@@ -2330,11 +2361,11 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       }
 
       // Skip Workable agencies not in the current active rotation slice
-      if (agency.atsPlatform === "workable" && !allowedWorkableTokens.has(agency.atsToken)) {
+      if (agency.atsPlatform === "workable" && !workableRotation.selectedSourceIds.has(atsSourceKey(agency))) {
         policySkippedAtsAgencies.push({
           agency,
           policy,
-          skipReason: "Skipped Workable rotation slice to prevent rate limiting (scheduled for later runs)."
+          skipReason: `Workable rotation: ${workableRotation.diagnostics.find(item => item.agency === agency)?.reason ?? "ROTATION_DEFERRED"}.`
         });
         continue;
       }
@@ -2366,17 +2397,19 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
     const cadencePassedAgencies: typeof uniqueAtsAgencies = [];
     for (const agency of uniqueAtsAgencies) {
       const key = atsSourceKey(agency);
-      const prev = sourceFetchStates.get(key);
-      if (prev?.lastAttemptAt) {
-        const elapsed = Date.parse(observedAt) - Date.parse(prev.lastAttemptAt);
-        if (Number.isFinite(elapsed) && elapsed < ATS_MIN_INTERVAL_MS) {
-          cadenceSkippedAts.push({
-            agency,
-            policy: atsPlatformPolicy(agency, registryPolicies),
-            skipReason: `Cadence guard: last fetched ${prev.lastAttemptAt}; 60-min minimum.`,
-          });
-          continue;
-        }
+      const skipReason = atsFetchCadenceSkip(
+        agency.atsPlatform,
+        sourceFetchStates.get(key)?.lastAttemptAt,
+        observedAt,
+        ATS_MIN_INTERVAL_MS,
+      );
+      if (skipReason) {
+        cadenceSkippedAts.push({
+          agency,
+          policy: atsPlatformPolicy(agency, registryPolicies),
+          skipReason,
+        });
+        continue;
       }
       cadencePassedAgencies.push(agency);
     }
@@ -2487,6 +2520,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       atsResults.push(await fetchOneAts(agency));
       await sleep(1_000);
     }
+    mergeSourceIdsByUrl(sourceIdsByUrl, buildSourceIdsByUrl(atsResults));
     // SP-01: ATS results carry the exact `platform:token` identity (atsSourceKey),
     // so two tenants on one ATS stay distinct even though they share a platform label.
     const atsItems = attachSourceIdentity(atsResults);
@@ -2632,7 +2666,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       console.log(`[api/cron/scrape] Reactivated ${reactivated} feed-confirmed jobs previously archived by the system.`);
     }
 
-    const newItems = allItems.filter((item) => item.sourceUrl && !existingUrls.has(item.sourceUrl));
+    const newItems = omitKnownSourceUrls(allItems, existingUrls);
     console.log(`[api/cron/scrape] ${newItems.length} new items found after URL dedup`);
 
     if (newItems.length === 0) {
@@ -2689,10 +2723,11 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
     const limit = Number.isSafeInteger(requestedLimit) && requestedLimit >= 1 && requestedLimit <= 100
       ? requestedLimit
       : 50;
-    const itemsToProcess = newItems.slice(0, limit);
+    const intake = selectIntakeBatch(newItems, limit);
+    const itemsToProcess = intake.selected;
     console.log(`[api/cron/scrape] Processing ${itemsToProcess.length} out of ${newItems.length} new items (limit: ${limit})`);
     const retrySourceIds = sourceIdsForUrls(
-      newItems.slice(itemsToProcess.length).map((item) => item.sourceUrl),
+      intake.deferred.map((item) => item.sourceUrl).filter((sourceUrl): sourceUrl is string => typeof sourceUrl === "string"),
       sourceIdsByUrl,
     );
     const markItemsForRetry = (items: readonly { sourceUrl: string }[]) => {

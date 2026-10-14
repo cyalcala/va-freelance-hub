@@ -35,7 +35,7 @@ function policyDb(failOn?: "registry" | "opt-outs") {
     update() {
       writes.push("lock-claim");
       // A held lock is a safe observation point after successful policy loading.
-      return { set: () => ({ where: async () => ({ meta: { changes: 0 } }) }) };
+      return { set: () => ({ where: () => ({ returning: async () => [] }) }) };
     },
   };
   return { db, reads, writes };

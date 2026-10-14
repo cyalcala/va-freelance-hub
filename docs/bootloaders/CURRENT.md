@@ -1,16 +1,18 @@
 # Current resume pointer
 
-Current owner priority (2026-10-12 Manila): repair the verified website shortfall
-and sustain trustworthy ten-minute/hourly flow. Read revised `astra777.txt`,
+Current owner priority (2026-10-14): cut behavioral bloat and surface verified
+Philippines openings from employers that are clearly hiring. Read `astra777.txt`
+first. The public board was HTTP 200, fresh, 1697 jobs at 2026-10-14T14:18:26Z.
+Do not make the October snapshot outage the majority task unless a new probe
+shows it returned. NEXT is deploy the fair-intake handler and re-count Hunt St
+and Coconut VA. MATH 0/13. Certified daily throughput UNKNOWN.
+
+Historical owner priority (2026-10-12 Manila): repair the verified website shortfall
+and sustain trustworthy ten-minute/hourly flow. Read
 [savepoint](../SYSTEM_SAVEPOINT.md), [incident](../operations/PUBLICATION_FUNNEL_INCIDENT_2026-10-12.md),
 [GCP receipt](../operations/GCP_PUBLICATION_INCIDENT_2026-10-12.md) and
 [local bounded-insert evidence](../operations/D1_BOUNDED_PUBLICATION_INSERTS_2026-10-12.md).
-Native binding repairs are locally verified; 4,204 tests, final typecheck/build
-and four audits pass. Production Pages/schema remain older. NEXT is
-LIVE_ACQUISITION_AND_PUBLICATION_FLOW_RECOVERY, beginning with the physical-lock
-advance plus HTTP 503/absent terminal diagnostic counterexample. Ten-minute
-clock exists; GCP zero-output and empty acquisition supply coexist. MATH 0/13,
-certified flow UNKNOWN. No live fix or daily objective acceptance yet.
+That NEXT is not the current NEXT.
 
 Latest owner-directed continuation (2026-10-11 Manila): first preserve Antigravity
 and swarm progress on canonical SSM and GitLab mirror, then deeply read

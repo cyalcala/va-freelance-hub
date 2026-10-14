@@ -41,6 +41,64 @@ export function attachSourceIdentity<T extends { sourceUrl?: string | null }>(
   );
 }
 
+/**
+ * Copy ATS (or any later) URL ownership into the map built from RSS/HTML/JSON.
+ * Overflow retry can then name the source that still has an unpublished item.
+ */
+export function mergeSourceIdsByUrl(
+  target: Map<string, Set<string>>,
+  extra: ReadonlyMap<string, ReadonlySet<string>>,
+): Map<string, Set<string>> {
+  for (const [sourceUrl, sourceIds] of extra) {
+    const merged = target.get(sourceUrl) ?? new Set<string>();
+    for (const sourceId of sourceIds) merged.add(sourceId);
+    target.set(sourceUrl, merged);
+  }
+  return target;
+}
+
+/**
+ * Take at most `limit` new items, one source per turn.
+ * A large feed ahead of the array must not fill the cap and permanently
+ * starve another source's unseen URLs. Dedup, geography, and freshness stay
+ * outside this function.
+ */
+export function selectIntakeBatch<T extends { sourceId?: string | null }>(
+  items: readonly T[],
+  limit: number,
+): { selected: T[]; deferred: T[] } {
+  const cap = Number.isSafeInteger(limit) && limit > 0 ? Math.min(limit, items.length) : 0;
+  if (cap === 0) return { selected: [], deferred: [...items] };
+  if (cap === items.length) return { selected: [...items], deferred: [] };
+  const buckets: T[][] = [];
+  const indexBySource = new Map<string, number>();
+  for (const item of items) {
+    const key = typeof item.sourceId === "string" && item.sourceId.trim() ? item.sourceId : "";
+    let index = indexBySource.get(key);
+    if (index === undefined) {
+      index = buckets.length;
+      indexBySource.set(key, index);
+      buckets.push([]);
+    }
+    buckets[index].push(item);
+  }
+  const selected: T[] = [];
+  const chosen = new Set<T>();
+  for (let cursor = 0; selected.length < cap; cursor += 1) {
+    let progressed = false;
+    for (const bucket of buckets) {
+      if (selected.length >= cap) break;
+      const item = bucket[cursor];
+      if (item === undefined) continue;
+      selected.push(item);
+      chosen.add(item);
+      progressed = true;
+    }
+    if (!progressed) break;
+  }
+  return { selected, deferred: items.filter((item) => !chosen.has(item)) };
+}
+
 /** Return each feed that must be fetched again because one of its items is unresolved. */
 export function sourceIdsForUrls(urls: readonly string[], sourceIdsByUrl: ReadonlyMap<string, ReadonlySet<string>>): Set<string> {
   const sourceIds = new Set<string>();

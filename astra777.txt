@@ -1,31 +1,136 @@
-# Astra777 — current incident and continuation contract
+# Astra777 — continuation contract (2026-10-14)
+
+The October publication-flow outage is not the current task. At 2026-10-14T14:18:26Z
+https://remotejobs-ph.pages.dev/opportunities returned HTTP 200, snapshot status
+fresh, source d1, age 3 seconds, 1697 jobs, 735 companies. A stale snapshot
+earlier the same day recovered. Do not spend the next diff on that incident
+unless a new probe shows an empty board or a 5xx.
+
+## Priorities
+
+1. Behavioral bloat reduction
+2. Trusted employer coverage
+3. False-negative reduction
+4. Dayshift coverage
+5. Mathematical proof
+6. Throughput toward 100–150+ verified PH jobs/day
+
+MATH 1–13 are not complete. Certified daily throughput is not 100–150. This
+file does not mark either claim done.
+
+## Architecture
+
+Astro on Cloudflare Pages. Public board reads a snapshot (memory, edge, one D1
+row, bundled last-known-good). Intake is apps/web/src/pages/api/cron/scrape.ts.
+Workable tenants are chosen by selectWorkableRotation (2 slots, 60 minutes,
+durable lastAttemptAt only). RSS, HTML, JSON, then ATS items are URL-deduped.
+selectIntakeBatch shares the existing 1–100 cap across sources. geoGate runs
+before assessPostingFreshness. Employer confidence is not an input to either.
+
+## Verified invariants
+
+- Publication still requires a per-opening geoGate pass and a posting instant
+  inside 30 days. A US location, an "(onsite)" location string, and a 2020
+  date stay unpublished. Tests call geoGate and assessPostingFreshness.
+- Dedup still drops a URL already stored (omitKnownSourceUrls).
+- The intake cap is still 50 by default and 100 at most.
+- Workable still waits 60 minutes, in selectWorkableRotation only.
+- Non-Workable ATS boards still wait 60 minutes in atsFetchCadenceSkip.
+- Directory verifiedAt is not a collection clock.
+- Identity for the held cohort is workable:pineapple-staffing.
+- Billing ceilings remain: 200 requests/source/day, 500 AI/day, 50,000 writes/day.
+
+## Trusted employer strategy
+
+Employer PH confidence, job validity, PH eligibility, and role relevance stay
+separate. Confidence is evidence that the employer hires Filipinos. It does
+not publish a closed, stale, duplicate, onsite, or country-locked opening.
+Direct job country and telecommuting beat the employer label. There is no
+global allowlist. Pineapple Staffing is the counterexample: three open US
+telecommuting roles from 2020–2022, public count 0, and that zero is correct.
+
+## Behavioral bloat
+
+Ranked ledger: docs/operations/BEHAVIORAL_BLOAT_LEDGER_2026-10-14.md.
+Removed on the live path: RSS-first newItems.slice(0, limit), and the second
+Workable 60-minute clock that repeated selectWorkableRotation. ATS item URLs
+now join the overflow map. Kept: geoGate, the 30-day freshness window,
+the two-slot Workable rotation, the non-Workable cadence, and the canary cap.
+
+## False negatives (authoritative ATS vs public board, 2026-10-14)
+
+Inventory fetch 2026-10-14T13:55:12.532Z. Public compare the same afternoon.
+Hunt St workable:hunt-st: 135 open, 79 fresh and PH-eligible, 52 of those on
+the board, 27 fresh Philippines telecommuting openings absent. Confirmed
+absent includes Bookkeeper (025-1379), Showing 0–0 of 0.
+Coconut VA workable:coconutva: 10 fresh PH-eligible, 3 on the board, 7 absent.
+Confirmed absent includes Recruiter job code 1791837787287.
+20Four7VA: 87 fresh eligible, 87 on the board after CPT-11528 was confirmed
+by search (Showing 1–1 of 1). The platform-page diff had been a false miss.
+Pineapple: 3 expected, 0 qualified, 0 published. Hold at PH ELIGIBILITY
+(United States) and the dates are also STALE.
+Local selectIntakeBatch, cap 50, beside 50 new RSS items, admits 28 of the 34
+systematic misses in one pass and defers 6 Hunt titles to the next pass.
+The live Pages cron has not loaded this function. Those 34 remain unpublished
+for that reason. This is not a claim that one deploy produces 100–150/day.
+
+## Dayshift
+
+q=day+shift on the live board returned 3 titles that state Day Shift:
+Hunt St "AU Accountant/Bookkeeper - Day Shift (026-983)", and two RocketAMS
+titles that say "Day Shift, Remote (PH)". classifyShift returns day_shift only
+for an explicit phrase. It returns unknown for "Bookkeeper (025-1379)".
+"Australian" in a title is not a dayshift claim. Workable widget descriptions
+are null, so a schedule that exists only in the description is unknown.
+Affordable Staff office-only remains a precision counterexample.
+
+## Proven
+
+- The public board is up. Snapshot at the probe above was fresh.
+- The 27 Hunt and 7 Coconut misses are fresh, location Philippines,
+  telecommuting true, geoGate eligible_verified, and absent from search.
+- The old head-of-line slice drops them when 50 RSS items are newer.
+  selectIntakeBatch does not. Adversarial tests cover that, dedup, the US
+  and onsite rejects, the stale reject, and the single Workable clock.
+- CPT-11528 is already public. Pineapple's three roles must stay off.
+
+## Unproven
+
+- MATH 1–13.
+- 100–150 newly published verified PH jobs per day.
+- That production has run selectIntakeBatch. It has not.
+- Which of the 34 misses were fetched and starved, versus never selected
+  by the two-slot rotation. The public board cannot separate those.
+- Description-only dayshift on Workable, because the widget description is null.
+- Turso to D1 reconciliation for this slice. Not run.
+
+## NEXT
+
+Deploy the committed handler to the Pages cron, then repeat the Hunt St and
+Coconut VA expected-to-published count. Do not publish a miss whose geoGate
+result is ineligible or whose freshness is outside the window. The six Hunt
+titles deferred by one fair pass must appear on the following pass or the
+report must name the new stage. Rotation remains two Workable tenants per
+hour; measure visit age before raising it.
+
+## Historical record
+
+Sections below are older observations. Their NEXT lines are not this NEXT.
+The pineapple identity in those notes is workable:pineapple-staffing.
+The October 13 cache deployment and the jobflow hold are history, not the
+majority task, unless a new probe shows the board failing.
 
 ## October 13 — cache deployment observed; agency release next
 
-Read docs/operations/PAGES_SNAPSHOT_RELEASE_2026-10-13.md. Production is now
+Read docs/operations/PAGES_SNAPSHOT_RELEASE_2026-10-13.md. Production was
 8c649da0-93ef-4458-89ad-715f1367a2ca / exact source
 34e3bd1efa34dc3a2c31f2cc3e5b6c5b04790e83, unchanged schema 0054/configuration.
 At 12:01 UTC the today filter showed 22 IDs and previously missing 9214 returned 200.
-Five-minute expiry is honest; hard delivery latency and sustainable CPU remain
-unproven. The 22 arrivals are not independently certified daily verified jobs.
-Main evidence checkpoint 0b39b4aaebb45dba0cb663849b07666ef77e3205 is exactly
-read back on SSM/GitLab, including repaired byte preservation of hashed logs.
-
-The separate jobflow release passed whole regression 3388/0/320594 across 233
-files in 109.29 seconds, app typecheck and build in 38.84 seconds. Those
-receipts precede the cohort-identity correction below and do not certify it. The prior full
-run 3387/1 exposed an obsolete heartbeat mock lacking RETURNING; the corrected
-fixture keeps the 500/heartbeat/release assertions and passes independent review.
-Independent native/guard review passed 49/0/647 on frozen runtime inputs.
-A standalone exact-robots guard extension passed 92 CI tests, but root
-subsequently found a real identity mismatch: the captured admitted source is
-workable:pineapple-staffing while the new runtime/test cohort used
-workable:pineapple. The jobflow release is HELD until actual-identity RED,
-correction and renewed verification. Earlier synthetic-cohort PASS is not
-proof that all seven real identities were covered. No admission is changed.
-No jobflow deployment or completed MATH claim follows from these local results.
-NEXT is finish that release, observe normal clocks, and implement complete
-permitted opening intake before the canary caps. Goal active; MATH 0/13.
+Five-minute expiry was honest; hard delivery latency and sustainable CPU were
+unproven. The 22 arrivals were not independently certified daily verified jobs.
+Main evidence checkpoint 0b39b4aaebb45dba0cb663849b07666ef77e3205 was read
+back on SSM/GitLab. The jobflow release was held on the pineapple identity.
+That hold is not the current NEXT.
 
 ## October 13 live evidence and immutable release preparation
 
