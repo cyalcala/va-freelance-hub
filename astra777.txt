@@ -153,14 +153,31 @@ Affordable Staff office-only remains a precision counterexample.
 - CPT-11528 is already public. Pineapple's three roles must stay off.
 - RocketAMS and HelloRache absences above are country locks, not misses
   the intake cap can fix.
+- Hammerjack is one of 13 static ids. fallbackPolicy("hammerjack") is
+  allowed, active, and publishable. Its robots mode is observe. The golden
+  id list is 27 (13 static + 14 ATS) and names hammerjack.
+  `packages/db/registry.test.ts` still inserts the older 26 identities.
+  That fixture does not fetch and does not decide Hammerjack publication.
+- Rotation starvation and intake-cap deferral are different stages.
+  `apps/web/tests/rotation-vs-intake.test.ts` calls `selectWorkableRotation`
+  and `selectIntakeBatch`. With no durable attempts, the two slots are
+  workable:coconutva and workable:crewbloom. Hunt is ROTATION_DEFERRED.
+  Its URLs are in neither the selected nor the deferred intake list.
+  Coconut's 7 fetched URLs are all selected beside 50 RSS items, so those
+  7 are not cap-deferred. A Hunt attempt 30 minutes old is COOLDOWN, and
+  `atsFetchCadenceSkip("workable", ...)` is still null. When Hunt and
+  Coconut are the oldest due attempts, they take the two slots. The other
+  five tenants contribute no items. Coconut's 7 are all selected. The Hunt
+  URLs the cap defers are selected on the next pass. The slot limit stays 2.
 
 ## Unproven
 
 - MATH 1–13.
 - 100–150 newly published verified PH jobs per day.
 - That production has run selectIntakeBatch. It has not.
-- Which of the 34 misses were fetched and starved, versus never selected
-  by the two-slot rotation. The public board cannot separate those.
+- Which live Hunt and Coconut misses are rotation starvation versus cap
+  deferral. The local test separates the stages. Production lastAttemptAt
+  was not read. The public board still cannot classify a live absence.
 - Description-only dayshift on Workable, because the widget description is null.
 - Turso to D1 reconciliation for this slice. Not run.
 
@@ -168,12 +185,16 @@ Affordable Staff office-only remains a precision counterexample.
 
 Deploy the committed handler, including source id hammerjack, to the Pages
 cron. Then re-count the 57 fresh misses from the 15:17 recount: Hunt 28,
-Coconut 7, CrewBloom 1, Pearl Talent 16, Hammerjack 5. Locally the
-follow-up pass admits the 20 the first cap defers. Do not publish a
-country-locked, stale, hybrid, or onsite row. Rotation remains two
-Workable tenants per hour; measure visit age before raising it.
+Coconut 7, CrewBloom 1, Pearl Talent 16, Hammerjack 5. Read durable
+lastAttemptAt for the seven admitted Workable tenants on that run.
+A miss whose tenant was not one of the two slots is FETCH (ROTATION_DEFERRED
+or COOLDOWN). A miss whose URL was fetched and deferred by selectIntakeBatch
+is the cap, and the next pass selects it. The public board cannot tell
+those apart until attempt age is read. Do not raise the two-slot limit
+before that measurement. Do not publish a country-locked, stale, hybrid,
+or onsite row. Local proof is apps/web/tests/rotation-vs-intake.test.ts.
 Canonical SSM still has no credentialed gcloud account, so origin does
-not yet have these commits. 887b1f29 is not on the live board.
+not yet have these commits. The live cron has not loaded this handler.
 
 ## Historical record
 

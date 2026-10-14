@@ -33,6 +33,7 @@ describe("SP-04 golden parity: hard-coded fallback is byte-equivalent to current
     "remote-ok",
     "jobicy-admin-support-apac",
     "jobicy-supporting-apac",
+    "hammerjack",
   ];
   const pausedStatic = [
     "problogger",
@@ -88,13 +89,13 @@ describe("SP-04 golden parity: hard-coded fallback is byte-equivalent to current
     }
   });
 
-  test("KNOWN_SOURCE_IDS is exactly 26 (12 static + 14 ATS) — no drift", () => {
-    expect(KNOWN_STATIC_IDS.length).toBe(12);
+  test("KNOWN_SOURCE_IDS is exactly 27 (13 static + 14 ATS) — no drift", () => {
+    expect(KNOWN_STATIC_IDS.length).toBe(13);
     expect(KNOWN_ATS_IDS.length).toBe(14);
-    expect(KNOWN_SOURCE_IDS.length).toBe(26);
-    expect(new Set(KNOWN_SOURCE_IDS).size).toBe(26);
-    // Hard-coded expectation to catch silent additions
-    expect(KNOWN_SOURCE_IDS.sort()).toEqual(
+    expect(KNOWN_SOURCE_IDS.length).toBe(27);
+    expect(new Set(KNOWN_SOURCE_IDS).size).toBe(27);
+    // Hard-coded expectation to catch silent additions. Copy before sorting.
+    expect([...KNOWN_SOURCE_IDS].sort()).toEqual(
       [
         "we-work-remotely",
         "remotive",
@@ -122,6 +123,7 @@ describe("SP-04 golden parity: hard-coded fallback is byte-equivalent to current
         "breezy:sourcefit",
         "breezy:vaaphilippines-recruitment",
         "breezy:time-etc",
+        "hammerjack",
       ].sort(),
     );
   });
@@ -626,6 +628,7 @@ describe("robots mode mirrors exact-six literal", () => {
       "breezy:sourcefit",
       "unknown:token",
       "workable:acme",
+      "hammerjack",
     ];
     for (const id of observes) {
       expect(robotsModeForSourceIdMirror(id)).toBe("observe");
@@ -647,7 +650,7 @@ describe("fallback covers every known id; resolver is reversible", () => {
     }
   });
 
-  test("resolvePolicy with empty Map fallback is byte-identical for all 26", () => {
+  test("resolvePolicy with empty Map fallback is byte-identical for every known id", () => {
     for (const id of KNOWN_SOURCE_IDS) {
       const a = fallbackPolicy(id);
       const b = resolvePolicy(id, null);

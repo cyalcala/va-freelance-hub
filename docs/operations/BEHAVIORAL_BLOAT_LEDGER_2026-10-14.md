@@ -26,6 +26,12 @@ Question for each layer: what decision does it add, and what fails if it goes?
    reached it. Non-Workable boards still use `atsFetchCadenceSkip`.
    Test: a Hunt tenant 30 minutes old is `COOLDOWN` in the rotation, and
    `atsFetchCadenceSkip("breezy", ...)` still returns the cadence sentence.
+   The same clock returns null for `workable`, so it cannot explain a Hunt
+   or Coconut miss. A tenant absent from `selectedSourceIds` contributes
+   no intake row. A URL the cap defers was fetched, and the next
+   `selectIntakeBatch` call selects it. Those are different stages.
+   `apps/web/tests/rotation-vs-intake.test.ts` drives both functions.
+   The two-slot limit was not raised.
 
 3. ATS URLs missing from `sourceIdsByUrl`.
    The map was built from RSS, HTML, and JSON only, so an ATS URL past the
