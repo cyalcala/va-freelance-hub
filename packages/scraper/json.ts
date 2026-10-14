@@ -2,7 +2,7 @@ import type { NewOpportunity } from "@va-hub/db";
 import type { Source } from "./sources";
 import { decodeHtmlEntities, fixMojibake } from "./text";
 import { toContentHash } from "./contentHash";
-import { conditionalFetchText, unchangedOutput, type ConditionalState, type SourceFetchOutput } from "./conditional";
+import { conditionalFetchText, unchangedOutput, type ConditionalState, type SourceFetchOutput, type SourceTransport } from "./conditional";
 import { collectionHeaders } from "./userAgent";
 import { normalizeSourcePostingDate } from "./source-posting-date";
 
@@ -79,7 +79,7 @@ export function isRelevantForHub(title: string, description: string): boolean {
   return HUB_RELEVANT_ROLE_REGEX.test(searchableText) && !PHYSICAL_OR_LOGISTICS_ROLE_REGEX.test(searchableText);
 }
 
-export async function fetchJSONSource(source: Source, state?: ConditionalState): Promise<SourceFetchOutput> {
+export async function fetchJSONSource(source: Source, state?: ConditionalState, transport?: SourceTransport): Promise<SourceFetchOutput> {
   console.log(`[json] Fetching ${source.name}...`);
 
   let data: unknown;
@@ -95,6 +95,7 @@ export async function fetchJSONSource(source: Source, state?: ConditionalState):
       },
       state,
       20_000,
+      transport,
     );
     if (cond.notModified) {
       console.log(`[json] ${source.name}: unchanged (${cond.status}), skipping parse.`);

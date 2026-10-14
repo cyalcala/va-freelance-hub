@@ -3,7 +3,7 @@ import type { NewOpportunity } from "@va-hub/db";
 import type { Source } from "./sources";
 import { decodeHtmlEntities, xmlNodeText, xmlTextList } from "./text";
 import { toContentHash } from "./contentHash";
-import { conditionalFetchText, unchangedOutput, type ConditionalState, type SourceFetchOutput } from "./conditional";
+import { conditionalFetchText, unchangedOutput, type ConditionalState, type SourceFetchOutput, type SourceTransport } from "./conditional";
 import { collectionHeaders } from "./userAgent";
 import { normalizeSourcePostingDate } from "./source-posting-date";
 
@@ -48,7 +48,7 @@ function normalizeText(raw: string | undefined): string {
     .trim();
 }
 
-export async function fetchRSSFeed(source: Source, state?: ConditionalState): Promise<SourceFetchOutput> {
+export async function fetchRSSFeed(source: Source, state?: ConditionalState, transport?: SourceTransport): Promise<SourceFetchOutput> {
   console.log(`[rss] Fetching ${source.name}...`);
 
   let xml: string;
@@ -60,6 +60,8 @@ export async function fetchRSSFeed(source: Source, state?: ConditionalState): Pr
       source.url,
       collectionHeaders(),
       state,
+      15_000,
+      transport,
     );
     if (cond.notModified) {
       console.log(`[rss] ${source.name}: unchanged (${cond.status}), skipping parse.`);

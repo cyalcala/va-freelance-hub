@@ -16,7 +16,7 @@ export { decideTriage, mapTriageCategoryToUiCategory } from "./triage-decision";
 export type { TriageDecision, TriageDecisionInput } from "./triage-decision";
 export { fetchATSFeed, fetchAshby, fetchBreezy, atsEndpointUrl } from "./ats";
 export { conditionalFetchText, unchangedOutput } from "./conditional";
-export type { ConditionalState, ConditionalResult, SourceFetchOutput } from "./conditional";
+export type { ConditionalState, ConditionalResult, SourceFetchOutput, SourceTransport } from "./conditional";
 export { hashString, sha256Hex, errorMessage } from "./contentHash";
 export {
   normalizeCompanyName, isQualityCompanyName, hostOf, isTrustedSourceUrl,

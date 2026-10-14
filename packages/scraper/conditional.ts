@@ -49,6 +49,14 @@ export interface ConditionalResult {
 }
 
 /**
+ * Per-call request seam for a collector's bounded transport. The supplied
+ * transport owns endpoint, redirect, byte and request limits and must reject
+ * incomplete bodies rather than return successful truncated responses. This
+ * seam grants no source authority and adds no retry or fallback on failure.
+ */
+export type SourceTransport = (url: string, init: RequestInit) => Promise<Response>;
+
+/**
  * Fetch `url` with conditional headers derived from `state`. Never throws for a
  * 304 — that is the success path. Non-2xx/304 responses still throw so the
  * source is reported as failed (not silently empty).
@@ -58,12 +66,13 @@ export async function conditionalFetchText(
   baseHeaders: Record<string, string>,
   state: ConditionalState | undefined,
   timeoutMs = 15_000,
+  transport?: SourceTransport,
 ): Promise<ConditionalResult> {
   const headers: Record<string, string> = { ...baseHeaders };
   if (state?.etag) headers["If-None-Match"] = state.etag;
   if (state?.lastModified) headers["If-Modified-Since"] = state.lastModified;
 
-  const res = await fetch(url, { headers, signal: AbortSignal.timeout(timeoutMs) });
+  const res = await (transport ?? fetch)(url, { headers, signal: AbortSignal.timeout(timeoutMs) });
 
   if (res.status === 304) {
     return {
