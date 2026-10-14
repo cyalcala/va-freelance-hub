@@ -72,6 +72,12 @@ Question for each layer: what decision does it add, and what fails if it goes?
 - Workable `jobs` array fallback to `[]` on a 200. It can hide a bad payload
   as an empty board. It is not why these inventories, which returned jobs,
   are missing. Left in place.
+- Workable `locations[]`. On 2026-10-14 the widget rows carried that array
+  with `hidden: true`, and the scalar country already matched. The only
+  Philippines name outside the scalar country was a hidden row on Coconut's
+  United States talent pool. Reading hidden locations would publish that
+  US row. Left unused. The list payload has no description field, so a null
+  description is not a dropped body.
 - Date-only Workable `published_on` stays on `new Date(raw).toISOString()`
   in the lake extractor. `normalizeSourcePostingDate` returns null for a
   date-only string. Using it there would mark fresh widget dates unknown

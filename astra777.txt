@@ -157,6 +157,14 @@ freshness accept it. A published sibling has the same location shape.
 Search for NetSuite is Showing 0–0 of 0. The stage is after parse.
 D1 was not read, so dedup, triage, and publication state are unknown.
 Do not add a title exception.
+Workable widget accounts checked 2026-10-14 (hunt-st 135, coconutva 31,
+crewbloom 149, pearltalent 286, rocketams 9, hello-rache 3) have no
+description field. fetchWorkable storing description null is not dropping
+text the list payload contained. locations[] is present and hidden on the
+rows compared. The scalar country already matches the visible country.
+The one row whose hidden locations include Philippines is Coconut
+"International Talent Pool", scalar country United States. Do not publish
+it from a hidden location row.
 
 ## Dayshift
 
