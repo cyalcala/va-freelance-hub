@@ -35,6 +35,10 @@ Sentinel monitoring and lifecycle orchestration for improving VA Freelance Hub t
 - Active Orchestrator ID Gen 9: 27133579-1ec8-4773-aa06-ab0ff4ef177c (aborted on network socket error)
 - Active Orchestrator ID Gen 10: 43d9ddfd-689b-48c2-aec2-42eb58476b93 (aborted on network socket error)
 - Active Orchestrator ID Gen 11: dfee3f08-3d6a-4361-93c0-a02d062beda0
+- Active Orchestrator ID Gen 12: retired
+- Active Orchestrator ID Gen 13: cce6edad-0d38-46a1-bb0c-e76eb7e4de7a
+- Cron 1 (Progress Reporting */8, Gen 13): task-69
+- Cron 2 (Liveness Check */10, Gen 13): task-71
 
 ## 🔒 Key Constraints
 - No technical decisions — relay only
@@ -44,7 +48,7 @@ Sentinel monitoring and lifecycle orchestration for improving VA Freelance Hub t
 - Continuous backup to Google Cloud Secure Source Manager (origin) and secondary mirror to GitLab
 
 ## User Context
-- **Last user request**: "Eliminate behavioral bloat across the ingestion and filtering pipeline, and ensure legitimate remote employers verifiably hiring Filipinos (especially vetted VA companies and dayshift employers) consistently surface their jobs, scaling toward 100–150+ newly published verified Philippines-eligible remote jobs per day..." (2026-10-14T20:00:03Z).
+- **Last user request**: "Own and execute the next phase of VA Freelance Hub: eliminate behavioral bloat, recover legitimate Philippines-eligible remote jobs from trusted employers across all 13 pipeline stages, and move toward 100–150+ newly published, verified jobs per day under strict production invariants. Use a very large team of agents." (2026-10-15T23:22:15Z).
 - **Pending clarifications**: none
 - **Delivered results**:
   - Milestone M1 (Requirement 1) proven and verified green (commit 3025e032).
@@ -56,7 +60,7 @@ Sentinel monitoring and lifecycle orchestration for improving VA Freelance Hub t
   - PUBLICATION_MANILA_DAY_CANONICAL_URL_MATCHED_IS_NOT_A_COMPLETED_FLOW proven and verified green (commits 7ab46b82, 86b75446).
   - PUBLICATION_MANILA_DAY_SOURCE_MATCHED_IS_NOT_A_COMPLETED_FLOW proven and verified green (commits 525372f5, 8113de61).
   - PUBLICATION_MANILA_DAY_ACTIVE_MATCHED_IS_NOT_A_COMPLETED_FLOW proven and verified green (commits 5f642df1, 301820d3).
-- **Current active focus**: Generation 11 Orchestrator (dfee3f08-3d6a-4361-93c0-a02d062beda0) active; driving Milestone 1 implementation and verification loop.
+- **Current active focus**: Generation 13 Orchestrator (cce6edad-0d38-46a1-bb0c-e76eb7e4de7a) dispatched; driving full 5-requirement scope with large-scale agent team.
 
 ## Project Status
 - **Phase**: in progress
@@ -69,8 +73,8 @@ Sentinel monitoring and lifecycle orchestration for improving VA Freelance Hub t
 ## Artifact Index
 - .agents/teamwork/ORIGINAL_REQUEST.md — Authoritative record of user requests
 - astra777.txt — Audit specification and baseline
-- .agents/teamwork/orchestrator_11/context.md — Context and dispatch parameters for Gen 11 Orchestrator
-- .agents/teamwork/orchestrator_11/progress.md — Progress tracker for Gen 11 Orchestrator
+- .agents/teamwork/orchestrator_13/context.md — Context and dispatch parameters for Gen 13 Orchestrator
+- .agents/teamwork/orchestrator_13/progress.md — Progress tracker for Gen 13 Orchestrator
 - .agents/teamwork/orchestrator_10/PROJECT.md — Master project plan across 4 milestones
 - .agents/teamwork/explorer_m1_1/handoff.md — Ingestion bloat audit handoff
 - .agents/teamwork/explorer_m1_2/handoff.md — Filtering gates consolidation handoff

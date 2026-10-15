@@ -233,6 +233,8 @@ Reconciled baselines:
 - Constitution audit: cohort partition, ground-truth unknown rule, and queue instrumentation PASSED.
 - Production guardrails: passed.
 - Workspace typecheck: passed with 0 errors (apps/web/tsconfig.json).
+- Full repository parity proven: Google Secure Source Manager (`origin`), GitHub (`github`), and GitLab (`gitlab`) are in 100% exact parity at commit `c54935cd7ab66fdfbd4be2ae7404f4fe0b925b1c` on branch `codex/verified-flow-directory-checkpoint`.
+- Google Cloud SSM authentication verified active for account `cyrusalcala.agency@gmail.com` on project `antigravity-494415`; push and ls-remote confirmed operational.
 - Authoritative employer evidence (findTrustedEmployer) safely resolves high-confidence PH employers
   in geoGate Step 8 after all negative country locks and onsite markers have executed.
 - Dayshift classification captures explicit daytime spans and AU/NZ/APAC daytime hours without

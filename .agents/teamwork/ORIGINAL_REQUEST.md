@@ -168,3 +168,157 @@ Preserve all production invariants (strict per-vacancy geoGate, 30-day freshness
 - [ ] Production billing and rate limits strictly preserved.
 - [ ] `astra777.txt` updated with current verified invariants, bottleneck analysis, and NEXT actions.
 - [ ] Clean atomic commits pushed to canonical Google Secure Source Manager (`origin`).
+
+## 2026-10-15T23:15:47Z
+
+Execute an autonomous improvement cycle on VA Freelance Hub to sustainably move toward 100–150+ new, verified, Philippines-eligible remote jobs published per day by eliminating behavioral bloat, recovering obvious PH-hiring employers, ensuring dayshift discovery, maintaining canonical SSM git parity, and preserving strict production invariants.
+
+Working directory: c:\Users\admin\Desktop\va-freelance-hub
+Integrity mode: development
+
+## Requirements
+
+### R1. Behavioral Bloat Elimination & Decision Consolidation
+Identify and eliminate behavioral complexity that duplicates decisions, suppresses legitimate openings, or creates hidden failure states across discovery, fetch, parse, normalize, dedup, ph_eligibility, policy, role_gates, triage, scoring, qualification, and publication. Replace multi-stage heuristics with single authoritative decisions while strictly preserving protected invariants.
+
+### R2. Trusted Employer Reconciliation & Zero-Drop Coverage
+Reconcile authoritative ATS and careers surfaces for high-confidence Philippine remote employers (including Hunt St, Coconut VA, 20Four7VA, Pearl Talent, CrewBloom, Hammerjack, Sourcefit, MultiplyMii) through the 13-stage pipeline. Ensure legitimate remote openings from employers known to hire in the Philippines have zero unexplained loss, while preserving constitutional zero filtering for onsite or non-PH country-locked roles (e.g. Pineapple Staffing, Affordable Staff onsite, UpGuard Australia). Retain and classify explicit dayshift/APAC schedule evidence.
+
+### R3. Repository Parity & Canonical Synchronization
+Verify and maintain the canonical hierarchy where Google Secure Source Manager (SSM) is the authoritative source of truth and GitHub/GitLab are mirrors. Audit local commits, ensure atomic commits are pushed to SSM (`origin`), confirm mirror sync (`github`, `gitlab`), verify branch parity, and ensure no silent divergence occurs.
+
+### R4. Mathematical Rigor & Production Invariants
+Continue proving canonical mathematical requirements (MATH 1–13) through reproducible behavioral evidence rather than ceremonial naming. Preserve all critical production invariants: 30-day posting freshness, per-opening geoGate verification, strict D1 parameter bind limits (<=100 params per statement, 28 params/row * 3 = 84), deduplication integrity, Turso lake safety, billing ceilings, and rollback capability.
+
+### R5. Durable System Memory Maintenance (`astra777.txt`)
+Continuously update `astra777.txt` to capture verified facts, proven invariants, pipeline loss distributions, git checkpoint hashes, tested counterexamples, and dependency-ready NEXT steps so that any subsequent agent can resume without information loss.
+
+## Acceptance Criteria
+
+### Pipeline Correctness & Behavioral Compression
+- [ ] Redundant gates and duplicated triage/eligibility decisions are consolidated or eliminated without regressing precision.
+- [ ] All 13 canonical stages of `PipelineLossTracker` log discrete reason codes for rejected candidates with zero silent drops.
+- [ ] Dayshift classification accurately extracts PHT daytime spans and AU/NZ/APAC daytime markers without fabricating unstated schedules.
+
+### Trusted Employer & False Negative Recovery
+- [ ] Legitimate, fresh, remote openings from vetted employers (e.g., Hunt St, Coconut VA, Hammerjack) are proven to reach qualified/published status under `selectIntakeBatch` and `findTrustedEmployer` geoGate Step 8.
+- [ ] Negative counterexamples strictly maintain 0% published status (Pineapple Staffing stale US roles, Affordable Staff Bacolod onsite, UpGuard Australia).
+
+### Verification & Test Suite
+- [ ] 100% of the project test suite (`bun test`) passes with zero failures, including all targeted, adversarial, and counterexample tests.
+- [ ] Workspace typecheck (`bun run typecheck` or equivalent) passes with zero errors.
+- [ ] Build preflight (`bun run build`) passes cleanly.
+
+### Repository & Deployment Hygiene
+- [ ] Local commits are pushed to canonical Google Secure Source Manager (`origin`).
+- [ ] Secondary mirrors (`github` and `gitlab`) are synchronized or have actionable sync receipts.
+- [ ] `astra777.txt` is updated with full checkpoint evidence and proven behavioral baselines.
+
+---
+
+## Detailed Mission Instructions & Operating Mandate
+
+### North Star
+Move VA Freelance Hub steadily toward 100–150+ NEW, VERIFIED, PHILIPPINES-ELIGIBLE REMOTE JOBS PUBLISHED PER DAY with high precision, high recall, low duplicate rate, low broken-link rate, low publication latency, and minimal behavioral complexity.
+
+### Current Priorities
+- P0: Preserve production correctness. Never damage verified working behavior.
+- P1: Eliminate behavioral bloat (consolidate duplicate eligibility/PH/dedup/freshness checks).
+- P2: Eliminate obvious false negatives for legitimate PH-hiring employers.
+- P3: Increase trusted-employer and dayshift coverage.
+- P4: Improve throughput and reliability toward 100–150+ verified jobs/day.
+- P5: Continue proving canonical mathematical and operational requirements (MATH 1–13).
+
+### Repository Hierarchy
+- Google Secure Source Manager (SSM) = canonical source of truth (`origin`).
+- GitHub = mirror / backup (`github`).
+- GitLab = mirror / backup (`gitlab`).
+- Current branch: `codex/verified-flow-directory-checkpoint`.
+
+### First Action: Build the Real System Model
+- Inspect repo structure, read `astra777.txt` deeply, trace the actual job lifecycle (SOURCE -> DISCOVERY -> FETCH -> PARSE -> NORMALIZE -> DEDUP -> PH EVIDENCE -> POLICY -> ROLE GATES -> TRIAGE -> SCORING -> QUALIFICATION -> PUBLICATION -> D1 / WEBSITE).
+- Base decisions on actual code, data, and test evidence.
+
+### Behavioral Compression Protocol
+For every simplification:
+1. Establish current observable behavior.
+2. Identify the protected invariant.
+3. Identify real production consumers.
+4. Establish baseline metrics.
+5. Create adversarial / counterexample tests.
+6. Simplify or consolidate (prefer 1 authoritative decision > several overlapping decisions).
+7. Run targeted tests.
+8. Run broader regressions (`bun test`).
+9. Compare before/after behavior.
+10. Verify real pipeline outcomes.
+11. Preserve rollback.
+12. Record the evidence.
+
+### Trusted PH Employer Evidence & Precedence
+- Formula: Employer PH confidence != Job validity != PH eligibility != Role relevance.
+- Precedence: direct job-level authoritative evidence > authoritative employer-level evidence > strong structural evidence > historical evidence > weak textual/model inference.
+- Counterexamples: Pineapple Staffing (0 published), Affordable Staff onsite (0 published), UpGuard Australia (0 published).
+
+### Reporting Format
+Report concisely using:
+- CHANGED: What materially changed.
+- EVIDENCE: Numbers, traces, tests, examples, before/after behavior.
+- REMOVED / SIMPLIFIED: Behavioral complexity eliminated.
+- COVERAGE: Trusted employers/jobs recovered or still missing.
+- INVARIANTS: What was reverified.
+- REPOSITORIES: SSM canonical status and GitHub/GitLab mirror status.
+- UNPROVEN: Remaining uncertainty.
+- NEXT: What is executing next.
+
+
+## 2026-10-15T23:22:15Z
+
+Use a very large team of agents.
+
+# Teamwork Project Prompt
+
+Own and execute the next phase of VA Freelance Hub: eliminate behavioral bloat, recover legitimate Philippines-eligible remote jobs from trusted employers across all 13 pipeline stages, and move toward 100–150+ newly published, verified jobs per day under strict production invariants.
+
+Working directory: c:\Users\admin\Desktop\va-freelance-hub
+Integrity mode: development
+
+## Requirements
+
+### R1. Behavioral Bloat Elimination & Pipeline Compression
+Audit and simplify the live pipeline (discovery, intake, geoGate, freshness, dedup, triage, scoring, qualification, publication). Eliminate redundant schedulers, repeated eligibility gates, duplicated cadence timers, and obsolete compatibility shims. Consolidate overlapping heuristics into single authoritative decision points while preserving all core invariants (30-day freshness, geoGate accuracy, D1 parameter budget <= 100, billing limits).
+
+### R2. Trusted Employer Coverage & 13-Stage False-Negative Elimination
+Enumerate and reconcile authoritative career/ATS openings from vetted Philippines-hiring and dayshift-friendly employers (e.g., Hunt St, Coconut VA, Hammerjack, Pearl Talent, CrewBloom, 20Four7VA, Sourcefit, RocketAMS). Enforce the 4-way separation matrix: `Employer PH confidence != Job validity != PH eligibility != Role relevance`. Trace every legitimate missing opening across all 13 canonical stages (SOURCE through PUBLICATION) using `PipelineLossTracker`, distinguishing healthy drops (stale, onsite, country-locked) from coverage defects, and recovering legitimate openings into publication.
+
+### R3. Dayshift and APAC Schedule Recognition
+Capture and retain explicit schedule markers (Australian, New Zealand, Philippine daytime, APAC business hours, morning shifts, and explicit PHT daytime spans like "8am - 5pm Manila time") without fabricating unstated hours. Ensure dayshift jobs are accurately classified, queryable, and exposed on public filters.
+
+### R4. Throughput & Scalable Intake toward 100–150+ Verified Jobs/Day
+Expand and balance multi-source intake fairness (`selectIntakeBatch`) across ATS feeds, RSS, and structured discovery. Prevent head-of-line blocking and rotation starvation so fresh eligible openings reach qualification and publication without exceeding Cloudflare D1 write or query constraints.
+
+### R5. Autonomous Execution Loop, Memory Maintenance & Repository Parity
+Operate in continuous, bounded, verified slices. After each slice: run targeted adversarial tests, regressions, and builds; record proven vs unproven evidence in `astra777.txt`; commit verified changes to Google Secure Source Manager (`origin`) as the canonical source of truth; and verify mirror synchronization with GitHub and GitLab.
+
+## Acceptance Criteria
+
+### Behavioral Compression & Invariants
+- [ ] Redundant gates or duplicate clocks identified in the bloat ledger are consolidated into single authoritative checks with zero regression in geoGate precision.
+- [ ] Constitutional Zero invariants strictly held: Pineapple Staffing (0 published), Affordable Staff onsite (0 published), and UpGuard Australia (0 published) remain unpublished.
+- [ ] Cloudflare D1 query batching strictly adheres to <= 100 parameters per batch (28 parameters/row * 3 rows = 84 max).
+
+### Trusted Employer & Loss Tracking Verification
+- [ ] 13-stage loss tracking (`PipelineLossTracker`) records stage transitions and explicit rejection codes for all reconciled employers.
+- [ ] Systematic misses from vetted employers (such as fresh telecommuting Philippines openings from Hunt St, Coconut VA, Hammerjack, Pearl Talent, and CrewBloom) are verified through intake and publication qualification.
+- [ ] Zero legitimate remote PH openings from vetted employers are silently dropped without an explicit machine-readable reason code.
+
+### Dayshift Recognition
+- [ ] Explicit daytime spans and AU/NZ/APAC daytime hours are parsed and indexed with `isDayshift: true` and appropriate `shiftCategory`.
+- [ ] Public opportunities filter `/opportunities` accurately slices and returns verified dayshift listings.
+
+### Test & Build Health
+- [ ] Full test suite (`bun test`) passes 100% with zero regressions across all test suites.
+- [ ] Static typecheck (`apps/web/tsconfig.json`) passes cleanly with zero type errors.
+
+### Repository & Documentation Integrity
+- [ ] `astra777.txt` accurately records CURRENT, PROVEN, OBSERVED, ACTIVE, UNPROVEN, and NEXT states.
+- [ ] Verified commits are pushed to canonical Google Secure Source Manager (`origin`) on the working branch (`codex/verified-flow-directory-checkpoint`), and mirror freshness on GitHub and GitLab is verified.
