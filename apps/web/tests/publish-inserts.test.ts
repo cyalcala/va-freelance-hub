@@ -1435,7 +1435,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
       expect(result).toEqual({ claimed: 1, published: 1, rejected: 0, quarantined: 0, deferred: 0 });
       const actual = sqlite.query(`SELECT is_active AS isActive, inactive_reason AS inactiveReason, geo_scope AS geoScope,
         ph_eligibility AS phEligibility, geo_evidence AS geoEvidence, geo_checked_at AS geoCheckedAt,
-        application_url AS applicationUrl, tags, pay_range AS payRange, category, experience_level AS experienceLevel,
+        application_url AS applicationUrl, tags, pay_range AS payRange, client_timezone AS clientTimezone, category, experience_level AS experienceLevel,
         type, updated_at AS updatedAt FROM opportunities WHERE id = ?`).get(inserted[0].id) as Record<string, any>;
       actual.isActive = Boolean(actual.isActive);
       actual.tags = JSON.parse(actual.tags);

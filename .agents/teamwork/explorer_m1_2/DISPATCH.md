@@ -1,34 +1,44 @@
-## 2026-10-10T14:19:10Z
-Sender: 5b172f40-7fdc-4682-884c-258bc6e35539
-Content:
-You are explorer_m1_2, an exploration agent for VA Freelance Hub.
+# Dispatch Assignment — explorer_m1_2
+
+**Milestone**: M1 (Behavioral Bloat & Redundant Complexity Elimination)
+**Specialization**: Filtering, GeoGate, and Triage Gate Consolidation
+**Working Directory**: c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\explorer_m1_2
+**Original Request**: c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\ORIGINAL_REQUEST.md
+**Project Plan**: c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\orchestrator_9\PROJECT.md
+**Baseline Reference**: c:\Users\admin\Desktop\va-freelance-hub\astra777.txt
+**Bloat Ledger**: c:\Users\admin\Desktop\va-freelance-hub\docs\operations\BEHAVIORAL_BLOAT_LEDGER_2026-10-14.md
+**Ponytail Skill**: c:\Users\admin\Desktop\va-freelance-hub\.agents\skills\ponytail-upstream\ponytail-audit\SKILL.md
+**Code Simplification**: c:\Users\admin\Desktop\va-freelance-hub\.agents\skills\code-simplification\SKILL.md
+
+## Mission & Tasks
+1. Audit filtering, geo-eligibility, and triage logic (`packages/scraper/geoGate.ts`, `packages/scraper/triage.ts`, `packages/scraper/triage-decision.ts`, `packages/scraper/policy.ts`, `packages/scraper/shiftClassifier.ts`).
+2. Apply Ponytail Audit and Code Simplification principles to trace:
+   - Duplicated decision points (e.g. model veto on structured geo scopes, redundant policy gates)
+   - Obsolete defensive heuristics or conflicting regexes (e.g. APAC token vs country location pin)
+   - Redundant country / location normalization
+   - Unused / speculative branches in triage
+3. Verify that removing or consolidating redundant gates does NOT relax core safety invariants:
+   - Strict per-vacancy geoGate (US/onsite/country-locked stay rejected)
+   - 30-day freshness window
+   - No global employer allowlist (Pineapple Staffing counterexample: 0 public)
+4. Formulate the exact before/after behavioral trace and code modifications for the Worker.
+5. Produce `analysis.md` and `handoff.md` in your working directory.
+6. Send completion message with summary.
+
+
+## 2026-10-15T13:30:11Z
+You are explorer_m1_2.
 Your working directory is: c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\explorer_m1_2
+Read your dispatch file at: c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\explorer_m1_2\DISPATCH.md
+Read the original request at: c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\ORIGINAL_REQUEST.md
+Read the project plan at: c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\orchestrator_9\PROJECT.md
+Also inspect:
+- c:\Users\admin\Desktop\va-freelance-hub\astra777.txt
+- c:\Users\admin\Desktop\va-freelance-hub\docs\operations\BEHAVIORAL_BLOAT_LEDGER_2026-10-14.md
+- Ponytail skill: c:\Users\admin\Desktop\va-freelance-hub\.agents\skills\ponytail-upstream\ponytail-audit\SKILL.md
+- Code simplification: c:\Users\admin\Desktop\va-freelance-hub\.agents\skills\code-simplification\SKILL.md
 
-Mandatory Request Context:
-Read the verbatim user request at:
-c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\ORIGINAL_REQUEST.md
-
-Additional context and audit baseline:
-- Project scope: c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\orchestrator_2\PROJECT.md
-- Audit baseline: c:\Users\admin\Desktop\va-freelance-hub\astra777.txt
-- Spec analysis: c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\spec_miner_1\analysis.md
-
-Objective:
-Investigate the ingestion pipeline and public exposure gating in:
-1. `apps/web/src/pages/api/cron/scrape.ts`
-2. `packages/scraper/publication-gateway.ts`
-3. `apps/web/src/lib/public-opportunities.ts`
-
-Specifically inspect:
-- The exact point where `assessPostingFreshness` is invoked in `scrape.ts` (pre-triage vs post-insert).
-- How invalid, stale, future, or missing dates are withheld and routed to `rejectedItems` with `isActive: false` and `inactiveReason`.
-- Verify that items with bad dates NEVER enter `gatePassedItems`, never get `isActive: true`, and never get exposed to `publicOpportunityFilters()`.
-- How `hasCurrentOwnership` in `publication-gateway.ts` verifies freshness post-persistence as defense-in-depth.
-- Identify any potential backdoor or gap where a non-fresh item could become publicly selectable.
-
-Output Requirements:
-Write your comprehensive findings and recommendations to:
-`c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\explorer_m1_2\handoff.md`
-Update `progress.md` with timestamps.
-Send a message back to parent orchestrator when complete.
-Do NOT modify any source code files.
+Task:
+Audit filtering, geo-eligibility, and triage logic (geoGate.ts, triage.ts, triage-decision.ts, policy.ts, shiftClassifier.ts). Trace and identify duplicated decision points, obsolete heuristics, redundant normalizations, and model veto overlaps. Verify that removing bloat preserves core safety invariants (per-vacancy geoGate, 30-day freshness, zero employer allowlist bypass). Formulate before/after behavioral traces and consolidation specifications for the Worker.
+Do NOT modify production source files. Write your analysis to c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\explorer_m1_2\analysis.md and your formal handoff to c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\explorer_m1_2\handoff.md.
+When complete, notify parent (Recipient: 27133579-1ec8-4773-aa06-ab0ff4ef177c) via send_message.

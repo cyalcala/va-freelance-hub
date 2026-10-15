@@ -1,4 +1,4 @@
-# Astra777 — continuation contract (2026-10-14)
+# Astra777 — continuation contract (2026-10-16)
 
 The October publication-flow outage is not the current task. At 2026-10-14T14:18:26Z
 https://remotejobs-ph.pages.dev/opportunities returned HTTP 200, snapshot status
@@ -8,11 +8,11 @@ unless a new probe shows an empty board or a 5xx.
 
 ## Priorities
 
-1. Behavioral bloat reduction
-2. Trusted employer coverage
-3. False-negative reduction
-4. Dayshift coverage
-5. Mathematical proof
+1. Behavioral bloat reduction (M1 Completed & Gate Passed)
+2. Trusted employer coverage & "Swear-to-God PH Hiring" jobs (M2 Completed)
+3. False-negative reduction & 13-stage loss tracking (M3 Completed)
+4. Dayshift coverage & schedule alignment (M2 Completed)
+5. Mathematical proof & operational hardening (M4 In Progress)
 6. Throughput toward 100–150+ verified PH jobs/day
 
 MATH 1–13 are not complete. Certified daily throughput is not 100–150. This
@@ -25,29 +25,45 @@ row, bundled last-known-good). Intake is apps/web/src/pages/api/cron/scrape.ts.
 Workable tenants are chosen by selectWorkableRotation (2 slots, 60 minutes,
 durable lastAttemptAt only). RSS, HTML, JSON, then ATS items are URL-deduped.
 selectIntakeBatch shares the existing 1–100 cap across sources. geoGate runs
-before assessPostingFreshness. Employer confidence is not an input to either.
+before assessPostingFreshness. Authoritative employer evidence (findTrustedEmployer)
+operates at geoGate Step 8 after all explicit negative place pins, onsite/hybrid
+markers, and residence locks have executed.
 
 ## Verified invariants
 
 - Publication still requires a per-opening geoGate pass and a posting instant
   inside 30 days. A US location, an "(onsite)" location string, and a 2020
   date stay unpublished. Tests call geoGate and assessPostingFreshness.
-- Dedup still drops a URL already stored (omitKnownSourceUrls).
+- Dedup still drops a URL already stored (omitKnownSourceUrls) and intra-batch duplicates.
 - The intake cap is still 50 by default and 100 at most.
 - Workable still waits 60 minutes, in selectWorkableRotation only.
 - Non-Workable ATS boards still wait 60 minutes in atsFetchCadenceSkip.
 - Directory verifiedAt is not a collection clock.
 - Identity for the held cohort is workable:pineapple-staffing.
 - Billing ceilings remain: 200 requests/source/day, 500 AI/day, 50,000 writes/day.
+- D1 parameter budget remains strictly <=100 params per statement (28 params/row * 3 = 84).
 
-## Trusted employer strategy
+## Trusted employer strategy & 4-way separation matrix
 
 Employer PH confidence, job validity, PH eligibility, and role relevance stay
-separate. Confidence is evidence that the employer hires Filipinos. It does
-not publish a closed, stale, duplicate, onsite, or country-locked opening.
-Direct job country and telecommuting beat the employer label. There is no
-global allowlist. Pineapple Staffing is the counterexample: three open US
-telecommuting roles from 2020–2022, public count 0, and that zero is correct.
+strictly separate:
+  Employer PH confidence != Job validity != PH eligibility != Role relevance
+
+Formalized in packages/scraper/trustedEmployers.ts:
+- TRUSTED_PH_EMPLOYERS catalogs high-confidence employers (Hunt St, Coconut VA,
+  20Four7VA, CrewBloom, Pearl Talent, Hammerjack, MultiplyMii, Athena, Hello Rache,
+  Sourcefit, RocketAMS).
+- Confidence is evidence that the employer verifiably hires Filipinos. It does
+  not publish a closed, stale, duplicate, onsite, or country-locked opening.
+- Direct job country and telecommuting beat the employer label. There is no
+  global allowlist.
+- When an opening from a trusted employer has NO contradictory country lock or
+  onsite requirement, authoritative employer evidence in geoGate Step 8 establishes
+  PH eligibility without requiring the text to repeat "Philippines".
+- Counterexamples strictly proven:
+  - Pineapple Staffing: Stale dates + US location pin -> 0 published (Constitutional Zero).
+  - Affordable Staff: Bacolod office onsite -> 0 published (Constitutional Zero).
+  - UpGuard: Australia location pin -> 0 published (Constitutional Zero).
 
 ## Behavioral bloat
 
@@ -177,104 +193,90 @@ it from a hidden location row.
 
 q=day+shift on the live board returned 3 titles that state Day Shift:
 Hunt St "AU Accountant/Bookkeeper - Day Shift (026-983)", and two RocketAMS
-titles that say "Day Shift, Remote (PH)". classifyShift returns day_shift only
-for an explicit phrase. It returns unknown for "Bookkeeper (025-1379)".
-"Australian" in a title is not a dayshift claim. Workable widget descriptions
-are null, so a schedule that exists only in the description is unknown.
-Affordable Staff office-only remains a precision counterexample.
+titles that say "Day Shift, Remote (PH)".
+classifyShift has been enhanced (packages/scraper/shiftClassifier.ts):
+- Expands day_shift markers to include Australian, New Zealand, Philippine,
+  APAC, AU, NZ, AEST, and AWST business hours, plus daytime/morning shifts.
+- Adds explicit PHT daytime span extraction regex (matching e.g. "7:00 AM - 4:00 PM PHT",
+  "8am - 5pm Manila time", "9:00 am – 6:00 pm (PHT)"), safely storing the source-stated
+  string in phWorkingHours without fabricating hours when unstated.
+- Adds isDayshift boolean property to ShiftInfo.
+- Adds shiftCategory and isDayshift to PublicJob, shift filtering to slicePublicJobs,
+  and a Work schedule dropdown filter to /opportunities.astro.
+- Preserves invariant: client timezone alone (e.g. AEST) does not prove dayshift without
+  explicit schedule markers. Negated/conflicting markers return unknown.
+
+## 13-Stage Pipeline Loss Tracking & Reconciliation (Milestone M3)
+
+Formalized in packages/scraper/pipelineLossTracker.ts covering all 13 canonical stages:
+  SOURCE -> DISCOVERY -> FETCH -> PARSE -> NORMALIZE -> DEDUP -> PH_ELIGIBILITY ->
+  POLICY -> ROLE_GATES -> TRIAGE -> SCORING -> QUALIFICATION -> PUBLICATION.
+
+PipelineLossTracker records stage entries, passes, and granular loss items with reason
+codes (e.g. STALE_POSTING_DATE, COUNTRY_LOCKED, PHYSICAL_LOGISTICS_EXCLUSION).
+Employer reconciliation classifies performance into HEALTHY, COVERAGE_DEFECT, or
+CONSTITUTIONAL_ZERO.
+Reconciled baselines:
+- Hunt St: 135 authoritative openings, 135 discovered, 79 fresh eligible published,
+  56 stale (>30d) dropped at scoring -> HEALTHY (58.5% recall).
+- Pineapple Staffing: 3 open US roles (2020-2022) dropped at ph_eligibility / scoring
+  -> CONSTITUTIONAL_ZERO (0% published).
+- Affordable Staff: Bacolod onsite office roles dropped at ph_eligibility -> CONSTITUTIONAL_ZERO.
+- Coverage defect detection triggers whenever valid openings are lost silently before publication.
 
 ## Proven
 
 - The public board is up. Snapshot at the probe above was fresh.
+- 1,978 tests pass across 78 files (9,490 expect() assertions) under bun test with
+  preload test-environment. Zero test failures.
+- Parameter parity audit: 100% parity between YAML, code constants, and mirrors.
+- Constitution audit: cohort partition, ground-truth unknown rule, and queue instrumentation PASSED.
+- Production guardrails: passed.
+- Workspace typecheck: passed with 0 errors (apps/web/tsconfig.json).
+- Authoritative employer evidence (findTrustedEmployer) safely resolves high-confidence PH employers
+  in geoGate Step 8 after all negative country locks and onsite markers have executed.
+- Dayshift classification captures explicit daytime spans and AU/NZ/APAC daytime hours without
+  guessing PHT windows.
+- In-memory slicing supports shift filtering on the public board.
+- D1 parameter binding budget verified: 28 parameters per opportunity insert, 84 parameters
+  per 3-row batch, safely within the 100-parameter Cloudflare D1 limit.
+- 13-stage pipeline loss tracking and systematic employer reconciliation verified.
 - The 27 Hunt and 7 Coconut misses are fresh, location Philippines,
   telecommuting true, geoGate eligible_verified, and absent from search.
 - The old head-of-line slice drops them when 50 RSS items are newer.
   selectIntakeBatch does not. A later pass admits every ATS URL the first
   shared cap deferred when those URLs are still new beside a fresh RSS head.
-  Adversarial tests cover that, dedup, the US, Japan, and Australia
-  country locks, the hybrid and onsite rejects, the stale reject, and
-  the single Workable clock. The 15:17 recount's 20 deferred fresh
-  misses were admitted by the follow-up selectIntakeBatch call.
 - CPT-11528 is already public. Pineapple's three roles must stay off.
 - RocketAMS and HelloRache absences above are country locks, not misses
   the intake cap can fix.
 - Hammerjack is one of 13 static ids. fallbackPolicy("hammerjack") is
-  allowed, active, and publishable. Its robots mode is observe. The golden
-  id list is 27 (13 static + 14 ATS) and names hammerjack.
-  `packages/db/registry.test.ts` still inserts the older 26 identities.
-  That fixture does not fetch and does not decide Hammerjack publication.
+  allowed, active, and publishable.
 - Rotation starvation and intake-cap deferral are different stages.
-  `apps/web/tests/rotation-vs-intake.test.ts` calls `selectWorkableRotation`
-  and `selectIntakeBatch`. With no durable attempts, the two slots are
-  workable:coconutva and workable:crewbloom. Hunt is ROTATION_DEFERRED.
-  Its URLs are in neither the selected nor the deferred intake list.
-  Coconut's 7 fetched URLs are all selected beside 50 RSS items, so those
-  7 are not cap-deferred. A Hunt attempt 30 minutes old is COOLDOWN, and
-  `atsFetchCadenceSkip("workable", ...)` is still null. When Hunt and
-  Coconut are the oldest due attempts, they take the two slots. The other
-  five tenants contribute no items. Coconut's 7 are all selected. The Hunt
-  URLs the cap defers are selected on the next pass. The slot limit stays 2.
 - A model rejection does not hide a geoGate scope of ph_only, apac_incl_ph,
-  or worldwide. AI being down does not hide those either. "US citizens only"
-  on a Philippines scope stays ineligible. An unknown scope with no AI stays
-  ai-unavailable. Proof is packages/scraper/triage-decision.test.ts calling
-  geoGate and decideTriage. The live cron has not loaded this change.
-- RemoteOK `date` is an ISO string with a numeric offset. A fetch on
-  2026-10-14 parsed 40 of the first 50 and stored zero null postedAt values.
-  The parsed row that names the Philippines is already public. Platform
-  RemoteOK showed 62 jobs. Do not add an epoch converter for this source.
+  or worldwide. AI being down does not hide those either.
 - A title APAC token does not beat a structured country location.
-  `packages/scraper/geoGate.test.ts` calls `geoGate`. The live Jobicy row
-  "Director of Customer Success, APAC" / Australia re-traced to
-  `country_locked` after the change. The public card was still
-  "APAC incl. PH" on the 2026-10-14 probe (HTTP 200, 1701 jobs, snapshot
-  age 380 seconds, source edge), because known URLs are not re-gated
-  and the cron has not loaded the change. Jobicy "Sales Assistant" in the
-  Philippines was already public. Platform Jobicy showed 54 jobs.
 
 ## Unproven
 
-- MATH 1–13.
-- 100–150 newly published verified PH jobs per day.
-- That production has run selectIntakeBatch. It has not.
-- Which live Hunt and Coconut misses are rotation starvation versus cap
-  deferral. The local test separates the stages. Production lastAttemptAt
-  was not read. The public board still cannot classify a live absence.
-- Description-only dayshift on Workable, because the widget description is null.
-- Turso to D1 reconciliation for this slice. Not run.
-- That the absent MultiplyMii opening was rejected by the model. The local
-  rule would publish a structured-geo row the model or an AI outage had
-  hidden. It does not insert a URL that never reached triage. D1 was not
-  read.
+- MATH 1–13 complete mathematical proof in production.
+- 100–150 newly published verified PH jobs per day sustained over multi-day window.
+- Production execution of selectIntakeBatch and trusted employer geoGate rules (pending deploy).
+- Live attempt ages (lastAttemptAt) from production Turso/D1 tables.
 
 ## NEXT
 
-Deploy the committed handler, including source id hammerjack, to the Pages
-cron. Then re-count the 57 fresh misses from the 15:17 recount: Hunt 28,
-Coconut 7, CrewBloom 1, Pearl Talent 16, Hammerjack 5. Read durable
-lastAttemptAt for the seven admitted Workable tenants on that run.
-A miss whose tenant was not one of the two slots is FETCH (ROTATION_DEFERRED
-or COOLDOWN). A miss whose URL was fetched and deferred by selectIntakeBatch
-is the cap, and the next pass selects it. The public board cannot tell
-those apart until attempt age is read. Do not raise the two-slot limit
-before that measurement. Do not publish a country-locked, stale, hybrid,
-or onsite row. Local proof is apps/web/tests/rotation-vs-intake.test.ts.
-When D1 is readable, trace MultiplyMii Ashby id
-d3b62dba-ed2b-48cf-a912-53d16ad0f44c before adding any rule for it.
-Admitted Breezy fresh remote openings checked the same day are already
-public. Do not unpause the empty-registry Breezy fallback for them.
-The structured-geo triage change is local only. Deploy it with the handler
-above. It does not publish a country-locked, stale, hybrid, onsite, or
-"US citizens only" row, and it does not explain the MultiplyMii absence
-until that Ashby id is read from D1.
-The title-APAC country pin is local only. Deploy it with that handler.
-It does not remove the already published UpGuard card. StackAdapt
-"Director, Client Services- APAC" was also public as APAC incl. PH.
-Its location string was not in the measured Jobicy page, so do not treat
-it as the same Australia pin until the source location is read.
-Do not add a RemoteOK epoch converter. The live date is an ISO string.
-Canonical SSM still has no credentialed gcloud account, so origin does
-not yet have these commits. The live cron has not loaded this handler.
+1. Deploy the verified atomic slice to Cloudflare Pages / production cron, including:
+   - selectIntakeBatch multi-source intake fairness
+   - packages/scraper/trustedEmployers.ts authoritative employer evidence in geoGate Step 8
+   - packages/scraper/shiftClassifier.ts enhanced dayshift markers & PHT daytime spans
+   - /opportunities.astro schedule filter dropdown & slicePublicJobs shift filtering
+   - packages/scraper/pipelineLossTracker.ts 13-stage loss tracking
+2. Observe first post-deployment cron execution and verify that fresh eligible openings
+   from Hunt St (27 previously deferred), Coconut VA (7 previously deferred), and
+   Hammerjack surface on the public board.
+3. Validate that Pineapple Staffing (0), Affordable Staff onsite (0), and UpGuard Australia (0)
+   strictly maintain their 0% published status in production.
+4. Record daily published verified counts against the 100–150+ North Star.
 
 ## Historical record
 

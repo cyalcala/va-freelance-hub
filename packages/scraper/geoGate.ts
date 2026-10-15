@@ -17,6 +17,8 @@
 //   layer decides. This gate must be precise, not clever.
 
 import { hasExplicitNonRemoteLocationType } from "./publication-remote";
+import { isObviousNonEnglishOrLocalOnly } from "./triage.js";
+import { findTrustedEmployer } from "./trustedEmployers";
 
 export type GeoScope =
   | "worldwide"
@@ -40,6 +42,8 @@ export interface GeoGateInput {
   /** Existing structured workplace enum; missing metadata is not remote proof. */
   locationType?: string | null;
   tags?: string[] | null;
+  company?: string | null;
+  sourceId?: string | null;
 }
 
 export interface GeoVerdict {
@@ -239,18 +243,34 @@ function firstMatch(regex: RegExp, text: string): string | null {
   return m ? m[1] ?? m[0] : null;
 }
 
+/** Detects structured non-PH location pins, returning the exact scope and evidence string if pinned. */
+export function detectStructuredLocationPin(locationRaw: string): { scope: GeoScope; evidence: string } | null {
+  if (!locationRaw) return null;
+  const regionExcl = firstMatch(REGION_EXCL_PH_REGEX, locationRaw);
+  if (regionExcl) {
+    return { scope: "region_excl_ph", evidence: `Region excludes PH: "${regionExcl}" in "${locationRaw}"` };
+  }
+  if (STRUCTURED_US_LOCATION_REGEX.test(locationRaw)) {
+    return { scope: "country_locked", evidence: `Location pinned to US: "${locationRaw}"` };
+  }
+  const stateCode = firstMatch(US_STATE_CODE_LOCATION_REGEX, locationRaw);
+  if (stateCode) {
+    return { scope: "country_locked", evidence: `Location contains US state code: "${stateCode}" in "${locationRaw}"` };
+  }
+  const place =
+    firstMatch(US_STATE_REGEX, locationRaw) ??
+    firstMatch(COUNTRY_REGEX, locationRaw) ??
+    firstMatch(CITY_REGEX, locationRaw);
+  if (place) {
+    return { scope: "country_locked", evidence: `Location pinned: "${place}" in "${locationRaw}"` };
+  }
+  return null;
+}
+
 /** Same place pins as the structured-location step. A title token must not
  * outrank them. Empty location is not a pin. */
 function structuredLocationPin(locationRaw: string): boolean {
-  if (!locationRaw) return false;
-  return Boolean(
-    firstMatch(REGION_EXCL_PH_REGEX, locationRaw) ||
-    STRUCTURED_US_LOCATION_REGEX.test(locationRaw) ||
-    firstMatch(US_STATE_CODE_LOCATION_REGEX, locationRaw) ||
-    firstMatch(US_STATE_REGEX, locationRaw) ||
-    firstMatch(COUNTRY_REGEX, locationRaw) ||
-    firstMatch(CITY_REGEX, locationRaw),
-  );
+  return Boolean(detectStructuredLocationPin(locationRaw));
 }
 
 function verdict(geoScope: GeoScope, phEligibility: PhEligibility, evidence: string): GeoVerdict {
@@ -308,6 +328,9 @@ export function geoGate(input: GeoGateInput): GeoVerdict {
   if (lang !== "en") {
     return verdict("country_locked", "ineligible", `Non-English posting (detected: ${lang})`);
   }
+  if (isObviousNonEnglishOrLocalOnly(title, description)) {
+    return verdict("country_locked", "ineligible", `Domestic localized non-English or student role (e.g. m/w/d, werkstudent, alternance)`);
+  }
 
   // 3. Source language tags without an accompanying "english".
   const langTag = tags.find((t) => LANGUAGE_TAGS.has(t));
@@ -317,23 +340,9 @@ export function geoGate(input: GeoGateInput): GeoVerdict {
 
   // 4. Structured location string → the most authoritative signal we hold.
   if (locationRaw) {
-    const regionExcl = firstMatch(REGION_EXCL_PH_REGEX, locationRaw);
-    if (regionExcl) {
-      return verdict("region_excl_ph", "ineligible", `Region excludes PH: "${regionExcl}" in "${locationRaw}"`);
-    }
-    if (STRUCTURED_US_LOCATION_REGEX.test(locationRaw)) {
-      return verdict("country_locked", "ineligible", `Location pinned to US: "${locationRaw}"`);
-    }
-    const stateCode = firstMatch(US_STATE_CODE_LOCATION_REGEX, locationRaw);
-    if (stateCode) {
-      return verdict("country_locked", "ineligible", `Location contains US state code: "${stateCode}" in "${locationRaw}"`);
-    }
-    const place =
-      firstMatch(US_STATE_REGEX, locationRaw) ??
-      firstMatch(COUNTRY_REGEX, locationRaw) ??
-      firstMatch(CITY_REGEX, locationRaw);
-    if (place) {
-      return verdict("country_locked", "ineligible", `Location pinned: "${place}" in "${locationRaw}"`);
+    const pin = detectStructuredLocationPin(locationRaw);
+    if (pin) {
+      return verdict(pin.scope, "ineligible", pin.evidence);
     }
   }
 
@@ -415,7 +424,19 @@ export function geoGate(input: GeoGateInput): GeoVerdict {
     return verdict("worldwide", "eligible_likely", "Worldwide/anywhere language in posting");
   }
 
-  // 8. No deterministic signal — the AI layer decides.
+  // 8. Authoritative employer evidence for high-confidence vetted PH employers.
+  // When no job-level negative constraint exists (steps 0, 4, 5, 6 have passed),
+  // a vetted employer establishing PH hiring intent provides authoritative evidence.
+  const employer = findTrustedEmployer(input.company || input.sourceId);
+  if (employer) {
+    return verdict(
+      employer.defaultGeoScope,
+      "eligible_verified",
+      `Authoritative employer evidence: ${employer.companyName} (${employer.confidenceTier}) - ${employer.evidenceNotes}`,
+    );
+  }
+
+  // 9. No deterministic signal — the AI layer decides.
   return verdict("unknown", "unclear", "No deterministic geo signal");
 }
 

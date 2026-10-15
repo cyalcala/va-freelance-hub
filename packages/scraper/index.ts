@@ -527,4 +527,30 @@ export type {
   CapabilityDefinition,
 } from "./capability-registry";
 
+// ─── Formalized Trusted PH Employer Evidence (Milestone M2 & Priority 2) ─────
+export {
+  TRUSTED_PH_EMPLOYERS,
+  findTrustedEmployer,
+  isTrustedPhEmployer,
+} from "./trustedEmployers";
+export type {
+  EmployerConfidenceTier,
+  EmployerEvidenceType,
+  TrustedEmployerProfile,
+} from "./trustedEmployers";
+
+// ─── 13-Stage Pipeline Loss Tracking & Reconciliation (Milestone M3) ─────────
+export {
+  PIPELINE_STAGES,
+  PipelineLossTracker,
+} from "./pipelineLossTracker";
+export type {
+  PipelineStage,
+  PipelineLossItem,
+  StageCounter,
+  EmployerReconciliationRecord,
+} from "./pipelineLossTracker";
+
+
+
 

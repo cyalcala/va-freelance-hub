@@ -1,5 +1,41 @@
 # System Savepoint
 
+## 2026-10-16 — Behavioral Bloat Elimination, Trusted PH Employers & Dayshift Scaling
+
+Completed Milestones M1, M2, and M3 of the Behavioral Bloat & Trusted Employer Expansion:
+1. **Behavioral Bloat Elimination (M1 Gate PASSED)**:
+   - Refined physical/logistics role regex in `packages/scraper/json.ts` (`delivery driver`, `food delivery`, `parcel delivery`), preventing premature exclusion of legitimate tech titles (e.g. Service Delivery Manager).
+   - Removed obsolete timezone exclusion patterns from `GEOGRAPHIC_EXCLUSION_REGEX` in `packages/scraper/triage.ts` (EST/PST timezone overlap is normal for remote Filipino workers; only residence/work-authorization locks disqualify).
+   - Replaced redundant 40-line categorization loop in `triage.ts` with canonical `categorizeOpportunityTitle`.
+   - Unified structured location pin detection into `detectStructuredLocationPin(locationRaw)` in `packages/scraper/geoGate.ts`.
+   - Early deterministic rejection of German/French localized roles (`m/w/d`, `werkstudent`, `alternance`, `cdi`, `cdd`, `praktikum`) before invoking AI models.
+   - Added in-memory intra-batch URL deduplication in `scrape.ts`.
+   - Resolved D1 `clientTimezone` data loss and verified D1 parameter binding budget (28 parameters/row * 3 rows = 84 parameters, safely <=100).
+   - 30 adversarial counterexample tests (149 assertions) in `packages/scraper/adversarial-counterexamples.test.ts`.
+
+2. **High-Confidence Trusted PH Employer Evidence & Dayshift Coverage (M2)**:
+   - Implemented `packages/scraper/trustedEmployers.ts` cataloging vetted PH employers (Hunt St, Coconut VA, 20Four7VA, CrewBloom, Pearl Talent, Hammerjack, MultiplyMii, Athena, Hello Rache, Sourcefit, RocketAMS).
+   - Integrated authoritative employer evidence into `geoGate` Step 8: remote roles with no country locks surface cleanly without requiring repetitive "Philippines" mentions.
+   - Strictly preserved the 4-way separation matrix: `Employer PH confidence != Job validity != PH eligibility != Role relevance`. Pineapple Staffing (stale US roles = 0), Affordable Staff (Bacolod onsite = 0), and UpGuard (Australia pin = 0) confirmed 0% published.
+   - Enhanced `classifyShift` in `packages/scraper/shiftClassifier.ts`: expanded `day_shift` markers for AU/NZ/PHT/APAC/AEST/AWST business hours, and added explicit PHT daytime span extraction (`phWorkingHours`).
+   - Added `isDayshift` and `shiftCategory` to `PublicJob`, added `shift` parameter to `slicePublicJobs`, and introduced schedule filter dropdown on `/opportunities.astro`.
+
+3. **13-Stage Pipeline Loss Tracking & Systematic Employer Reconciliation (M3)**:
+   - Implemented `packages/scraper/pipelineLossTracker.ts` formalizing:
+     `SOURCE -> DISCOVERY -> FETCH -> PARSE -> NORMALIZE -> DEDUP -> PH_ELIGIBILITY -> POLICY -> ROLE_GATES -> TRIAGE -> SCORING -> QUALIFICATION -> PUBLICATION`.
+   - Provides granular reason attribution and reconciliation records:
+     - Hunt St: 135 open, 79 fresh eligible published, 56 stale dropped at scoring -> HEALTHY.
+     - Pineapple Staffing: 3 open US roles -> CONSTITUTIONAL_ZERO (0% published).
+     - Affordable Staff: Bacolod onsite -> CONSTITUTIONAL_ZERO (0% published).
+     - Coverage defect detection triggers whenever valid openings are lost silently.
+
+4. **Verification & Audit Integrity (M4)**:
+   - Full test run: 1,978 tests passing across 78 files (9,490 expect assertions). Zero test failures.
+   - Parameter Parity Audit: 100% PASSED (`audit-parameters.ts`).
+   - Constitution Audit: PASSED (`audit-constitution.ts`).
+   - Production Guardrails: PASSED (`check-production-guardrails.ts`).
+   - TypeScript Compilation: 0 errors (`bun run typecheck`).
+
 ## 2026-10-13 20:01 Manila — cache deployment observed
 
 [The bounded cache release](operations/PAGES_SNAPSHOT_RELEASE_2026-10-13.md)

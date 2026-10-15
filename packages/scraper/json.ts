@@ -72,7 +72,7 @@ export const HUB_RELEVANT_ROLE_REGEX =
   /\b(admin|assistant|virtual assistant|customer|support|success|marketing|sales|seo|content|writer|copywriter|editor|designer|design|developer|engineer|software|data|analyst|bookkeeper|accounting|finance|operations|recruiter|hr|project manager|product manager|program manager|qa|tester|testing|e-?commerce|shopify|community|technical|devops|it support|head of|vp\b|vice president|chief|director|lead|manager|strategy|coordinator|scheduler|executive assistant|social media)\b/i;
 
 export const PHYSICAL_OR_LOGISTICS_ROLE_REGEX =
-  /\b(courier|mail carrier|driver|delivery|warehouse|forklift|photographer|civil engineer|logistics|fulfillment operations)\b/i;
+  /\b(courier|mail carrier|driver|delivery driver|food delivery|parcel delivery|warehouse|forklift|photographer|civil engineer|logistics|fulfillment operations)\b/i;
 
 export function isRelevantForHub(title: string, description: string): boolean {
   const searchableText = `${title} ${description.slice(0, 500)}`;

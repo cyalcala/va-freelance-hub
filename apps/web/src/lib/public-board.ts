@@ -1,6 +1,7 @@
 import type { DirectoryCategory } from "./directory-categories";
 import { isDirectoryNiche } from "./directory-categories";
 import type { FreshFilter } from "./public-query";
+import { classifyShift, type ShiftCategory } from "@va-hub/scraper";
 
 /** Public job card plus the fields a detail page can render without another scan. */
 export type PublicJob = {
@@ -25,6 +26,8 @@ export type PublicJob = {
   locationType: "remote" | "hybrid" | "onsite" | null;
   payRange: string | null;
   updatedAt: string | null;
+  shiftCategory?: ShiftCategory | null;
+  isDayshift?: boolean;
 };
 
 export type PublicDirectoryRow = {
@@ -124,6 +127,7 @@ export function slicePublicJobs(
     platform?: string;
     geoScope?: string;
     fresh?: FreshFilter | null;
+    shift?: string | null;
     query?: string;
     offset: number;
     limit: number;
@@ -138,6 +142,18 @@ export function slicePublicJobs(
     if (options.geoScope && job.geoScope !== options.geoScope) return false;
     if (options.fresh && !matchesFreshFilter(job.scrapedAt, options.fresh, now)) return false;
     if (options.query && !matchesJobQuery(job, options.query)) return false;
+    if (options.shift) {
+      const resolvedCategory = job.shiftCategory ?? (job.isDayshift ? "day_shift" : classifyShift({
+        clientTimezone: job.clientTimezone,
+        title: job.title,
+        description: job.description,
+      }).category);
+      if (options.shift === "day_shift") {
+        if (resolvedCategory !== "day_shift" && !job.isDayshift) return false;
+      } else if (resolvedCategory !== options.shift) {
+        return false;
+      }
+    }
     return true;
   });
   const ordered = [...filtered].sort(options.fresh ? byScrapedDesc : byEffectiveDesc);

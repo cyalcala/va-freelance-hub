@@ -26,6 +26,12 @@ const GEO_SCOPE_OPTIONS = [
   { value: 'apac_incl_ph', label: 'APAC incl. PH' },
   { value: 'worldwide', label: 'Worldwide' },
 ];
+const SHIFT_OPTIONS = [
+  { value: 'day_shift', label: 'Day shift (PH / AU / NZ / APAC)' },
+  { value: 'flexible', label: 'Flexible / Async' },
+  { value: 'mid_shift', label: 'Mid shift (UK / Europe)' },
+  { value: 'night_shift', label: 'Night shift (US / Graveyard)' },
+];
 
 const searchParams = Astro.url.searchParams;
 const parsedRequest = parseJobBoardRequest(searchParams);
@@ -40,7 +46,9 @@ const selectedCategory = parseJobCategory(category);
 const type = searchParams.get('type') || '';
 const platform = searchParams.get('platform') || '';
 const geoScope = searchParams.get('geoScope') || '';
-const activeFilterCount = [category, type, platform, geoScope, fresh].filter(Boolean).length;
+const shiftParam = searchParams.get('shift') || '';
+const shift = SHIFT_OPTIONS.some((o) => o.value === shiftParam) ? shiftParam : '';
+const activeFilterCount = [category, type, platform, geoScope, fresh, shift].filter(Boolean).length;
 const hasActiveFilters = Boolean(query || activeFilterCount > 0);
 const offset = (currentPage - 1) * PAGE_SIZE;
 
@@ -58,6 +66,7 @@ function buildPageUrl(page: number) {
   if (platform) params.set('platform', platform);
   if (geoScope) params.set('geoScope', geoScope);
   if (fresh) params.set('fresh', fresh);
+  if (shift) params.set('shift', shift);
   if (page > 1) params.set('page', String(page));
   const qs = params.toString();
   return qs ? `/opportunities?${qs}` : '/opportunities';
@@ -83,6 +92,7 @@ const activeFilters = [
   { key: 'platform', value: platform, label: `Source: ${platform}` },
   { key: 'geoScope', value: geoScope, label: `Scope: ${GEO_SCOPE_OPTIONS.find((option) => option.value === geoScope)?.label ?? geoScope}` },
   { key: 'fresh', value: fresh, label: `Arrivals: ${fresh === 'today' ? 'Today (Manila)' : 'Last 24 hours'}` },
+  { key: 'shift', value: shift, label: `Schedule: ${SHIFT_OPTIONS.find((option) => option.value === shift)?.label ?? shift}` },
 ].filter((filter) => filter.value);
 
 try {
@@ -95,6 +105,7 @@ try {
     platform: platform || undefined,
     geoScope: geoScope && GEO_SCOPE_OPTIONS.some((option) => option.value === geoScope) ? geoScope : undefined,
     fresh,
+    shift: shift || undefined,
     query,
     offset,
     limit: PAGE_SIZE,
@@ -188,6 +199,15 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
                 <option value="">All scopes</option>
                 {GEO_SCOPE_OPTIONS.map((option) => (
                   <option value={option.value} selected={geoScope === option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label for="shift" class="field-label">Work schedule</label>
+              <select id="shift" name="shift" form="search" class="field-select">
+                <option value="">All schedules</option>
+                {SHIFT_OPTIONS.map((option) => (
+                  <option value={option.value} selected={shift === option.value}>{option.label}</option>
                 ))}
               </select>
             </div>

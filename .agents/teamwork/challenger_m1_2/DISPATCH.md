@@ -1,24 +1,35 @@
-## 2026-10-10T17:52:23Z
-You are Challenger 2 (teamwork_preview_challenger) for Milestone M1: PUBLICATION_FRESH_SCRAPE_POSTING_DATE_PREFENCE_EVIDENCE.
+## 2026-10-15T14:52:00Z
+You are challenger_m1_2, a teamwork_preview_challenger for VA Freelance Hub.
+Your working directory is: c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\challenger_m1_2
+Your parent orchestrator conversation ID is: dfee3f08-3d6a-4361-93c0-a02d062beda0
 
-Working Directory: c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\challenger_m1_2
-Parent Orchestrator ID: a12ba992-b75e-4d8d-b719-7a9f7b217918
+MANDATORY CONTEXT:
+Read these files before starting work:
+- c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\ORIGINAL_REQUEST.md
+- c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\orchestrator_10\PROJECT.md
+- c:\Users\admin\Desktop\va-freelance-hub\astra777.txt
+- c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\explorer_m1_3\analysis.md
+- c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\worker_m1_gen11\handoff.md
 
-MANDATORY FIRST STEP: Read the original request at:
-c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\ORIGINAL_REQUEST.md
-Also read the worker handoff report at:
-c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\worker_m1_1\handoff.md
-and audit baseline at:
-c:\Users\admin\Desktop\va-freelance-hub\astra777.txt
+SKILLS:
+Load and utilize:
+- c:\Users\admin\Desktop\va-freelance-hub\.agents\skills\doubt-driven-development\SKILL.md
+- c:\Users\admin\Desktop\va-freelance-hub\.agents\skills\test-driven-development\SKILL.md
 
-Task:
-1. Empirically verify correctness and stress-test the boundary dates and invariants:
-   - Impossible calendar rollover (Sep 31, non-leap Feb 29).
-   - Sub-millisecond and nanosecond future boundaries (+1ms, +1ns).
-   - Exact 30-day inclusive boundary (30 * 86,400,000 ms) and boundary + 1ms / + 1ns.
-   - Zero public rows (`isActive = 1`) and zero ledger IDs on bad dates.
-   - Mixed batch partitioning.
-2. Run verification commands or tests to challenge these invariants:
-   `bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/native-fresh-scrape-posting-date.test.ts`
-3. Write your report to `c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\challenger_m1_2\handoff.md` with explicit Verdict: APPROVE or REQUEST_CHANGES.
-4. Send completion message back to parent orchestrator.
+SCOPE & OBJECTIVE:
+Empirical Adversarial Verification for Milestone 1 (Intake & Pipeline Focus):
+1. Challenge Intake & Cadence Invariants:
+   - Prove that `selectIntakeBatch(newItems, limit)` cycles round-robin without starving ATS feeds when RSS head has 50 items.
+   - Prove that deferred ATS items are fully selected on subsequent passes.
+   - Prove that `selectWorkableRotation` enforces the 2-slot cap and 60-minute durable cooldown.
+   - Prove that `drainPendingTriageQueue` immediately rejects rows where `phEligibility === "ineligible"`.
+2. Mutation Testing:
+   - Run tests against `packages/scraper/adversarial-counterexamples.test.ts`.
+   - Verify that all 5 invariants have hard, unbypassable assertions.
+3. Deliverable:
+   - Write comprehensive challenger report to `c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\challenger_m1_2\handoff.md` with explicit verdict: `APPROVE` or `REQUEST_CHANGES`.
+   - Send completion message to parent orchestrator (`dfee3f08-3d6a-4361-93c0-a02d062beda0`).
+
+
+## 2026-10-15T14:59:35Z
+You are challenger_m1_2. Your working directory is c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\challenger_m1_2. Read c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\challenger_m1_2\DISPATCH.md and c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\ORIGINAL_REQUEST.md. Independently challenge Milestone 1: stress-test intake fairness, workable 2-slot / 60m cooldown, geo-scope sovereignty, and run mutation tests against the 5 protected invariants. Write your challenger report to c:\Users\admin\Desktop\va-freelance-hub\.agents\teamwork\challenger_m1_2\handoff.md with an explicit verdict of APPROVE or REQUEST_CHANGES, and report back to parent orchestrator dfee3f08-3d6a-4361-93c0-a02d062beda0 via send_message.

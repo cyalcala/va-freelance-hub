@@ -1,6 +1,38 @@
 export function categorizeOpportunityTitle(title: string, description: string = ""): string {
   const lower = `${title} ${description}`.toLowerCase();
 
+  // AI & Machine Learning (evaluated before tech so AI specialists route to "ai")
+  if (
+    lower.includes("ai engineer") ||
+    lower.includes("ai specialist") ||
+    lower.includes("ai operations") ||
+    lower.includes("prompt engineer") ||
+    lower.includes("machine learning") ||
+    lower.includes("artificial intelligence") ||
+    lower.includes("generative ai") ||
+    lower.includes("llm")
+  ) {
+    return "ai";
+  }
+
+  // Writing & Content (evaluated before tech so Technical Writers route to "writing")
+  if (
+    lower.includes("writer") ||
+    lower.includes("writing") ||
+    lower.includes("copywriter") ||
+    lower.includes("content writer") ||
+    lower.includes("content producer") ||
+    lower.includes("content production") ||
+    lower.includes("editorial") ||
+    lower.includes("journalist") ||
+    lower.includes("proofread") ||
+    lower.includes("editor") ||
+    lower.includes("content specialist") ||
+    lower.includes("knowledge management")
+  ) {
+    return "writing";
+  }
+
   // Tech / Engineering
   if (
     lower.includes("software") ||
@@ -95,21 +127,11 @@ export function categorizeOpportunityTitle(title: string, description: string = 
     return "marketing";
   }
 
-  // Writing & Content
-  if (
-    lower.includes("writer") ||
-    lower.includes("copywriter") ||
-    lower.includes("content writer") ||
-    lower.includes("proofread") ||
-    lower.includes("editor") ||
-    lower.includes("content specialist")
-  ) {
-    return "writing";
-  }
 
   // Admin & Operations & General VA
   if (
     lower.includes("virtual assistant") ||
+    lower.includes("assistant") ||
     lower.includes("va") ||
     lower.includes("administrative") ||
     lower.includes("admin") ||

@@ -123,7 +123,7 @@ describe("native grouped scrape obeys the D1 bound-parameter budget", () => {
     const result = await nativeScrape({ source: "remote-ok", dates: Array(4).fill(FRESH), duplicateSourceUrlIndex: 3 });
     expectPublished(result, 3, 0, 4);
     expect(result.actualReturnedIds).toEqual([[1, 2, 3], []]);
-    expect(result.bindingAttempts.filter(attempt => attempt.opportunityInsert).map(attempt => attempt.parameters)).toEqual([81, 27]);
+    expect(result.bindingAttempts.filter(attempt => attempt.opportunityInsert).map(attempt => attempt.parameters)).toEqual([84, 28]);
     expect(result.ledger).toEqual([{ source: "remote-ok", n: 3, ids: "[1,2,3]" }]);
     expect(result.body).toMatchObject({ acceptedForInsert: 4, attemptedInsert: 4, skipped: 1 });
   }, 45000);

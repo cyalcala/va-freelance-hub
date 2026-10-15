@@ -35,5 +35,44 @@ describe("source-stated shift hints", () => {
     expect(result.clientTimezone).toBe("EST");
     expect(result.category).toBe("flexible");
     expect(result.isAsyncOrFlexible).toBe(true);
+    expect(result.isDayshift).toBe(false);
+  });
+
+  test.each([
+    ["Work New Zealand business hours", "day_shift"],
+    ["Must be available during APAC business hours", "day_shift"],
+    ["Morning shift position for AU clients", "day_shift"],
+    ["Operating during AEST business hours", "day_shift"],
+    ["AWST business hours required", "day_shift"],
+  ])("classifies expanded dayshift marker %s correctly", (description, category) => {
+    const result = classifyShift({ description });
+    expect(result.category).toBe(category);
+    expect(result.isDayshift).toBe(true);
+    expect(result.phWorkingHours).toBeNull();
+  });
+
+  test.each([
+    ["Working hours: 7:00 AM - 4:00 PM PHT", "7:00 AM - 4:00 PM PHT"],
+    ["Schedule: 8am - 5pm Manila time", "8am - 5pm Manila time"],
+    ["Shift: 9:00 am – 6:00 pm (PHT)", "9:00 am – 6:00 pm (PHT)"],
+    ["Expected hours: 6am to 3pm Philippine time", "6am to 3pm Philippine time"],
+  ])("extracts explicit PHT daytime span from %s", (description, expectedSpan) => {
+    const result = classifyShift({ description });
+    expect(result.category).toBe("day_shift");
+    expect(result.isDayshift).toBe(true);
+    expect(result.phWorkingHours).toBe(expectedSpan);
+    expect(result.evidence).toContain(expectedSpan);
+  });
+
+  test("does not extract PHT daytime span if negated or conflicting", () => {
+    const negated = classifyShift({ description: "No 8am - 5pm Manila time shift required" });
+    expect(negated.category).toBe("unknown");
+    expect(negated.phWorkingHours).toBeNull();
+    expect(negated.isDayshift).toBe(false);
+
+    const conflicting = classifyShift({ description: "Work 8am - 5pm Manila time or night shift" });
+    expect(conflicting.category).toBe("unknown");
+    expect(conflicting.phWorkingHours).toBeNull();
+    expect(conflicting.isDayshift).toBe(false);
   });
 });

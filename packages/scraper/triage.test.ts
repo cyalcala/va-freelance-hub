@@ -35,7 +35,7 @@ describe("isObviousGeoRestriction", () => {
   it("should match US/UK/Canada geographic exclusions", () => {
     expect(isObviousGeoRestriction("Virtual Assistant (US Only)", "")).toBe(true);
     expect(isObviousGeoRestriction("Developer", "United Kingdom Only")).toBe(true);
-    expect(isObviousGeoRestriction("Marketing Coordinator", "US timezone only")).toBe(true);
+    expect(isObviousGeoRestriction("Marketing Coordinator", "Canada only")).toBe(true);
     expect(isObviousGeoRestriction("Systems Engineer", "Must possess active security clearance")).toBe(true);
     expect(isObviousGeoRestriction("Fullstack Dev", "W-2 only; no C2C arrangements.")).toBe(true);
     expect(isObviousGeoRestriction("Content Writer", "Must be a US citizen; no visa sponsorship available.")).toBe(true);
@@ -43,8 +43,10 @@ describe("isObviousGeoRestriction", () => {
     expect(isObviousGeoRestriction("Product Designer", "Australia only")).toBe(true);
   });
 
-  it("should NOT match standard global roles", () => {
+  it("should NOT match standard global roles or timezone-overlap requirements", () => {
     expect(isObviousGeoRestriction("Senior React Developer", "Open to candidates worldwide.")).toBe(false);
+    expect(isObviousGeoRestriction("Marketing Coordinator", "US timezone only")).toBe(false);
+    expect(isObviousGeoRestriction("Virtual Assistant", "Must overlap 4 hours with EST business hours")).toBe(false);
   });
 });
 

@@ -1,3 +1,5 @@
+import { categorizeOpportunityTitle } from "./categorizer.js";
+
 export interface TriageResult {
   eligibleForFilipinos: boolean;
   reason: string;
@@ -47,11 +49,6 @@ const GEOGRAPHIC_EXCLUSION_REGEX = new RegExp(
     "us citizenship required",
     "must be a us citizen",
     "work from the us",
-    "us timezone only",
-    "est only",
-    "pst only",
-    "mst only",
-    "cst only",
     "north america only",
     "(?:active )?(?:security|secret|top secret|ts/sci) clearance (?:is )?required",
     "must (?:have|hold|possess) (?:an? )?(?:active )?(?:security|secret|top secret|ts/sci) clearance",
@@ -370,61 +367,20 @@ export async function triageJob(
     };
   }
 
-  // 2. If running without Cloudflare Workers AI binding (e.g. local scripts), fallback to basic tags & eligibility
-  if (!env || !env.AI) {
-    // Basic heuristic categorizer for local development
-    let category: TriageResult["category"] = "other";
-    const tags: string[] = [];
-    const text = `${title} ${cleanDescription}`.toLowerCase();
+  const geminiKey = env?.GEMINI_API_KEY;
+  const groqKey = env?.GROQ_API_KEY;
 
-    if (
-      text.includes("ai engineer") ||
-      text.includes("ai specialist") ||
-      text.includes("ai operations") ||
-      text.includes("prompt engineer") ||
-      text.includes("machine learning") ||
-      text.includes("artificial intelligence") ||
-      text.includes("generative ai")
-    ) {
-      category = "ai";
-      tags.push("ai", "automation");
-    } else if (
-      text.includes("writer") ||
-      text.includes("writing") ||
-      text.includes("copywriter") ||
-      text.includes("content producer") ||
-      text.includes("content production") ||
-      text.includes("editorial") ||
-      text.includes("journalist") ||
-      text.includes("knowledge management")
-    ) {
-      category = "writing";
-      tags.push("writing", "content");
-    } else if (text.includes("admin") || text.includes("assistant") || text.includes("data entry")) {
-      category = "admin";
-      tags.push("assistant", "admin");
-    } else if (text.includes("developer") || text.includes("engineer") || text.includes("code") || text.includes("tech")) {
-      category = "tech";
-      tags.push("software-development", "tech");
-    } else if (text.includes("design") || text.includes("creative") || text.includes("illustrat")) {
-      category = "design";
-      tags.push("creative", "design");
-    } else if (text.includes("social") || text.includes("instagram") || text.includes("facebook") || text.includes("marketing")) {
-      category = "marketing";
-      tags.push("marketing", "social-media");
-    } else if (text.includes("support") || text.includes("customer") || text.includes("chat")) {
-      category = "customer-service";
-      tags.push("customer-support", "helpdesk");
-    } else if (text.includes("bookkeeper") || text.includes("accounting") || text.includes("finance")) {
-      category = "finance";
-      tags.push("finance", "accounting");
-    }
+  // 2. If running without Cloudflare Workers AI binding and without API keys (e.g. local scripts), fallback to basic tags & eligibility
+  if (!env?.AI && !geminiKey && !groqKey) {
+    // Canonical heuristic categorizer for local development
+    const category = categorizeOpportunityTitle(title, cleanDescription) as TriageResult["category"];
+    const tags: string[] = [category];
 
     return {
       eligibleForFilipinos: true,
-      reason: "Mock classification (Workers AI binding env.AI is not available)",
+      reason: "Mock classification (Workers AI binding env.AI and free API keys are not available)",
       category,
-      tags: tags.length ? tags : ["remote"],
+      tags,
       payRange: null,
       clientTimezone: null,
       applicationUrl: null,
@@ -493,8 +449,6 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
 
   let lastError: Error | null = null;
   const providerFailures: string[] = [];
-  const geminiKey = env?.GEMINI_API_KEY;
-  const groqKey = env?.GROQ_API_KEY;
   // Provider order. Gemini Flash-Lite is the default PRIMARY when configured (its
   // ~1k-1.5k/day free tier dwarfs the ~50-200 triages the 10k-neuron/day CF budget
   // affords); Groq is the second free provider, absorbing Gemini's rate-limit /

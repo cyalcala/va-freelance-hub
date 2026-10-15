@@ -428,9 +428,9 @@ export async function drainPendingTriageInline(
       tags: baseTags,
     });
 
-    // Known workplace contradictions need no AI. Fence the selected source,
+    // Known workplace contradictions or geo-ineligible listings need no AI. Fence the selected source,
     // pending state and exact type so a changed row is deferred, not overwritten.
-    if (hasExplicitNonRemoteLocationType(item.locationType)) {
+    if (hasExplicitNonRemoteLocationType(item.locationType) || gate.phEligibility === "ineligible") {
       try {
         const rejected = await db.update(opportunities).set({
           inactiveReason: "policy-rejected",
@@ -446,7 +446,7 @@ export async function drainPendingTriageInline(
           sourceBinding === null ? isNull(opportunities.sourceId) : eq(opportunities.sourceId, sourceBinding),
           eq(opportunities.isActive, false),
           eq(opportunities.inactiveReason, "pending-triage"),
-          eq(opportunities.locationType, item.locationType),
+          item.locationType === null ? isNull(opportunities.locationType) : eq(opportunities.locationType, item.locationType as "hybrid" | "remote" | "onsite"),
         )).returning({ id: opportunities.id });
         if (rejected.length > 0) stats.rejected += 1;
         else stats.deferred += 1;
@@ -524,6 +524,7 @@ export async function drainPendingTriageInline(
           || item.sourceUrl,
         tags: mergedTags,
         payRange: triage.payRange,
+        clientTimezone: triage.clientTimezone ?? (item as any).clientTimezone ?? null,
         category: mapTriageCategoryToUiCategory(triage.category),
         experienceLevel: triage.experienceLevel,
         type: triage.employmentType === "contract" ? "freelance" : (triage.employmentType || "freelance"),
@@ -2334,11 +2335,16 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       a.companyName.localeCompare(b.companyName)
     );
 
+    const agencyPolicyMap = new Map<string, AtsPlatformPolicy>();
+    for (const agency of sortedAtsAgencies) {
+      agencyPolicyMap.set(atsSourceKey(agency), atsPlatformPolicy(agency as any, registryPolicies));
+    }
+
     // Spend the two slots on permitted, due tenants; directory dates cannot advance registry-only sources.
     const workableRotation = selectWorkableRotation({
       agencies: sortedAtsAgencies,
       sourceKey: atsSourceKey,
-      isPolicyEnabled: agency => atsPlatformPolicy(agency, registryPolicies).enabled,
+      isPolicyEnabled: agency => agencyPolicyMap.get(atsSourceKey(agency))?.enabled ?? atsPlatformPolicy(agency as any, registryPolicies).enabled,
       states: sourceFetchStates,
       statesAvailable: fetchStateLoad.available,
       observedAt,
@@ -2350,7 +2356,8 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
     const policySkippedAtsAgencies: SkippedAtsAgency[] = [];
 
     for (const agency of sortedAtsAgencies) {
-      const policy = atsPlatformPolicy(agency, registryPolicies);
+      const sourceKey = atsSourceKey(agency);
+      const policy = agencyPolicyMap.get(sourceKey) ?? atsPlatformPolicy(agency as any, registryPolicies);
       if (!policy.enabled) {
         policySkippedAtsAgencies.push({
           agency,
@@ -2361,7 +2368,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       }
 
       // Skip Workable agencies not in the current active rotation slice
-      if (agency.atsPlatform === "workable" && !workableRotation.selectedSourceIds.has(atsSourceKey(agency))) {
+      if (agency.atsPlatform === "workable" && !workableRotation.selectedSourceIds.has(sourceKey)) {
         policySkippedAtsAgencies.push({
           agency,
           policy,
@@ -2370,7 +2377,6 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
         continue;
       }
 
-      const sourceKey = atsSourceKey(agency);
       const primaryCompanyName = primaryAtsCompanies.get(sourceKey);
       if (primaryCompanyName) {
         duplicateAtsAgencies.push({ agency, primaryCompanyName });
@@ -2406,7 +2412,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       if (skipReason) {
         cadenceSkippedAts.push({
           agency,
-          policy: atsPlatformPolicy(agency, registryPolicies),
+          policy: agencyPolicyMap.get(key) ?? atsPlatformPolicy(agency as any, registryPolicies),
           skipReason,
         });
         continue;
@@ -2418,8 +2424,8 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
     const nonWorkableFetchList = cadencePassedAgencies.filter((a) => a.atsPlatform !== "workable");
 
     const fetchOneAts = async (agency: typeof uniqueAtsAgencies[number]): Promise<SourceFetchResult> => {
-      const policy = atsPlatformPolicy(agency, registryPolicies);
       const key = atsSourceKey(agency);
+      const policy = agencyPolicyMap.get(key) ?? atsPlatformPolicy(agency as any, registryPolicies);
       const atsUrl = atsEndpointUrl(agency.atsPlatform as any, agency.atsToken as string);
 
       // Check robots.txt for the ATS endpoint origin. No current ATS ID is in
@@ -3016,6 +3022,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
 
         triagedItems.push({
           ...item,
+          clientTimezone: triage.clientTimezone ?? (item as any).clientTimezone ?? null,
           // Geo verdict (masterplan L1): gate-verified positives keep their
           // strong verdict; gate-unknown items that passed AI triage are
           // "eligible_likely" — the AI affirmed them but no structured

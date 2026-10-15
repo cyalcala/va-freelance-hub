@@ -414,6 +414,23 @@ test("homepage preview and search use the snapshot without a second eligibility 
   expect(directory.total).toBe(1);
 });
 
+test("slicePublicJobs filters by shift correctly", () => {
+  const jobs = [
+    job({ id: 10, title: "AU Accountant - Day Shift", description: "Australian business hours" }),
+    job({ id: 11, title: "Async Software Engineer", description: "Work whenever you want" }),
+    job({ id: 12, title: "Support Lead", description: "Night shift supporting US clients" }),
+    job({ id: 13, title: "General VA", description: "No shift specified" }),
+  ];
+  const dayShift = slicePublicJobs(jobs, { shift: "day_shift", offset: 0, limit: 10 });
+  expect(dayShift.jobs.map((j) => j.id)).toEqual([10]);
+
+  const flexible = slicePublicJobs(jobs, { shift: "flexible", offset: 0, limit: 10 });
+  expect(flexible.jobs.map((j) => j.id)).toEqual([11]);
+
+  const all = slicePublicJobs(jobs, { offset: 0, limit: 10 });
+  expect(all.total).toBe(4);
+});
+
 test("the refresh lease cannot be taken twice inside its window", () => {
   const db = sourceDatabase();
   try {
