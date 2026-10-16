@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-10-16
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/38933142982
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/38966740819
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 12 |
-| Auto-added this run | 5 |
+| Candidates considered | 7 |
+| Auto-added this run | 0 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 6 |
 | Rejected for quality | 1 |
@@ -23,11 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/38933142
 
 ## Auto-added companies
 
-- Sanctuary Computer
-- Egear
-- Alloy
-- AITrainers
-- Affirm
+- (none this run)
 
 ## Durable candidate queue (SP-06, non-publishing)
 
