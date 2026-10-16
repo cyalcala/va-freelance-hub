@@ -1,9 +1,9 @@
 # Astra777 — continuation contract (2026-10-16)
 
-The October publication-flow outage is not the current task. At 2026-10-14T14:18:26Z
+The October publication-flow outage is not the current task. At 2026-10-16T00:02:21Z
 https://remotejobs-ph.pages.dev/opportunities returned HTTP 200, snapshot status
-fresh, source d1, age 3 seconds, 1697 jobs, 735 companies. A stale snapshot
-earlier the same day recovered. Do not spend the next diff on that incident
+fresh, source d1, age 100 seconds, 1742 jobs, 735 companies. A stale snapshot
+earlier recovered cleanly on edge revalidation. Do not spend the next diff on that incident
 unless a new probe shows an empty board or a 5xx.
 
 ## Priorities
