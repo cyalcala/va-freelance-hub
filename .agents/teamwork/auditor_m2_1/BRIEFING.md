@@ -1,4 +1,4 @@
-# BRIEFING — 2026-10-16T00:24:00Z
+# BRIEFING — 2026-10-16T00:52:00Z
 
 ## Mission
 Conduct a rigorous Forensic Integrity Audit of Milestone 2 (Employer Trust Lists, Shift & Timezone Classification, GeoGate updates).
@@ -20,7 +20,7 @@ Conduct a rigorous Forensic Integrity Audit of Milestone 2 (Employer Trust Lists
 
 ## Current Parent
 - Conversation ID: cce6edad-0d38-46a1-bb0c-e76eb7e4de7a
-- Updated: not yet
+- Updated: 2026-10-16T00:50:46Z
 
 ## Audit Scope
 - **Work product**: packages/scraper/trustedEmployers.ts, packages/scraper/shiftClassifier.ts, packages/scraper/geoGate.ts, and test files
@@ -28,18 +28,26 @@ Conduct a rigorous Forensic Integrity Audit of Milestone 2 (Employer Trust Lists
 - **Audit type**: forensic integrity check
 
 ## Audit Progress
-- **Phase**: investigating
-- **Checks completed**: none
+- **Phase**: reporting
+- **Checks completed**:
+  - Ground truth reconciliation (ORIGINAL_REQUEST.md, astra777.txt, PROJECT.md, worker_m2/handoff.md)
+  - Static analysis for hardcoded outputs, facades, mock stubs in production
+  - Targeted M2 test execution (69 pass, 0 fail)
+  - Public snapshot test execution (43 pass, 0 fail)
+  - Typecheck execution (code 0)
+  - Web build execution (code 0)
+  - Inline empirical verification of edge cases
+  - Adversarial challenger stress tests (57 pass, 0 fail, 1,009 assertions)
 - **Checks remaining**:
-  - Read ORIGINAL_REQUEST.md, astra777.txt, orchestrator_13/PROJECT.md, worker_m2/handoff.md
-  - Static analysis for hardcoded outputs, facades, mocks in production
-  - Independent build and test execution
-  - Dynamic verification & stress testing
-  - Report preparation
-- **Findings so far**: in progress
+  - Await completion of full repository test suite
+  - Write final handoff.md report
+  - Send message to parent orchestrator
+- **Findings so far**: CLEAN — No integrity violations found.
 
 ## Key Decisions Made
-- Commencing independent investigation and empirical testing without modifying production or test code.
+- Confirmed that trusted employer resolution is decoupled from vacancy geography and validity (4-way separation matrix enforced).
+- Confirmed that Step 8 in geoGate executes strictly after Steps 0-7, making bypass of country locks or onsite requirements impossible.
+- Confirmed that dayshift classification strictly adheres to textual/metadata evidence without fabricating schedules.
 
 ## Artifact Index
 - DISPATCH.md — dispatch message record
@@ -48,9 +56,13 @@ Conduct a rigorous Forensic Integrity Audit of Milestone 2 (Employer Trust Lists
 - handoff.md — final audit report
 
 ## Attack Surface
-- **Hypotheses tested**: [TBD]
-- **Vulnerabilities found**: [TBD]
-- **Untested angles**: [TBD]
+- **Hypotheses tested**:
+  - Can high confidence in an employer bypass a foreign country lock? -> REJECTED (Proven impossible via Step 4/5).
+  - Can high confidence in an employer bypass onsite/hybrid workplace types? -> REJECTED (Proven impossible via Step 0).
+  - Can client timezone alone fabricate dayshift hours? -> REJECTED (Returns unknown / phWorkingHours=null).
+  - Can negative or conflicting shift markers bypass classification? -> REJECTED (Returns unknown).
+- **Vulnerabilities found**: None. Invariants hold strictly.
+- **Untested angles**: None within Milestone 2 scope.
 
 ## Loaded Skills
 None requested.
