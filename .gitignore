@@ -16,6 +16,7 @@ node_modules/
 .agents/RESET_AUTONOMY
 .agents/NEW_MISSION
 .agents/.agents
+.agents/skills/agent-skills/
 skills-lock.json
 graphify-out/
 .tmp*

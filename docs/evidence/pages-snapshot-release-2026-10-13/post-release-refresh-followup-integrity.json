@@ -1,0 +1,20 @@
+{
+  "algorithm": "SHA-256",
+  "files": [
+    {
+      "file": "post-release-refresh-followup-readonly.ts",
+      "sha256": "37fc62292de10b0dbe720495f8a418ea1c58196275694c55f73434e505d19e4e",
+      "bytes": 2924
+    },
+    {
+      "file": "post-release-refresh-followup.json",
+      "sha256": "0215f7b956186f5138d70d97fddd20b29aeb3af9e3e50aac9710350cf323c6e8",
+      "bytes": 6763
+    },
+    {
+      "file": "POST_RELEASE_REFRESH_FOLLOWUP.md",
+      "sha256": "b74c74bffa1633a1ea759ce1113399e3d2ba2efcdd3468a99b057fd338c7215b",
+      "bytes": 2331
+    }
+  ]
+}

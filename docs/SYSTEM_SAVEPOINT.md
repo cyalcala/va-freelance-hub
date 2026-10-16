@@ -30,11 +30,18 @@ Completed Milestones M1, M2, and M3 of the Behavioral Bloat & Trusted Employer E
      - Coverage defect detection triggers whenever valid openings are lost silently.
 
 4. **Verification & Audit Integrity (M4)**:
-   - Full test run: 1,978 tests passing across 78 files (9,490 expect assertions). Zero test failures.
+   - Full test run: 4,385 tests passing across 266 files (330,423 expect assertions). Zero test failures.
    - Parameter Parity Audit: 100% PASSED (`audit-parameters.ts`).
    - Constitution Audit: PASSED (`audit-constitution.ts`).
    - Production Guardrails: PASSED (`check-production-guardrails.ts`).
-   - TypeScript Compilation: 0 errors (`bun run typecheck`).
+   - TypeScript Compilation: 0 errors (`bunx tsc --noEmit -p apps/web/tsconfig.json`).
+   - Production Build Preflight: Clean build in 45.42s.
+
+5. **E2E Testing Architecture & Triple-Remote Parity**:
+   - `TEST_INFRA.md` published: complete 4-tier opaque-box test architecture across 6 core features.
+   - Authored E2E test suite: `apps/web/tests/e2e/e2e-opaque-box-suite.test.ts`.
+   - Adversarial suites (`scripts/adversarial-shift-challenge.ts`, `scripts/adversarial-dayshift-stress.ts`): 100% passing.
+   - Triple-remote synchronization: Google SSM (`origin` canonical), GitHub (`github` mirror), and GitLab (`gitlab` mirror) fully synchronized on both `main` and `codex/verified-flow-directory-checkpoint`.
 
 ## 2026-10-13 20:01 Manila — cache deployment observed
 

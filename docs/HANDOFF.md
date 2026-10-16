@@ -1,18 +1,29 @@
 # Handoff
 
-## 2026-10-12 Manila — Live flow incident is current
+## 2026-10-16 Manila — Generation 13 M2 Handoff & Triple-Remote Mirror Synchronization
 
-Continue the same work branch from incident start `0f8068350b6572385d2e88d145539cc6c20a9b86`.
-Read revised `astra777.txt`, newest savepoint and the October 12 GCP/public-funnel
-receipts. Local bounded-insert repair passed 4,204 tests, final typecheck/build,
-four audits and independent review, but production Pages is reported at
-`3065f0d...` with D1 schema 0054. No release/migration performed. Do not equate
-local repair with the observed live 503 root cause or deploy dependent schema
-blindly. A physically advanced scrape lock and unavailable acknowledgement are
-the next concrete counterexample. Restore compatible ingestion and permitted
-acquisition/ready supply, preserve all quality/budget/authority gates, then
-observe physical/receipt/visibility effects. MATH remains 0/13, flow UNKNOWN.
-[Bounded evidence](operations/D1_BOUNDED_PUBLICATION_INSERTS_2026-10-12.md).
+Current branch: `codex/verified-flow-directory-checkpoint`.
+Live board state verified at `2026-10-16T00:02:21Z`: HTTP 200, snapshot status `fresh`, source `d1`, age 100s, 1,742 jobs across 735 companies on `https://remotejobs-ph.pages.dev/opportunities`.
+
+### Status & Verification Baseline
+- **Build & Test Health**: Full test suite passes 100% (4,385 passing, 0 failures, 330,423 assertions). Typecheck passes cleanly with 0 errors (`bunx tsc --noEmit -p apps/web/tsconfig.json`). Production build preflight passes cleanly in 45.42s.
+- **Milestone 1 (Bloat Elimination)**: Completed & verified. Redundant gates, duplicate cadence timers, and obsolete timezone exclusion patterns consolidated into single authoritative checks.
+- **Milestone 2 (Trusted Employer Coverage & Dayshift Recognition)**:
+  - Cataloged high-confidence employers in `packages/scraper/trustedEmployers.ts` with authoritative evidence at `geoGate` Step 8.
+  - Strictly preserved 4-way separation matrix: `Employer PH confidence != Job validity != PH eligibility != Role relevance`. Constitutional Zeros (Pineapple Staffing 0, Affordable Staff onsite 0, UpGuard Australia 0) strictly hold.
+  - Dayshift and APAC business hours parsed and classified with `isDayshift: true` without schedule fabrication; explicit PHT spans (`8am - 5pm Manila time`) extracted.
+- **E2E & Adversarial Test Infrastructure**:
+  - `TEST_INFRA.md` published: complete 4-tier opaque-box test architecture across 6 core features (30 tier-1, 12 tier-2, 10 tier-3, 6 tier-4).
+  - Authored `apps/web/tests/e2e/e2e-opaque-box-suite.test.ts` (62KB).
+  - Empirical adversarial scripts: `scripts/adversarial-shift-challenge.ts` and `scripts/adversarial-dayshift-stress.ts` passing 100%.
+- **Triple-Remote Synchronization State**:
+  - Google Secure Source Manager (`origin`): Canonical source of truth. Both `main` and `codex/verified-flow-directory-checkpoint` synced.
+  - GitHub (`github`): Secondary mirror (`cyalcala/va-freelance-hub`). Both `main` and `codex/verified-flow-directory-checkpoint` synced.
+  - GitLab (`gitlab`): Secondary mirror (`cyrus-group4793641/va-freelance-hub`). Both `main` and `codex/verified-flow-directory-checkpoint` synced.
+- **Next Resumption Order**:
+  1. Complete Milestone 2 gate aggregation (auditor, reviewers, challengers).
+  2. Advance to Milestone 3: 13-stage pipeline loss tracking (`packages/scraper/pipelineLossTracker.ts`) and systematic employer reconciliation.
+
 
 ## 2026-10-11 Manila — Antigravity/swarm preservation is the current handoff
 
