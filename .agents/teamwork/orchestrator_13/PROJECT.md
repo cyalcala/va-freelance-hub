@@ -37,8 +37,8 @@
 |---|---------|-------------|-----------|--------|--------|
 | 1 | Baseline Survey & Code Verification | Deep exploration of codebase, tests, git branch state, and existing PRs/commits | M0 (Survey) | ORIGINAL_REQUEST | DONE |
 | 2 | Behavioral Bloat Elimination & Gate Invariants | Audit live pipeline, eliminate redundant gates/timers/shims, consolidate heuristics, verify adversarial counterexamples | M1 | R1, astra777.txt | DONE |
-| 3 | Trusted Employer Evidence & Dayshift Recognition | Enforce 4-way separation matrix, enhance dayshift classification (AU/NZ/APAC/PHT spans), verify public filters | M2 | R2, R3 | IN_PROGRESS |
-| 4 | 13-Stage Loss Tracking & Systematic Employer Reconciliation | Implement PipelineLossTracker across all 13 stages, reconcile vetted employers (Hunt St, Coconut VA, Hammerjack, Pearl Talent, CrewBloom, 20Four7VA, etc.), verify Constitutional Zeros | M3 | R2 | PLANNED |
+| 3 | Trusted Employer Evidence & Dayshift Recognition | Enforce 4-way separation matrix, enhance dayshift classification (AU/NZ/APAC/PHT spans), verify public filters | M2 | R2, R3 | DONE |
+| 4 | 13-Stage Loss Tracking & Systematic Employer Reconciliation | Implement PipelineLossTracker across all 13 stages, reconcile vetted employers (Hunt St, Coconut VA, Hammerjack, Pearl Talent, CrewBloom, 20Four7VA, etc.), verify Constitutional Zeros | M3 | R2 | IN_PROGRESS |
 | 5 | Multi-Source Intake Fairness & Throughput Scaling | Expand selectIntakeBatch fairness across ATS, RSS, and structured discovery, preventing starvation and respecting D1 limits toward 100-150+ jobs/day | M4 | R4 | PLANNED |
 | 6 | Full Regression, Memory Maintenance & Dual-Mirror Parity | Full test pass (bun test 100%), typecheck, build, update astra777.txt, commit to SSM (`origin`), mirror to GitHub and GitLab, victory audit handoff | M5 | R5 | PLANNED |
 
@@ -47,8 +47,8 @@
 |---|------|-------|-------------|--------|
 | 0 | Survey & Baseline Mapping | 3 parallel Explorers surveying codebase, pipeline state, and git repo | none | DONE |
 | 1 | Behavioral Bloat Elimination & Gate Consolidation | Consolidate redundant checks, preserve invariants and adversarial counterexamples | M0 | DONE |
-| 2 | Trusted Employer Coverage & Dayshift Recognition | 4-way separation matrix, dayshift extraction & public filter exposure | M1 | IN_PROGRESS |
-| 3 | 13-Stage Loss Tracking & Employer Reconciliation | 13-stage loss tracker, reconcile vetted employers, zero silent drops | M2 | PLANNED |
+| 2 | Trusted Employer Coverage & Dayshift Recognition | 4-way separation matrix, dayshift extraction & public filter exposure | M1 | DONE |
+| 3 | 13-Stage Loss Tracking & Employer Reconciliation | 13-stage loss tracker, reconcile vetted employers, zero silent drops | M2 | IN_PROGRESS |
 | 4 | Intake Fairness & Scalable Throughput | Multi-source intake balancing, rotation fairness, D1 batching limits | M3 | PLANNED |
 | 5 | Full Verification, Memory & Repository Parity | Complete test suite, astra777.txt sync, SSM origin commit, GitHub/GitLab mirror sync, victory audit | M4 | PLANNED |
 
@@ -62,4 +62,6 @@
 - `packages/scraper/shiftClassifier.ts`: Working-hour / dayshift classification, explicit PHT spans.
 - `packages/scraper/pipelineLossTracker.ts`: 13-stage loss tracker, reconciliation logic.
 - `packages/scraper/adversarial-counterexamples.test.ts`: Adversarial test suite for all invariants and counterexamples.
+- `apps/web/tests/e2e/e2e-opaque-box-suite.test.ts`: 71-test E2E opaque-box suite across Tiers 1-4.
+- `TEST_INFRA.md` & `TEST_READY.md`: E2E test architecture and readiness receipts.
 - `astra777.txt`: Living engineering memory.
