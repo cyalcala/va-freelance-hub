@@ -1,16 +1,16 @@
 # Directory Enrichment — Latest
 
 Date: 2026-10-17
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39015674736
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39055777117
 
 | Metric | Value |
 | --- | ---: |
-| Companies processed | 1 |
+| Companies processed | 0 |
 | Websites set | 0 |
-| Hiring pages set | 1 |
+| Hiring pages set | 0 |
 | Auto-verified | 0 |
 | Budget | 40 |
 
 ## Enrichment details
 
-- #980 True Zero Technologies: hiring_page=https://jobs.lever.co/truezerotech
+- (none this run)
