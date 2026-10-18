@@ -1,12 +1,12 @@
 # Prospector Latest
 
-Date: 2026-10-17
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39067213105
+Date: 2026-10-18
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39097136513
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 8 |
-| Auto-added this run | 1 |
+| Candidates considered | 7 |
+| Auto-added this run | 0 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 6 |
 | Rejected for quality | 1 |
@@ -23,7 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39067213
 
 ## Auto-added companies
 
-- Askable
+- (none this run)
 
 ## Durable candidate queue (SP-06, non-publishing)
 
