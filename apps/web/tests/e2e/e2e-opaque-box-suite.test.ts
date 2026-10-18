@@ -167,16 +167,16 @@ describe("E2E Opaque-Box Test Suite — Generation 13 Pipeline Architecture", ()
 
     // ─── Feature 3: Trusted Employer Evidence & Dayshift Recognition ─────────
     describe("Feature 3: Trusted Employer Evidence & Dayshift Recognition", () => {
-      test("F03-T1-01: Trusted employer resolution at Step 8 establishes eligibility for vetted agencies", () => {
+      test("F03-T1-01: Employer discovery metadata leaves missing opening geography unknown", () => {
         const verdict = geoGate({
           title: "General Virtual Assistant",
           description: "Support client communications and scheduling.",
           company: "Hunt St",
           sourceId: "workable:hunt-st",
         });
-        expect(verdict.phEligibility).toBe("eligible_verified");
-        expect(verdict.geoScope).toBe("ph_only");
-        expect(verdict.evidence).toContain("Hunt St");
+        expect(verdict.phEligibility).toBe("unclear");
+        expect(verdict.geoScope).toBe("unknown");
+        expect(verdict.evidence).toBe("No deterministic geo signal");
       });
 
       test("F03-T1-02: 4-way separation matrix blocks trusted employer openings when country lock is present", () => {

@@ -18,7 +18,6 @@
 
 import { hasExplicitNonRemoteLocationType } from "./publication-remote";
 import { isObviousNonEnglishOrLocalOnly } from "./triage.js";
-import { findTrustedEmployer } from "./trustedEmployers";
 
 export type GeoScope =
   | "worldwide"
@@ -42,6 +41,7 @@ export interface GeoGateInput {
   /** Existing structured workplace enum; missing metadata is not remote proof. */
   locationType?: string | null;
   tags?: string[] | null;
+  /** Discovery context only; names and source tokens do not establish job eligibility. */
   company?: string | null;
   sourceId?: string | null;
 }
@@ -424,19 +424,9 @@ export function geoGate(input: GeoGateInput): GeoVerdict {
     return verdict("worldwide", "eligible_likely", "Worldwide/anywhere language in posting");
   }
 
-  // 8. Authoritative employer evidence for high-confidence vetted PH employers.
-  // When no job-level negative constraint exists (steps 0, 4, 5, 6 have passed),
-  // a vetted employer establishing PH hiring intent provides authoritative evidence.
-  const employer = findTrustedEmployer(input.company || input.sourceId);
-  if (employer) {
-    return verdict(
-      employer.defaultGeoScope,
-      "eligible_verified",
-      `Authoritative employer evidence: ${employer.companyName} (${employer.confidenceTier}) - ${employer.evidenceNotes}`,
-    );
-  }
-
-  // 9. No deterministic signal — the AI layer decides.
+  // 8. The employer discovery catalog has no source-bound, current hiring
+  // claim or per-opening scope. A company name/token cannot supply missing
+  // geographic evidence; unresolved openings continue to the triage layer.
   return verdict("unknown", "unclear", "No deterministic geo signal");
 }
 

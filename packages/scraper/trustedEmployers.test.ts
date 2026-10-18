@@ -5,7 +5,7 @@ import { assessPostingFreshness } from "./publication-freshness";
 
 const OBSERVED_NOW = "2026-10-14T15:00:00.000Z";
 
-describe("Formalized Trusted PH Employer Evidence (Milestone M2 & Priority 2)", () => {
+describe("PH employer discovery catalog", () => {
   describe("findTrustedEmployer resolution", () => {
     test("resolves canonical tokens correctly", () => {
       expect(findTrustedEmployer("hunt-st")?.companyName).toBe("Hunt St");
@@ -50,8 +50,8 @@ describe("Formalized Trusted PH Employer Evidence (Milestone M2 & Priority 2)", 
     });
   });
 
-  describe("Authoritative Employer Evidence in geoGate", () => {
-    test("vetted PH employer surfaces remote job without explicit Philippines token in description", () => {
+  describe("Discovery metadata does not establish per-opening PH eligibility", () => {
+    test("known employer remains unclear without job-level geography", () => {
       const huntRole = geoGate({
         company: "Hunt St",
         title: "Senior Bookkeeper",
@@ -60,13 +60,12 @@ describe("Formalized Trusted PH Employer Evidence (Milestone M2 & Priority 2)", 
         locationType: "remote",
       });
 
-      expect(huntRole.phEligibility).toBe("eligible_verified");
-      expect(huntRole.geoScope).toBe("ph_only");
-      expect(huntRole.evidence).toContain("Authoritative employer evidence: Hunt St");
-      expect(huntRole.evidence).toContain("tier_a_vetted");
+      expect(huntRole.phEligibility).toBe("unclear");
+      expect(huntRole.geoScope).toBe("unknown");
+      expect(huntRole.evidence).toBe("No deterministic geo signal");
     });
 
-    test("vetted PH employer with sourceId resolves in geoGate", () => {
+    test("known source identity remains unclear without job-level geography", () => {
       const coconutRole = geoGate({
         sourceId: "workable:coconutva",
         title: "Executive Virtual Assistant",
@@ -75,12 +74,12 @@ describe("Formalized Trusted PH Employer Evidence (Milestone M2 & Priority 2)", 
         locationType: "remote",
       });
 
-      expect(coconutRole.phEligibility).toBe("eligible_verified");
-      expect(coconutRole.geoScope).toBe("ph_only");
-      expect(coconutRole.evidence).toContain("Coconut VA");
+      expect(coconutRole.phEligibility).toBe("unclear");
+      expect(coconutRole.geoScope).toBe("unknown");
+      expect(coconutRole.evidence).toBe("No deterministic geo signal");
     });
 
-    test("hammerjack and rocketams default to apac_incl_ph default scope", () => {
+    test("employer catalog default scopes cannot become opening verdicts", () => {
       const hjRole = geoGate({
         company: "Hammerjack",
         title: "Accountant",
@@ -88,8 +87,8 @@ describe("Formalized Trusted PH Employer Evidence (Milestone M2 & Priority 2)", 
         locationRaw: "Remote",
         locationType: "remote",
       });
-      expect(hjRole.phEligibility).toBe("eligible_verified");
-      expect(hjRole.geoScope).toBe("apac_incl_ph");
+      expect(hjRole.phEligibility).toBe("unclear");
+      expect(hjRole.geoScope).toBe("unknown");
 
       const rocketRole = geoGate({
         sourceId: "workable:rocketams",
@@ -98,8 +97,8 @@ describe("Formalized Trusted PH Employer Evidence (Milestone M2 & Priority 2)", 
         locationRaw: "Remote",
         locationType: "remote",
       });
-      expect(rocketRole.phEligibility).toBe("eligible_verified");
-      expect(rocketRole.geoScope).toBe("apac_incl_ph");
+      expect(rocketRole.phEligibility).toBe("unclear");
+      expect(rocketRole.geoScope).toBe("unknown");
     });
   });
 

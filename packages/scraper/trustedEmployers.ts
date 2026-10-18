@@ -1,8 +1,9 @@
 /**
- * Formalized Trusted PH Employer Evidence (Milestone M2 & Priority 2).
+ * Employer discovery and prioritization catalog.
  *
- * Establishes reusable, high-confidence evidence signals for vetted employers
- * that verifiably hire remote Filipino professionals.
+ * These labels are research priors for locating employers' authoritative
+ * hiring surfaces. They do not contain dated, source-bound hiring evidence
+ * or establish an individual opening's geography or working schedule.
  *
  * Core Constitutional Separation:
  *   Employer PH confidence != Job validity != PH eligibility != Role relevance
@@ -14,9 +15,9 @@
  *   4. Work location requirements (e.g. Affordable Staff Bacolod onsite rejects)
  *   5. Deduplication (same source URL or vacancy identity)
  *
- * However, when a job has NO contradictory country locks or onsite requirements,
- * authoritative employer evidence establishes Philippine eligibility without
- * requiring the posting description to redundantly repeat "Philippines".
+ * Absence of a contradiction is not affirmative PH eligibility. Every opening
+ * still needs its own applicable evidence; a catalog name/token match is not
+ * collection permission, a publication grant, or a substitute for that evidence.
  */
 
 export type EmployerConfidenceTier = "tier_a_vetted" | "tier_b_known";
@@ -33,10 +34,13 @@ export interface TrustedEmployerProfile {
   id: string;
   companyName: string;
   aliases: string[];
+  /** Discovery confidence label; no dated per-opening authority is implied. */
   confidenceTier: EmployerConfidenceTier;
   evidenceTypes: EmployerEvidenceType[];
   evidenceNotes: string;
+  /** Research prior, never an opening verdict. */
   defaultGeoScope: "ph_only" | "apac_incl_ph";
+  /** Research prior, never evidence of an opening's schedule. */
   typicalWorkingHours: "day_shift" | "flexible" | "night_shift" | "unknown";
 }
 
@@ -162,7 +166,8 @@ function normalizeIdentifier(raw: string): string {
 }
 
 /**
- * Resolves an employer name, token, or sourceId to a known trusted PH employer profile.
+ * Finds a discovery profile by name, token, or alias. Normalization may join
+ * identical tokens across providers; this lookup must not authorize eligibility.
  */
 export function findTrustedEmployer(identifier: string | null | undefined): TrustedEmployerProfile | null {
   if (!identifier) return null;
@@ -195,7 +200,8 @@ export function findTrustedEmployer(identifier: string | null | undefined): Trus
 }
 
 /**
- * Returns true if the company or token belongs to a verified trusted PH employer.
+ * Returns whether the name/token matches a discovery profile, without granting
+ * PH eligibility, schedule certainty, collection permission, or publication.
  */
 export function isTrustedPhEmployer(identifier: string | null | undefined): boolean {
   return Boolean(findTrustedEmployer(identifier));

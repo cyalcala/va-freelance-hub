@@ -234,11 +234,11 @@ describe("Milestone 2 Empirical Challenger Adversarial Suite", () => {
         const freshness = assessPostingFreshness(date, OBSERVED_NOW);
         expect(freshness.state).toBe("STALE");
 
-        // Even with a vetted employer that passes geoGate Step 8:
+        // Even with explicit per-opening Philippines metadata:
         const geo = geoGate({
           company: "Hunt St",
           title: "Bookkeeper",
-          locationRaw: "Remote",
+          locationRaw: "Philippines",
           locationType: "remote",
         });
         expect(geo.phEligibility).toBe("eligible_verified");
