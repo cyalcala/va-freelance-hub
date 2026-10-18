@@ -2,6 +2,67 @@ import { describe, expect, test } from "bun:test";
 import { PIPELINE_STAGES, PipelineLossTracker } from "./pipelineLossTracker";
 
 describe("13-Stage Pipeline Loss Tracking & Systematic Reconciliation (Milestone M3)", () => {
+  test("an empty tracker cannot invent twenty published openings or a healthy funnel", () => {
+    const rec = new PipelineLossTracker().reconcileEmployer("workable:hunt-st", "Hunt St", 20);
+    expect(rec.discovered).toBeNull();
+    expect(rec.accepted).toBeNull();
+    expect(rec.published).toBeNull();
+    expect(rec.recallRate).toBeNull();
+    expect(rec.status).toBe("UNKNOWN");
+  });
+
+  test("aggregate stage passes cannot be attributed to one employer", () => {
+    const tracker = new PipelineLossTracker();
+    tracker.recordPass("publication", 20);
+    const rec = tracker.reconcileEmployer("workable:hunt-st", "Hunt St", 20);
+    expect(rec.published).toBeNull();
+    expect(rec.status).toBe("UNKNOWN");
+  });
+
+  test("known rejections do not prove publication zero or a complete cohort", () => {
+    const tracker = new PipelineLossTracker();
+    for (let index = 0; index < 20; index++) {
+      tracker.recordLoss("ph_eligibility", { id: "same-retried-opening", sourceId: "workable:hunt-st",
+        reasonCode: "COUNTRY_LOCKED", reasonDetail: "Repeated rejection observation" });
+    }
+    const rec = tracker.reconcileEmployer("workable:hunt-st", "Hunt St", 20, true);
+    expect(rec.dropoffsByStage.ph_eligibility).toBe(20);
+    expect(rec.published).toBeNull();
+    expect(rec.status).toBe("UNKNOWN");
+  });
+
+  test("counts only explicit distinct publication receipts for the exact source", () => {
+    const tracker = new PipelineLossTracker();
+    tracker.recordPublication({ id: "receipt-1", sourceId: "workable:hunt-st" });
+    tracker.recordPublication({ id: "receipt-1", sourceId: "workable:hunt-st" });
+    tracker.recordPublication({ id: "receipt-2", sourceId: "lever:hunt-st" });
+    tracker.recordLoss("publication", { id: "unrelated", sourceId: "workable:hunt-st-other",
+      company: "Hunt St", reasonCode: "WRITE_FAILED", reasonDetail: "Another tenant" });
+    const rec = tracker.reconcileEmployer("workable:hunt-st", "Hunt St", 20);
+    expect(rec.published).toBe(1);
+    expect(rec.recallRate).toBeNull();
+    expect(rec.discovered).toBeNull();
+    expect(rec.accepted).toBeNull();
+    expect(rec.losses).toHaveLength(0);
+    expect(rec.status).toBe("UNKNOWN");
+    expect(tracker.getStageSummary().publication.passed).toBe(2);
+  });
+
+  test("a claimed constitutional zero cannot erase a recorded publication", () => {
+    const tracker = new PipelineLossTracker();
+    tracker.recordPublication({ id: "receipt-1", sourceId: "workable:pineapple-staffing" });
+    const rec = tracker.reconcileEmployer("workable:pineapple-staffing", "Pineapple Staffing", 3, true);
+    expect(rec.published).toBe(1);
+    expect(rec.status).toBe("COVERAGE_DEFECT");
+  });
+
+  test("zero or inconsistent declared counts cannot manufacture a recall ratio", () => {
+    const tracker = new PipelineLossTracker();
+    tracker.recordPublication({ id: "receipt-1", sourceId: "workable:hunt-st" });
+    expect(tracker.reconcileEmployer("workable:hunt-st", "Hunt St", 0).recallRate).toBeNull();
+    expect(tracker.reconcileEmployer("workable:hunt-st", "Hunt St", Number.NaN).recallRate).toBeNull();
+  });
+
   test("initializes all 13 canonical stages", () => {
     expect(PIPELINE_STAGES.length).toBe(13);
     expect(PIPELINE_STAGES).toEqual([
@@ -86,7 +147,7 @@ describe("13-Stage Pipeline Loss Tracking & Systematic Reconciliation (Milestone
   });
 
   describe("Systematic Employer Reconciliation", () => {
-    test("reconciles Hunt St: 135 open, 56 stale dropped, 79 fresh published -> HEALTHY", () => {
+    test("reports observed Hunt St publications without inventing missing stage coverage", () => {
       const tracker = new PipelineLossTracker();
 
       // Record 56 stale openings dropped at scoring
@@ -101,18 +162,21 @@ describe("13-Stage Pipeline Loss Tracking & Systematic Reconciliation (Milestone
         });
       }
 
-      const rec = tracker.reconcileEmployer("hunt-st", "Hunt St", 135, false);
+      for (let i = 0; i < 79; i++) {
+        tracker.recordPublication({ id: `hunt-published-${i}`, sourceId: "workable:hunt-st" });
+      }
+      const rec = tracker.reconcileEmployer("workable:hunt-st", "Hunt St", 135, false);
       expect(rec.authoritativeOpenings).toBe(135);
-      expect(rec.discovered).toBe(135);
-      expect(rec.accepted).toBe(135);
+      expect(rec.discovered).toBeNull();
+      expect(rec.accepted).toBeNull();
       expect(rec.published).toBe(79);
       expect(rec.dropoffsByStage.scoring).toBe(56);
       expect(rec.dropoffsByStage.ph_eligibility).toBe(0);
-      expect(rec.status).toBe("HEALTHY");
-      expect(rec.recallRate).toBeCloseTo(79 / 135, 2);
+      expect(rec.status).toBe("UNKNOWN");
+      expect(rec.recallRate).toBeNull();
     });
 
-    test("reconciles Pineapple Staffing: Constitutional Zero (0% published)", () => {
+    test("Pineapple rejection observations cannot certify zero publication", () => {
       const tracker = new PipelineLossTracker();
 
       // Pineapple has 3 US-pinned / stale roles
@@ -127,15 +191,15 @@ describe("13-Stage Pipeline Loss Tracking & Systematic Reconciliation (Milestone
         });
       }
 
-      const rec = tracker.reconcileEmployer("pineapple-staffing", "Pineapple Staffing", 3, true);
+      const rec = tracker.reconcileEmployer("workable:pineapple-staffing", "Pineapple Staffing", 3, true);
       expect(rec.authoritativeOpenings).toBe(3);
-      expect(rec.published).toBe(0);
-      expect(rec.recallRate).toBe(0);
-      expect(rec.status).toBe("CONSTITUTIONAL_ZERO");
+      expect(rec.published).toBeNull();
+      expect(rec.recallRate).toBeNull();
+      expect(rec.status).toBe("UNKNOWN");
       expect(rec.dropoffsByStage.ph_eligibility).toBe(3);
     });
 
-    test("reconciles Affordable Staff Bacolod onsite: Constitutional Zero", () => {
+    test("Affordable Staff onsite rejection leaves publication unobserved", () => {
       const tracker = new PipelineLossTracker();
 
       tracker.recordLoss("ph_eligibility", {
@@ -147,12 +211,12 @@ describe("13-Stage Pipeline Loss Tracking & Systematic Reconciliation (Milestone
         reasonDetail: "Onsite Bacolod office requirement",
       });
 
-      const rec = tracker.reconcileEmployer("affordable-staff", "Affordable Staff", 1, true);
-      expect(rec.published).toBe(0);
-      expect(rec.status).toBe("CONSTITUTIONAL_ZERO");
+      const rec = tracker.reconcileEmployer("direct:affordable-staff", "Affordable Staff", 1, true);
+      expect(rec.published).toBeNull();
+      expect(rec.status).toBe("UNKNOWN");
     });
 
-    test("detects COVERAGE_DEFECT when valid employer has 0 published openings", () => {
+    test("policy losses expose their reasons without assuming publication completeness", () => {
       const tracker = new PipelineLossTracker();
 
       // 20 openings lost unexpectedly at intake or policy
@@ -167,11 +231,12 @@ describe("13-Stage Pipeline Loss Tracking & Systematic Reconciliation (Milestone
         });
       }
 
-      const rec = tracker.reconcileEmployer("defect-agency", "Defect Agency", 20, false);
+      const rec = tracker.reconcileEmployer("workable:defect-agency", "Defect Agency", 20, false);
       expect(rec.authoritativeOpenings).toBe(20);
-      expect(rec.published).toBe(0);
-      expect(rec.recallRate).toBe(0);
-      expect(rec.status).toBe("COVERAGE_DEFECT");
+      expect(rec.published).toBeNull();
+      expect(rec.recallRate).toBeNull();
+      expect(rec.status).toBe("UNKNOWN");
+      expect(rec.dropoffsByStage.policy).toBe(20);
     });
   });
 });

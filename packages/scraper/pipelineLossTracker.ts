@@ -1,7 +1,7 @@
 /**
- * 13-Stage Pipeline Loss Tracking & Systematic Employer Reconciliation (Milestone M3 & Priority 2).
+ * In-memory pipeline observation helper. No production caller is wired here.
  *
- * Tracks every opening through the complete 13-stage ingestion lifecycle:
+ * Callers may record aggregate counters and individual losses at these stages:
  *   1. SOURCE (Authoritative source enumerated)
  *   2. DISCOVERY (Endpoint / feed discovered)
  *   3. FETCH (HTTP request successful, non-429/5xx)
@@ -16,9 +16,8 @@
  *  12. QUALIFICATION (Lake admission & publication readiness)
  *  13. PUBLICATION (D1 mart insert / update)
  *
- * Provides granular visibility into:
- *   Expected openings -> Discovered -> Accepted -> Published
- * eliminating silent false negatives.
+ * Missing observations remain unknown. A declared opening count and absence
+ * of recorded losses cannot prove discovery, acceptance, or publication.
  */
 
 export const PIPELINE_STAGES = [
@@ -61,18 +60,21 @@ export interface EmployerReconciliationRecord {
   employerId: string;
   companyName: string;
   authoritativeOpenings: number;
-  discovered: number;
-  accepted: number;
-  published: number;
-  recallRate: number; // published / authoritativeOpenings (0..1)
+  discovered: number | null;
+  accepted: number | null;
+  /** Distinct explicitly observed publications, not a complete cohort total. */
+  published: number | null;
+  /** Unknown until publications and expected openings share a complete named cohort. */
+  recallRate: number | null;
   dropoffsByStage: Record<PipelineStage, number>;
   losses: PipelineLossItem[];
-  status: "HEALTHY" | "COVERAGE_DEFECT" | "CONSTITUTIONAL_ZERO";
+  status: "UNKNOWN" | "COVERAGE_DEFECT";
 }
 
 export class PipelineLossTracker {
   private stageCounters: Map<PipelineStage, StageCounter> = new Map();
   private losses: PipelineLossItem[] = [];
+  private publications: Map<string, { id: string; sourceId: string }> = new Map();
 
   constructor() {
     for (const stage of PIPELINE_STAGES) {
@@ -86,7 +88,7 @@ export class PipelineLossTracker {
   }
 
   /**
-   * Records an item successfully entering and passing a pipeline stage.
+   * Records aggregate stage activity, without employer or vacancy attribution.
    */
   public recordPass(stage: PipelineStage, count = 1): void {
     const counter = this.stageCounters.get(stage);
@@ -94,6 +96,16 @@ export class PipelineLossTracker {
       counter.entered += count;
       counter.passed += count;
     }
+  }
+
+  /** Records a publication observation by exact source and vacancy identity.
+   * Call only from a confirmed publication receipt; retries do not add jobs. */
+  public recordPublication(item: { id: string; sourceId: string }): void {
+    if (!item.id.trim() || !item.sourceId.trim()) throw new Error("publication observation requires source and vacancy identities");
+    const key = JSON.stringify([item.sourceId, item.id]);
+    if (this.publications.has(key)) return;
+    this.publications.set(key, { id: item.id, sourceId: item.sourceId });
+    this.recordPass("publication");
   }
 
   /**
@@ -140,7 +152,10 @@ export class PipelineLossTracker {
   }
 
   /**
-   * Reconciles a specific employer's flow through the pipeline.
+   * Summarizes one exact canonical source identity. Company display names and
+   * token substrings cannot attribute observations. This helper has no complete
+   * cohort membership or employer-scoped stage successes, so it cannot certify
+   * HEALTHY, constitutional zero, or an end-to-end funnel.
    */
   public reconcileEmployer(
     employerId: string,
@@ -149,7 +164,7 @@ export class PipelineLossTracker {
     isConstitutionalZero = false,
   ): EmployerReconciliationRecord {
     const employerLosses = this.losses.filter(
-      (l) => l.sourceId.includes(employerId) || (l.company && l.company.toLowerCase().includes(companyName.toLowerCase())),
+      (l) => l.sourceId === employerId,
     );
 
     const dropoffsByStage = {} as Record<PipelineStage, number>;
@@ -157,30 +172,20 @@ export class PipelineLossTracker {
       dropoffsByStage[stage] = employerLosses.filter((l) => l.droppedAtStage === stage).length;
     }
 
-    const totalDropped = employerLosses.length;
-    const published = isConstitutionalZero ? 0 : Math.max(0, authoritativeOpenings - totalDropped);
-    const discovered = Math.max(0, authoritativeOpenings - (dropoffsByStage.source + dropoffsByStage.discovery + dropoffsByStage.fetch));
-    const accepted = Math.max(0, discovered - (dropoffsByStage.parse + dropoffsByStage.normalize + dropoffsByStage.dedup + dropoffsByStage.ph_eligibility + dropoffsByStage.policy + dropoffsByStage.role_gates));
-
-    let status: "HEALTHY" | "COVERAGE_DEFECT" | "CONSTITUTIONAL_ZERO";
-    if (isConstitutionalZero) {
-      status = "CONSTITUTIONAL_ZERO";
-    } else if (authoritativeOpenings > 0 && published === 0) {
-      status = "COVERAGE_DEFECT";
-    } else if (published / Math.max(1, authoritativeOpenings) < 0.5) {
-      status = "COVERAGE_DEFECT";
-    } else {
-      status = "HEALTHY";
-    }
+    const observations = [...this.publications.values()].filter(item => item.sourceId === employerId);
+    const published = observations.length > 0 ? observations.length : null;
+    // A zero expectation cannot erase a real publication. Without complete
+    // cohort observations all other health/zero claims remain unproven.
+    const status = isConstitutionalZero && published !== null ? "COVERAGE_DEFECT" : "UNKNOWN";
 
     return {
       employerId,
       companyName,
       authoritativeOpenings,
-      discovered,
-      accepted,
+      discovered: null,
+      accepted: null,
       published,
-      recallRate: authoritativeOpenings > 0 ? published / authoritativeOpenings : 1,
+      recallRate: null,
       dropoffsByStage,
       losses: employerLosses,
       status,

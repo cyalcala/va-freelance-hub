@@ -253,7 +253,7 @@ describe("E2E Opaque-Box Test Suite — Generation 13 Pipeline Architecture", ()
         expect(tracker.getLosses()[0].reasonCode).toBe("GEO_ONSITE_REQUIRED");
       });
 
-      test("F04-T1-03: Employer reconciliation correctly calculates recall rate and stage dropoffs", () => {
+      test("F04-T1-03: Source reconciliation reports observed publications and stage dropoffs", () => {
         const tracker = new PipelineLossTracker();
         tracker.recordLoss("ph_eligibility", {
           id: "job-001",
@@ -270,21 +270,25 @@ describe("E2E Opaque-Box Test Suite — Generation 13 Pipeline Architecture", ()
           reasonDetail: "Exceeded 30 days",
         });
 
-        const recon = tracker.reconcileEmployer("hunt-st", "Hunt St", 10);
+        for (let i = 0; i < 8; i++) {
+          tracker.recordPublication({ id: `published-${i}`, sourceId: "workable:hunt-st" });
+        }
+        const recon = tracker.reconcileEmployer("workable:hunt-st", "Hunt St", 10);
         expect(recon.authoritativeOpenings).toBe(10);
         expect(recon.published).toBe(8);
-        expect(recon.recallRate).toBeCloseTo(0.8, 2);
+        expect(recon.recallRate).toBeNull();
         expect(recon.dropoffsByStage.ph_eligibility).toBe(1);
         expect(recon.dropoffsByStage.scoring).toBe(1);
       });
 
-      test("F04-T1-04: Reconciliation marks high-performing employer (>=50% recall) as HEALTHY", () => {
+      test("F04-T1-04: Reconciliation leaves health unknown without publication observations", () => {
         const tracker = new PipelineLossTracker();
         const recon = tracker.reconcileEmployer("coconutva", "Coconut VA", 10);
-        expect(recon.status).toBe("HEALTHY");
+        expect(recon.status).toBe("UNKNOWN");
+        expect(recon.published).toBeNull();
       });
 
-      test("F04-T1-05: Reconciliation marks low-performing employer (<50% recall or 0 published) as COVERAGE_DEFECT", () => {
+      test("F04-T1-05: Observed publications do not certify cohort completeness or recall", () => {
         const tracker = new PipelineLossTracker();
         for (let i = 0; i < 8; i++) {
           tracker.recordLoss("fetch", {
@@ -295,9 +299,11 @@ describe("E2E Opaque-Box Test Suite — Generation 13 Pipeline Architecture", ()
             reasonDetail: "Server error",
           });
         }
-        const recon = tracker.reconcileEmployer("low-recall", "Low Recall", 10);
-        expect(recon.status).toBe("COVERAGE_DEFECT");
-        expect(recon.recallRate).toBe(0.2);
+        tracker.recordPublication({ id: "published-1", sourceId: "workable:low-recall" });
+        tracker.recordPublication({ id: "published-2", sourceId: "workable:low-recall" });
+        const recon = tracker.reconcileEmployer("workable:low-recall", "Low Recall", 10);
+        expect(recon.status).toBe("UNKNOWN");
+        expect(recon.recallRate).toBeNull();
       });
     });
 
@@ -728,7 +734,7 @@ describe("E2E Opaque-Box Test Suite — Generation 13 Pipeline Architecture", ()
         }
       });
 
-      test("F04-T2-03: Complete loss scenario (100% dropped at ph_eligibility) reconciles with 0% recall", () => {
+      test("F04-T2-03: Rejection counts alone leave publication and recall unknown", () => {
         const tracker = new PipelineLossTracker();
         for (let i = 0; i < 5; i++) {
           tracker.recordLoss("ph_eligibility", {
@@ -738,18 +744,18 @@ describe("E2E Opaque-Box Test Suite — Generation 13 Pipeline Architecture", ()
             reasonDetail: "US locked",
           });
         }
-        const recon = tracker.reconcileEmployer("test", "Test", 5);
-        expect(recon.recallRate).toBe(0);
-        expect(recon.published).toBe(0);
-        expect(recon.status).toBe("COVERAGE_DEFECT");
+        const recon = tracker.reconcileEmployer("workable:test", "Test", 5);
+        expect(recon.recallRate).toBeNull();
+        expect(recon.published).toBeNull();
+        expect(recon.status).toBe("UNKNOWN");
       });
 
       test("F04-T2-04: Employer with 0 authoritative openings reconciles cleanly without division-by-zero", () => {
         const tracker = new PipelineLossTracker();
         const recon = tracker.reconcileEmployer("empty", "Empty Agency", 0);
-        expect(recon.recallRate).toBe(1);
-        expect(Number.isFinite(recon.recallRate)).toBe(true);
-        expect(recon.published).toBe(0);
+        expect(recon.recallRate).toBeNull();
+        expect(recon.published).toBeNull();
+        expect(recon.status).toBe("UNKNOWN");
       });
 
       test("F04-T2-05: Multiple duplicate drops for same vacancy identity correctly increment stage tallies", () => {
@@ -984,7 +990,7 @@ describe("E2E Opaque-Box Test Suite — Generation 13 Pipeline Architecture", ()
       tracker.recordPass("triage");
       tracker.recordPass("scoring");
       tracker.recordPass("qualification");
-      tracker.recordPass("publication");
+      tracker.recordPublication({ id: "hunt-published-01", sourceId: "workable:hunt-st" });
 
       // Negative counterexample drops at ph_eligibility
       tracker.recordLoss("ph_eligibility", {
@@ -996,12 +1002,13 @@ describe("E2E Opaque-Box Test Suite — Generation 13 Pipeline Architecture", ()
         reasonDetail: "US locked vacancy",
       });
 
-      const huntRecon = tracker.reconcileEmployer("hunt-st", "Hunt St", 1);
-      expect(huntRecon.status).toBe("HEALTHY");
+      const huntRecon = tracker.reconcileEmployer("workable:hunt-st", "Hunt St", 1);
+      expect(huntRecon.published).toBe(1);
+      expect(huntRecon.status).toBe("UNKNOWN");
 
-      const pineappleRecon = tracker.reconcileEmployer("pineapple-staffing", "Pineapple Staffing", 1, true);
-      expect(pineappleRecon.status).toBe("CONSTITUTIONAL_ZERO");
-      expect(pineappleRecon.published).toBe(0);
+      const pineappleRecon = tracker.reconcileEmployer("workable:pineapple-staffing", "Pineapple Staffing", 1, true);
+      expect(pineappleRecon.status).toBe("UNKNOWN");
+      expect(pineappleRecon.published).toBeNull();
     });
 
     test("C-04: Multi-Source Intake + D1 Parameter Budget + Freshness", () => {
@@ -1446,7 +1453,7 @@ describe("E2E Opaque-Box Test Suite — Generation 13 Pipeline Architecture", ()
       expect(nightResult.total).toBe(0);
     });
 
-    test("Scenario S-05: Systematic Employer Reconciliation Audit Across 8 Major Agencies", () => {
+    test("Scenario S-05: Loss-only simulations cannot certify publication across 8 major agencies", () => {
       const tracker = new PipelineLossTracker();
       const agencyAudits = [
         { id: "hunt-st", name: "Hunt St", authoritative: 79, isCz: false },
@@ -1481,14 +1488,10 @@ describe("E2E Opaque-Box Test Suite — Generation 13 Pipeline Architecture", ()
       }
 
       for (const agency of agencyAudits) {
-        const recon = tracker.reconcileEmployer(agency.id, agency.name, agency.authoritative, agency.isCz);
-        if (agency.isCz) {
-          expect(recon.status).toBe("CONSTITUTIONAL_ZERO");
-          expect(recon.published).toBe(0);
-        } else {
-          expect(recon.status).toBe("HEALTHY");
-          expect(recon.recallRate).toBeGreaterThanOrEqual(0.5);
-        }
+        const recon = tracker.reconcileEmployer(`workable:${agency.id}`, agency.name, agency.authoritative, agency.isCz);
+        expect(recon.status).toBe("UNKNOWN");
+        expect(recon.published).toBeNull();
+        expect(recon.recallRate).toBeNull();
       }
     });
   });
