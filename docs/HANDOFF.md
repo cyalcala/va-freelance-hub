@@ -1,5 +1,20 @@
 # Handoff
 
+## 2026-10-18 — Reconciled source, runtime and coverage boundary
+
+Continue the mission from the current [savepoint](SYSTEM_SAVEPOINT.md) and compact
+[Astra contract](../astra777.txt). SSM is canonical; GitHub/GitLab are mirrors.
+The 27 GitHub-only report descendants are preserved in SSM/GitLab at `be7c493a`.
+Do not infer whole-ref or unattended parity from two matching branches.
+Production is still October13 Pages `8c649da0`/source`34e3bd1e`/schema0054.
+The October16 employer inference and M3 production-monitoring claims below
+were not supported: the catalog was unscoped, and the tracker has no production
+consumer and inferred successful publications. Local corrections and independent
+reviews pass; combined regression4499/0/331630, typecheck/build/four audits pass. Next release must isolate
+Workable rotation/fair intake plus necessary original-date protection, with
+real-shaped native positive/negative inputs before deployment. Do not deploy
+the combined checkout or reuse the dirty historical release candidate blindly.
+
 ## 2026-10-16 Manila — Generation 13 M2 Handoff & Triple-Remote Mirror Synchronization
 
 Current branch: `codex/verified-flow-directory-checkpoint`.

@@ -1,5 +1,19 @@
 # Implementation Status
 
+## 2026-10-18 — Actual runtime and proof gaps reconciled
+
+The current [savepoint](SYSTEM_SAVEPOINT.md) and [Astra contract](../astra777.txt)
+supersede older completion/incident NEXT lines. Production Pages remains October
+13 source `34e3bd1e`/schema0054. Later local employer/tracker/day-shift changes are
+not deployment evidence. Seven admitted Workable tenants have 0 fetches/133
+rotation skips each in 24h; complete-day eligible-storage proxy is 35.4/day,
+not certification. Unsupported catalog PH verification and inferred tracker
+publication/health/recall are removed locally with targeted adversarial tests;
+combined regression passes4499/0/331630 with typecheck/build/four audits. Economics unknown-as-zero measurement is
+[corrected and captured](operations/SOURCE_ECONOMICS_MEASUREMENT_REPAIR_2026-10-18.md).
+MATH accepted remains 0/13, trusted-employer recall and certified daily flow UNKNOWN.
+NEXT is the bounded verified checkpoint and isolated0054 Workable release.
+
 ## 2026-10-12 Manila — Local binding repair; live flow incident open
 
 Scrape and direct ingestion now bound physical statements to three rows for one

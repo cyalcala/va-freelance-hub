@@ -1,5 +1,45 @@
 # System Savepoint
 
+## 2026-10-18 — Runtime reconciled; unsupported completion claims corrected
+
+Mission remains active. Read the current compact [Astra continuation contract](../astra777.txt)
+and [repository audit](operations/REPOSITORY_PARITY_2026-10-18.md). Start SHA
+`c23a2db0b60b544d3305312b696784eed98a1089`; 27 GitHub-only bot descendants were
+preserved by fast-forward to `be7c493a935cbf023c33db5c3c0398399a4d69c1`, then
+pushed to canonical SSM and GitLab main/checkpoint. Whole-ref and automated
+mirroring parity are not established by that branch receipt.
+
+Actual Pages remains October 13 source `34e3bd1e`, deployment `8c649da0`, schema
+**0054**. Current local features and later gateway migrations are not deployed.
+Seven admitted Workable sources each have 0 attempts/133 rotation skips in 24h.
+Complete October 11–17 eligible-storage proxy averages 35.4/day, not certified
+first publications. GCP has two enabled hourly jobs; sampled publisher output
+is zero and its source label is still October 4. Do not reopen the old outage
+without current failure evidence or deploy the combined checkout blindly.
+
+The October 16 M2/M3 completion language below overstates proof: the employer
+catalog has no scoped/dated hiring authority; all inspected production callers
+omit its identity inputs. PipelineLossTracker has no production consumer and
+its earlier published counts were inferred from expected minus losses. Current
+local corrections remove that employer eligibility branch and fabricated funnel,
+health and recall claims. Missing observations stay UNKNOWN. Targeted verification
+209/0/1618; independent reviews pass. Final combined regression4499/0/331630,
+typecheck/build and all four audits pass. [Commits, proof and limits](operations/AUTONOMOUS_IMPROVEMENT_2026-10-18.md).
+
+The source-economics report correction preserves UNKNOWN for attribution gaps
+and zero denominators; fixed production input now exposes 65 rather than 64
+source rows. [Capture, tests and limits](operations/SOURCE_ECONOMICS_MEASUREMENT_REPAIR_2026-10-18.md).
+
+**NEXT:** finish an
+isolated 0054-compatible Workable rotation/fair-intake/original-date safety release
+with nonempty native job-to-D1 proof, ordinary-clock observation and rollback.
+The old dirty release candidate rejects legitimate date-only Workable dates and
+is not accepted for deployment. Independent review of the new candidate also
+proved current-onsite and stored-stale-date URL reactivation bypasses; repair
+them with native regression proof. Its retained full run is 3103 pass/1 timeout,
+not acceptance. No source admission, migration, deployment,
+certified daily throughput or MATH acceptance is claimed here.
+
 ## 2026-10-16 — Behavioral Bloat Elimination, Trusted PH Employers & Dayshift Scaling
 
 Completed Milestones M1, M2, and M3 of the Behavioral Bloat & Trusted Employer Expansion:

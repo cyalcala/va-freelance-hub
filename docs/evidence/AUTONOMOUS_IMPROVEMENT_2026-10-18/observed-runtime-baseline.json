@@ -1,0 +1,389 @@
+{
+  "scope": "SAFE_AGGREGATE_PROJECTION_FROM_ALREADY_COMPLETED_READ_ONLY_TOOL_RESULTS_NO_REQUERY",
+  "sourceShaAtInitialObservation": "c23a2db0b60b544d3305312b696784eed98a1089",
+  "gcp": {
+    "observedAt": "2026-10-18T08:00:36.995Z",
+    "project": "antigravity-494415",
+    "region": "asia-southeast1",
+    "jobsListComplete": true,
+    "schedulerListComplete": true,
+    "jobs": [
+      {
+        "name": "lake-publish-job",
+        "updatedAt": "2026-10-04T09:13:09.798366Z",
+        "gitShaLabel": "3a0ba3bc7c0c75c5cd32ae71f924375e2be023f2",
+        "imageDigest": "sha256:97db3a248ac23bd5cab40a44d60c233fb98881d531fbc18f179e1bac8fd3b97a",
+        "latestExecution": "lake-publish-job-kx9lh",
+        "latestCompletion": "2026-10-18T07:47:36.178845Z",
+        "latestFiveCompletedSucceeded": true
+      },
+      {
+        "name": "shadow-dispatch-job",
+        "updatedAt": "2026-10-04T01:17:04.359329Z",
+        "gitShaLabel": "780f0e86557b71e6800e7004174aca6853e9d8b5",
+        "imageDigest": "sha256:86c1c3b61866eac59960dbeeb95cc3afa14fd97f9cf99345ca230c4301083da1",
+        "latestExecution": "shadow-dispatch-job-fkbh9",
+        "latestCompletion": "2026-10-18T07:53:16.256170Z",
+        "latestFiveCompletedSucceeded": true
+      }
+    ],
+    "schedules": [
+      {
+        "name": "lake-publish-hourly",
+        "cron": "47 * * * *",
+        "timeZone": "UTC",
+        "state": "ENABLED",
+        "lastAttempt": "2026-10-18T07:47:05.772746Z"
+      },
+      {
+        "name": "shadow-dispatch-hourly",
+        "cron": "53 * * * *",
+        "timeZone": "UTC",
+        "state": "ENABLED",
+        "lastAttempt": "2026-10-18T07:53:04.676798Z"
+      }
+    ],
+    "latestFivePublisherAppReceipts": [
+      {
+        "timestamp": "2026-10-18T07:47:33.563884Z",
+        "event": "lake_publish_completed",
+        "syncedCount": 0,
+        "enrolledSources": 13,
+        "durationMs": 19910
+      },
+      {
+        "timestamp": "2026-10-18T06:47:31.588524Z",
+        "event": "lake_publish_completed",
+        "syncedCount": 0,
+        "enrolledSources": 13,
+        "durationMs": 18527
+      },
+      {
+        "timestamp": "2026-10-18T05:47:30.649230Z",
+        "event": "lake_publish_completed",
+        "syncedCount": 0,
+        "enrolledSources": 13,
+        "durationMs": 17628
+      },
+      {
+        "timestamp": "2026-10-18T04:47:37.146867Z",
+        "event": "lake_publish_completed",
+        "syncedCount": 0,
+        "enrolledSources": 13,
+        "durationMs": 24227
+      },
+      {
+        "timestamp": "2026-10-18T03:47:40.533717Z",
+        "event": "lake_publish_completed",
+        "syncedCount": 0,
+        "enrolledSources": 13,
+        "durationMs": 17468
+      }
+    ],
+    "limitations": [
+      "Inspected one project/region only. No miner or ten-minute GCP clock in this complete regional list. Labels are provenance metadata, not remote source byte attestation. Successful executions are not new verified publication certificates."
+    ]
+  },
+  "pages": {
+    "observedAt": "2026-10-18T08:23:28.012Z",
+    "status": 200,
+    "project": "remotejobs-ph",
+    "canonicalAndLatestDeployment": "8c649da0-93ef-4458-89ad-715f1367a2ca",
+    "sourceSha": "34e3bd1efa34dc3a2c31f2cc3e5b6c5b04790e83",
+    "createdAt": "2026-10-13T11:52:29.354194Z",
+    "stage": "deploy:success",
+    "productionBranch": "main",
+    "compatibilityDate": "2024-11-01",
+    "compatibilityFlags": [
+      "nodejs_compat"
+    ],
+    "d1Binding": {
+      "binding": "DB",
+      "id": "08072f16-d3d1-436a-9104-b057a162db7c"
+    },
+    "aiBindingNames": [
+      "AI"
+    ],
+    "secretNamesOnly": [
+      "GEMINI_API_KEY",
+      "GROQ_API_KEY",
+      "INNGEST_SIGNING_KEY",
+      "OPENROUTER_API_KEY",
+      "PROXY_SECRET"
+    ],
+    "otherBindingMapsEmpty": true
+  },
+  "public": {
+    "observedAt": "2026-10-18T08:09:14.443Z",
+    "url": "https://remotejobs-ph.pages.dev/opportunities",
+    "status": 200,
+    "jobs": 1702,
+    "companies": 757,
+    "snapshotStatus": "stale",
+    "snapshotSource": "d1",
+    "snapshotGeneratedAt": "2026-10-18T07:56:02.760Z",
+    "capturedAgeSeconds": 787,
+    "cacheControl": "no-store",
+    "workScheduleFilterPresent": false
+  },
+  "d1": {
+    "observedAt": "2026-10-18T08:10:34.951Z",
+    "allQueriesReportedRowsWritten": 0,
+    "stored": 7514,
+    "activeEligible": 1712,
+    "storedVerifiedLabelsActive": 725,
+    "latestScrapedAt": "2026-10-18T08:01:00.683Z",
+    "latestUpdatedAt": "2026-10-18T08:10:09.887Z",
+    "latestMigration": "0054_public_serving_snapshot.sql",
+    "migrationAppliedAt": "2026-10-07 08:31:02",
+    "dailyCurrentInventoryAndReceiptProxy": [
+      {
+        "manilaDate": "2026-10-11",
+        "completeDay": true,
+        "storedRows": 20,
+        "currentlyEligibleRows": 17,
+        "currentlyStoredVerifiedLabels": 0,
+        "recentPosted0to7dCurrentEligibleRows": 17,
+        "ledgerReceipts": 16,
+        "ledgerReportedPublished": 17,
+        "ledgerArrayIdsSum": 14,
+        "ledgerCountIdMismatchReceipts": 2
+      },
+      {
+        "manilaDate": "2026-10-12",
+        "completeDay": true,
+        "storedRows": 34,
+        "currentlyEligibleRows": 28,
+        "currentlyStoredVerifiedLabels": 9,
+        "recentPosted0to7dCurrentEligibleRows": 28,
+        "ledgerReceipts": 23,
+        "ledgerReportedPublished": 27,
+        "ledgerArrayIdsSum": 14,
+        "ledgerCountIdMismatchReceipts": 9
+      },
+      {
+        "manilaDate": "2026-10-13",
+        "completeDay": true,
+        "storedRows": 40,
+        "currentlyEligibleRows": 25,
+        "currentlyStoredVerifiedLabels": 2,
+        "recentPosted0to7dCurrentEligibleRows": 24,
+        "ledgerReceipts": 21,
+        "ledgerReportedPublished": 24,
+        "ledgerArrayIdsSum": 14,
+        "ledgerCountIdMismatchReceipts": 7
+      },
+      {
+        "manilaDate": "2026-10-14",
+        "completeDay": true,
+        "storedRows": 48,
+        "currentlyEligibleRows": 36,
+        "currentlyStoredVerifiedLabels": 3,
+        "recentPosted0to7dCurrentEligibleRows": 36,
+        "ledgerReceipts": 30,
+        "ledgerReportedPublished": 36,
+        "ledgerArrayIdsSum": 26,
+        "ledgerCountIdMismatchReceipts": 10
+      },
+      {
+        "manilaDate": "2026-10-15",
+        "completeDay": true,
+        "storedRows": 52,
+        "currentlyEligibleRows": 38,
+        "currentlyStoredVerifiedLabels": 3,
+        "recentPosted0to7dCurrentEligibleRows": 37,
+        "ledgerReceipts": 32,
+        "ledgerReportedPublished": 43,
+        "ledgerArrayIdsSum": 31,
+        "ledgerCountIdMismatchReceipts": 12
+      },
+      {
+        "manilaDate": "2026-10-16",
+        "completeDay": true,
+        "storedRows": 89,
+        "currentlyEligibleRows": 74,
+        "currentlyStoredVerifiedLabels": 31,
+        "recentPosted0to7dCurrentEligibleRows": 50,
+        "ledgerReceipts": 36,
+        "ledgerReportedPublished": 97,
+        "ledgerArrayIdsSum": 18,
+        "ledgerCountIdMismatchReceipts": 18
+      },
+      {
+        "manilaDate": "2026-10-17",
+        "completeDay": true,
+        "storedRows": 44,
+        "currentlyEligibleRows": 30,
+        "currentlyStoredVerifiedLabels": 2,
+        "recentPosted0to7dCurrentEligibleRows": 27,
+        "ledgerReceipts": 27,
+        "ledgerReportedPublished": 30,
+        "ledgerArrayIdsSum": 19,
+        "ledgerCountIdMismatchReceipts": 8
+      },
+      {
+        "manilaDate": "2026-10-18",
+        "completeDay": false,
+        "storedRows": 17,
+        "currentlyEligibleRows": 16,
+        "currentlyStoredVerifiedLabels": 1,
+        "recentPosted0to7dCurrentEligibleRows": 16,
+        "ledgerReceipts": 15,
+        "ledgerReportedPublished": 16,
+        "ledgerArrayIdsSum": 10,
+        "ledgerCountIdMismatchReceipts": 5
+      }
+    ],
+    "workable24h": {
+      "observedLastEvent": "2026-10-18T08:11:01.917Z",
+      "scope": "rolling24h source_fetch_events",
+      "sources": [
+        {
+          "sourceId": "workable:coconutva",
+          "events": 133,
+          "attempted": 0,
+          "successes": 0,
+          "failures": 0,
+          "skips": 133,
+          "parsed": 0,
+          "lastAttemptInWindow": null,
+          "reasonClass": "ROTATION"
+        },
+        {
+          "sourceId": "workable:crewbloom",
+          "events": 133,
+          "attempted": 0,
+          "successes": 0,
+          "failures": 0,
+          "skips": 133,
+          "parsed": 0,
+          "lastAttemptInWindow": null,
+          "reasonClass": "ROTATION"
+        },
+        {
+          "sourceId": "workable:hello-rache",
+          "events": 133,
+          "attempted": 0,
+          "successes": 0,
+          "failures": 0,
+          "skips": 133,
+          "parsed": 0,
+          "lastAttemptInWindow": null,
+          "reasonClass": "ROTATION"
+        },
+        {
+          "sourceId": "workable:hunt-st",
+          "events": 133,
+          "attempted": 0,
+          "successes": 0,
+          "failures": 0,
+          "skips": 133,
+          "parsed": 0,
+          "lastAttemptInWindow": null,
+          "reasonClass": "ROTATION"
+        },
+        {
+          "sourceId": "workable:pearltalent",
+          "events": 133,
+          "attempted": 0,
+          "successes": 0,
+          "failures": 0,
+          "skips": 133,
+          "parsed": 0,
+          "lastAttemptInWindow": null,
+          "reasonClass": "ROTATION"
+        },
+        {
+          "sourceId": "workable:pineapple-staffing",
+          "events": 133,
+          "attempted": 0,
+          "successes": 0,
+          "failures": 0,
+          "skips": 133,
+          "parsed": 0,
+          "lastAttemptInWindow": null,
+          "reasonClass": "ROTATION"
+        },
+        {
+          "sourceId": "workable:rocketams",
+          "events": 133,
+          "attempted": 0,
+          "successes": 0,
+          "failures": 0,
+          "skips": 133,
+          "parsed": 0,
+          "lastAttemptInWindow": null,
+          "reasonClass": "ROTATION"
+        }
+      ]
+    },
+    "failures24h": [
+      {
+        "sourceId": "greenhouse:remotecom",
+        "attemptsFailed": 20,
+        "errorClass": "Greenhouse HTTP 404"
+      }
+    ],
+    "skipDistribution24h": [
+      {
+        "reason": "REGISTRY",
+        "events": 4256,
+        "sources": 32
+      },
+      {
+        "reason": "CADENCE",
+        "events": 1469,
+        "sources": 13
+      },
+      {
+        "reason": "ROTATION",
+        "events": 931,
+        "sources": 7
+      },
+      {
+        "reason": "PAUSED",
+        "events": 798,
+        "sources": 6
+      },
+      {
+        "reason": "OTHER",
+        "events": 451,
+        "sources": 4
+      },
+      {
+        "reason": "DUPLICATE_IDENTITY",
+        "events": 133,
+        "sources": 1
+      }
+    ],
+    "limitations": [
+      "Storage date plus current active/PH flags is a mutable storage proxy, not independently verified first publication. Stored verified labels are not independent adjudication. Ledger count/ID disagreements persist; unique recorded IDs are still not a daily certificate. Sources are parsed before PH/freshness/AI/publication gates. No observed source census or end-to-end trusted-employer recall denominator was measured."
+    ],
+    "uniqueRecordedLedgerIdsSeparateLaterQuery": {
+      "observedAtApprox": "2026-10-18T08:11Z",
+      "values": {
+        "2026-10-11": 14,
+        "2026-10-12": 14,
+        "2026-10-13": 14,
+        "2026-10-14": 26,
+        "2026-10-15": 24,
+        "2026-10-16": 18,
+        "2026-10-17": 19,
+        "2026-10-18": 11
+      },
+      "caveat": "Separate query later than daily-ledger read; current incomplete-day10vs11 IDs is not a same-snapshot inconsistency."
+    }
+  },
+  "turso": {
+    "observedAt": "2026-10-18T08:21:00.468Z",
+    "tableCounts": {
+      "lake_candidate_jobs": 2187,
+      "lake_intake_items": 488,
+      "lake_runs": 78,
+      "lake_ats_discovery": 9977
+    },
+    "limitations": [
+      "Only aggregate counts and schema were read. Status/qualification/current source evidence not measured. No claim these rows are fresh or publishable."
+    ]
+  }
+}

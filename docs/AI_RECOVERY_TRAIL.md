@@ -1,5 +1,17 @@
 # AI Recovery Trail
 
+## 2026-10-18 — Runtime and claimed coverage reconciled
+
+Recovered all of Astra and current source governance before changes. Verified
+old Pages deployment/schema, Workable selection starvation, low storage proxies,
+and deficient publication receipts. Preserved 27 GitHub-only bot descendants
+in canonical SSM/GitLab by fast-forward. Corrected unsupported employer-catalog
+PH inference, test-only tracker fabricated success and source-economics false
+zero reporting. Targeted tests and independent reviews pass; final combined
+regression4499/0/331630, typecheck/build/four audits pass. [Current savepoint](SYSTEM_SAVEPOINT.md) owns NEXT;
+[compact Astra](../astra777.txt) replaces the conflicting long memory while its
+previous bytes are archived. MATH0/13, certified flow and employer recall UNKNOWN.
+
 ## 2026-10-12 Manila — Owner incident resumed and measured
 
 Owner edited the goal after the prior stop, prioritizing one October 12 posting

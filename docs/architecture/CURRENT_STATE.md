@@ -1,11 +1,29 @@
 # VA Freelance Hub — current architectural ownership and evidence
 
-**Version:** 1.3 · 2026-10-10. **Purpose:** canonical ownership, current evidence
+**Version:** 1.4 · 2026-10-18. **Purpose:** canonical ownership, current evidence
 pointers and unresolved migration facts. This map does not dispatch runtime work.
 The [October 4 owner resource](../directives/2026-10-04-PH-VA-FRESHNESS-GCP-CANONICAL-UPGRADE.md)
 clarifies source control versus execution. The [October 1 topology snapshot](CURRENT_STATE_2026-10-01_SNAPSHOT.md)
 is preserved verbatim as historical evidence; it is not today's runtime inventory.
 Read the newest savepoint and verify deployed versions before acting.
+
+## October 18 verified subset
+
+SSM remains canonical; GitHub and GitLab are mirrors/continuity. Branch equality
+does not prove whole-repository or unattended mirroring parity. The
+[remote audit](../operations/REPOSITORY_PARITY_2026-10-18.md) found 27 GitHub-only
+report descendants, subsequently preserved in SSM and GitLab by fast-forward.
+Eight residual workflow report writers still target GitHub's runtime `origin`.
+
+Actual Pages is deployment `8c649da0`/source`34e3bd1e`, schema0054. GCP in the
+inspected region still has two hourly jobs; publisher labels October4 source
+`3a0ba3bc`, and five sampled receipts synced zero. The retained ten-minute
+Cloudflare caller remains a real collection dependency. Seven admitted Workable
+sources have zero attempts and133rotation skips each in24h. New intake/tracker/
+dayshift source code is not deployed architecture. PipelineLossTracker has no
+production consumer. Read the compact [Astra model](../../astra777.txt) and
+current [savepoint](../SYSTEM_SAVEPOINT.md) for source/runtime distinctions and
+the bounded0054-compatible release NEXT. No migration or new clock is claimed.
 
 ## Canonical operating model
 
@@ -46,7 +64,7 @@ It covers one project/region and sampled workflows, not the entire fleet.
 | GitHub project validation | CI-ONLY as runtime role | Tests/build/type checks validate inspected source; not GCP health or production publication |
 | Secure Source Manager repository | CURRENT canonical Git remote | Instance `va-freelance-hub` in `asia-northeast1`; receipt `../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md` |
 | GitLab mirror | SECONDARY fallback | Not the canonical repository. Older GitLab readbacks remain dated evidence |
-| GitHub docs/ADRs/prompts/history | RETAINED remote `github` / not canonical Git | Residual Actions clocks stay classified below. Do not push canonical history there |
+| GitHub docs/ADRs/prompts/history | MIRROR remote `github` / not canonical Git | Preserve canonical history as a mirror; residual Actions clocks stay separately classified |
 | GCP miner / other migrated controllers | UNKNOWN outside inspected scope | No miner job/scheduler in inspected region; don't infer none elsewhere |
 | Exact Git SHA -> running image/config | UNKNOWN | Artifact images/tags exist; immutable source-to-execution mapping not recovered |
 | Historical Trigger/Vercel/Next application paths | LEGACY unless new evidence | Preserve artifacts; don't revive old clocks merely for familiarity |
