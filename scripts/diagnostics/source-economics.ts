@@ -403,6 +403,12 @@ function pct(x: number): string {
   return `${(x * 100).toFixed(1)}%`;
 }
 
+function measuredCount(value: unknown): number | null {
+  if (typeof value !== "number" && (typeof value !== "string" || value.trim() === "")) return null;
+  const count = Number(value);
+  return Number.isSafeInteger(count) && count >= 0 ? count : null;
+}
+
 /** Render the human baseline. Pure: same inputs always produce the same text. */
 export function renderReport(byName: Record<string, Row[]>, meta: EconMeta): string {
   const id = byName["identity_coverage"]?.[0] ?? {};
@@ -532,23 +538,27 @@ export function renderReport(byName: Record<string, Row[]>, meta: EconMeta): str
       );
     }
     lines.push("");
+  }
 
+  if (triage.length > 0 || outcomes.length > 0) {
     lines.push(`## Yield efficiency (last 7 days)`);
     lines.push("");
-    lines.push(`Yield per real (changed) fetch and per 100 items seen.`);
+    lines.push(`Stored eligibility per real (changed) fetch and per 100 items seen; not marginal verified first-publication yield.`);
+    lines.push(`UNKNOWN means a count is missing/invalid or its denominator is zero. Fetch and stored cohorts may differ across intake paths; these descriptive ratios do not establish source productivity or causal yield.`);
     lines.push("");
     lines.push(`| source_id | real fetches | items seen | eligible stored | yield / fetch | yield / 100 items |`);
     lines.push(`| --- | ---: | ---: | ---: | ---: | ---: |`);
-    const triageBySource = new Map(triage.map((r) => [String(r["source_id"]), num(r["eligible"])]));
-    for (const r of outcomes) {
-      const sid = String(r["source_id"]);
-      const realFetches = num(r["real_fetches"]);
-      const items = num(r["items"]);
-      const eligible = triageBySource.get(sid) ?? 0;
-      const ypf = realFetches > 0 ? (eligible / realFetches).toFixed(2) : "0.00";
-      const y100 = items > 0 ? ((eligible / items) * 100).toFixed(2) : "0.00";
+    const triageBySource = new Map(triage.map((r) => [String(r["source_id"]), r]));
+    const fetchBySource = new Map(outcomes.map((r) => [String(r["source_id"]), r]));
+    const sourceIds = new Set([...fetchBySource.keys(), ...triageBySource.keys()]);
+    for (const sid of sourceIds) {
+      const realFetches = measuredCount(fetchBySource.get(sid)?.["real_fetches"]);
+      const items = measuredCount(fetchBySource.get(sid)?.["items"]);
+      const eligible = measuredCount(triageBySource.get(sid)?.["eligible"]);
+      const ypf = eligible !== null && realFetches !== null && realFetches > 0 ? (eligible / realFetches).toFixed(2) : "UNKNOWN";
+      const y100 = eligible !== null && items !== null && items > 0 ? ((eligible / items) * 100).toFixed(2) : "UNKNOWN";
       lines.push(
-        `| ${sid} | ${realFetches} | ${items} | ${eligible} | ${ypf} | ${y100} |`,
+        `| ${sid} | ${realFetches ?? "UNKNOWN"} | ${items ?? "UNKNOWN"} | ${eligible ?? "UNKNOWN"} | ${ypf} | ${y100} |`,
       );
     }
     lines.push("");

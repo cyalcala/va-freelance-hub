@@ -4,3 +4,6 @@ docs/architecture/CURRENT_STATE_2026-10-01_SNAPSHOT.md -text whitespace=-blank-a
 # Preserve hashed operational captures and build logs exactly on restoration.
 docs/evidence/publication-flow-2026-10-13/** -text whitespace=-blank-at-eof,cr-at-eol
 docs/evidence/pages-snapshot-release-2026-10-13/** -text whitespace=-blank-at-eof,cr-at-eol
+# Preserve the fixed-input measurement comparison and archived memory bytes.
+docs/evidence/AUTONOMOUS_IMPROVEMENT_2026-10-18/** -text whitespace=-blank-at-eof,cr-at-eol
+docs/audits/ASTRA777_BEFORE_RECONCILIATION_2026-10-18.md -text whitespace=-blank-at-eof,cr-at-eol

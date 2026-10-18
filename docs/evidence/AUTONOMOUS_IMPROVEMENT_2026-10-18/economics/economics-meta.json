@@ -1,0 +1,15 @@
+{
+  "unit": "SP-02",
+  "asOf": "2026-10-18T08:15:21.418Z",
+  "cut7Unix": 1791706521,
+  "cut14Unix": 1791101721,
+  "cut30Unix": 1789719321,
+  "queryOrder": [
+    "qualified_supply",
+    "identity_coverage",
+    "supply_totals",
+    "source_supply",
+    "fetch_outcomes_7d",
+    "triage_outcomes_7d"
+  ]
+}
