@@ -1,8 +1,9 @@
 # Generated report canonical persistence — 2026-10-20
 
-Source base: `8078a260aab0650e815e780209f4598b94af9e29` on
-`codex/verified-flow-directory-checkpoint`. This is a source/test receipt;
-**activation and actual persisted-write acceptance remain pending**. The earlier
+Initial source base: `8078a260aab0650e815e780209f4598b94af9e29` on
+`codex/verified-flow-directory-checkpoint`. This receipt covers local source
+verification, CI-only activation, and a subsequent clean-runner CI repair;
+**actual report persisted-write acceptance remains separate**. The earlier
 [SSM capability diagnostic](SSM_RUNTIME_CAPABILITY_PROBE_2026-10-18.md) passed
 GitHub run `39142613038`, but read/dry-run negotiation is not a main-write proof.
 
@@ -114,6 +115,67 @@ Until an actual selected main job stores and reads back a new report commit in
 SSM, then GitHub, persisted-write/main authorization and recurrent continuity
 remain unverified. A suitable acceptance run uses an existing read-only aggregate
 report job after the exact infrastructure slice is backed up and activated.
+
+## CI activation and archived-entrypoint repair
+
+Root backed up source commit `8b1895f51dc04a14f8ece9c2e5383cb70145e1d1`, then
+activated the separately prepared CI-only commit
+`e7daa6ea78647382ee29b5d15ab1c2a2555f4147` on SSM/GitHub/GitLab main with
+readbacks. The activation has one parent,
+`5c46edf47ca7aada79d3b931284ffd7aa4773a66`; it contains exactly the thirteen
+reviewed blobs and preserves all other base tree entries. Its actual release
+classifier returned `deployable=false`. Preparation evidence is retained in
+`tmp/canonical-report-activation-preparation-2026-10-20.json`.
+
+[CI run 39408643056](https://github.com/cyalcala/va-freelance-hub/actions/runs/39408643056)
+passed the secret scan, four audits, scope classification and all sixteen new
+persistence tests. Full unit tests were **4484 pass / 1 fail / 331673 assertions**
+in 95.20s. Deployment was skipped. The sole failure was the existing native
+legacy-Hunter quarantine test: it expected `LEGACY_QUARANTINE`, but Bun stopped
+first because `scripts/gha/harvest.ts` imported `fast-xml-parser` before its
+unconditional quarantine throw. The root uses an isolated install; that parser
+is declared only in `packages/scraper`. Neither the legacy script nor its test
+nor dependency manifests changed in the activation commit. Failed job
+`118580665460` is retained in `tmp/canonical-report-activation-ci-failed.log`.
+
+The bounded follow-up removes two unused imports and all unreachable prototype
+code, reducing the archived entrypoint from 190 lines to three. Its literal
+quarantine error and nonzero exit remain unchanged. Repository consumer checks
+found no workflow/package entrypoint using the prototype; the native quarantine
+test and production guardrail are its real inspected consumers. No source
+selection, network request, environment read, publication path or dependency is
+enabled by this removal. The old prototype remains recoverable from Git.
+
+The existing native test now copies the actual entrypoint into a temporary
+package with no declared dependencies and invokes Bun with `--no-install` and
+`--no-env-file`. This prevents ambient developer dependency resolution from
+hiding the clean-runner defect. A copy alone initially passed on this developer
+host and was therefore insufficient evidence; the explicit dependency-free
+fixture then reproduced CI's missing-package failure before the source repair.
+
+- Before: **0 pass / 1 fail**, exact missing `fast-xml-parser` error before the
+  quarantine assertion (`.tmp-canonical-legacy-quarantine-red.log`).
+- After: **1/0/7 assertions**, 2.88s, same quarantine message/exit, zero HTTP,
+  no `.env` load, no synthetic credential/private text exposed
+  (`.tmp-canonical-legacy-quarantine-green.log`).
+- All twelve neighboring GHA files after the repair: **158/0/304616**,
+  67.60s (`.tmp-canonical-legacy-neighbors.log`).
+- The classifier additionally excludes only exact `scripts/gha/harvest.ts`,
+  because it is an unconditional quarantined tombstone. Actual shell tests
+  classify this repair as non-Pages and mixed active-runtime changes as
+  deployable; static and shell classifier checks passed **2/0/18** in 0.90s
+  (`.tmp-canonical-legacy-classifier.log`). Other GHA scripts, app runtime,
+  migrations and suffix lookalikes remain deployable. The extra true-result
+  fixture initially reused its output filename; assigning a distinct output per
+  case corrected that test harness issue without changing classifier behavior.
+- Exact root production-guardrail tests passed **16/0/34**, 525ms
+  (`.tmp-canonical-legacy-guardrail-exact.log`). All four production/governance
+  audits passed with explicit exit zero; scoped whitespace checks passed.
+
+This follow-up is pending its own review/activation and a new full CI result.
+It does not convert the failed full CI run into a pass, prove report persistence,
+or establish GitLab unattended credentials. No timeout or dependency was added;
+no test was disabled.
 
 References checked against primary documentation:
 [composite actions](https://docs.github.com/en/actions/tutorials/create-actions/create-a-composite-action),

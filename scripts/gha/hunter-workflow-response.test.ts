@@ -293,7 +293,12 @@ test("native legacy harvest CLI stays quarantined with no HTTP request or env-fi
     writeFileSync(join(result.workspace, ".env"), `HUNTER_FIXTURE_ENV_LOADED=${PRIVATE_TEXT}\n`);
     const preload = join(result.workspace, "deny-env-file.ts");
     writeFileSync(preload, 'if (process.env.HUNTER_FIXTURE_ENV_LOADED) throw new Error("ENV_FILE_WAS_READ");\n');
-    const child = Bun.spawn([process.execPath, "--no-env-file", "--preload", preload, join(ROOT, "scripts/gha/harvest.ts")], {
+    // Exercise the real entrypoint without the developer checkout's incidental
+    // packages. Quarantine must work before any legacy parser can be resolved.
+    const entrypoint = join(result.workspace, "legacy-harvest.ts");
+    copyFileSync(join(ROOT, "scripts/gha/harvest.ts"), entrypoint);
+    writeFileSync(join(result.workspace, "package.json"), '{"name":"legacy-quarantine-fixture","private":true}\n');
+    const child = Bun.spawn([process.execPath, "--no-install", "--no-env-file", "--preload", preload, entrypoint], {
       cwd: result.workspace, env: { PATH: process.env.PATH ?? process.env.Path ?? "",
         SystemRoot: process.env.SystemRoot ?? "C:/Windows", INGEST_API_URL: result.url, PROXY_SECRET: SECRET },
       stdout: "pipe", stderr: "pipe",
@@ -303,6 +308,7 @@ test("native legacy harvest CLI stays quarantined with no HTTP request or env-fi
     ]);
     expect(exitCode).toBe(1);
     expect(stderr).toContain("LEGACY_QUARANTINE");
+    expect(stderr).not.toContain("Cannot find package");
     expect(stderr).not.toContain("ENV_FILE_WAS_READ");
     expect(result.requests).toHaveLength(0);
     expect(stdout + stderr).not.toContain(SECRET);
