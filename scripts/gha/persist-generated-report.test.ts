@@ -262,14 +262,14 @@ for (const extra of [{ REPORT_KEY: "../../runtime.ts" }, { GITHUB_REF: "refs/hea
   } finally { f.dispose(); }
 }, 120_000);
 
-test("actual release classifier excludes only the persistence infrastructure, retaining runtime deployment", () => {
+test("actual release classifier excludes persistence infrastructure and the quarantined CLI, retaining runtime deployment", () => {
   const workflow = Bun.YAML.parse(readFileSync(join(root, ".github/workflows/ci-guardrail.yml"), "utf8")) as any;
   const classifier = workflow.jobs.changes.steps.find((step: any) => step.id === "scope").run;
   const pattern = classifier.match(/grep -qvE '([^']+)'/)?.[1];
   expect(pattern).toBeDefined();
   const ignored = new RegExp(pattern!);
-  for (const path of [".github/actions/persist-generated-report/action.yml", "scripts/gha/persist-generated-report.sh", "scripts/gha/persist-generated-report.test.ts", "docs/directory-health-latest.md"]) expect(ignored.test(path)).toBe(true);
-  for (const path of ["apps/web/src/pages/api/cron/scrape.ts", "migrations/0055.sql", ".github/actions/some-deployer/action.yml", "scripts/gha/persist-generated-report.sh.extra", "scripts/gha/harvest.ts"]) expect(ignored.test(path)).toBe(false);
+  for (const path of [".github/actions/persist-generated-report/action.yml", "scripts/gha/persist-generated-report.sh", "scripts/gha/persist-generated-report.test.ts", "scripts/gha/harvest.ts", "docs/directory-health-latest.md"]) expect(ignored.test(path)).toBe(true);
+  for (const path of ["apps/web/src/pages/api/cron/scrape.ts", "migrations/0055.sql", ".github/actions/some-deployer/action.yml", "scripts/gha/persist-generated-report.sh.extra", "scripts/gha/chef.ts", "scripts/gha/harvest.ts.extra"]) expect(ignored.test(path)).toBe(false);
 });
 
 test("execute the actual release classifier for CI-only and mixed runtime changes", () => {
@@ -288,11 +288,13 @@ git() {
 }
 source "$CLASSIFIER"
 `);
+    let caseIndex = 0;
     for (const [paths, expected] of [
-      [".github/actions/persist-generated-report/action.yml\nscripts/gha/persist-generated-report.sh", "false"],
+      [".github/actions/persist-generated-report/action.yml\nscripts/gha/persist-generated-report.sh\nscripts/gha/harvest.ts", "false"],
       [".github/actions/persist-generated-report/action.yml\napps/web/src/pages/api/cron/scrape.ts", "true"],
+      ["scripts/gha/harvest.ts\nscripts/gha/chef.ts", "true"],
     ]) {
-      const output = join(dir, `result-${expected}`);
+      const output = join(dir, `result-${caseIndex++}`);
       const result = Bun.spawnSync([bash, "--noprofile", "--norc", shellPath(join(dir, "run.sh"))], {
         env: { ...process.env, CLASSIFIER: shellPath(join(dir, "classifier.sh")),
           BEFORE: "1111111111111111111111111111111111111111", CURRENT: "2222222222222222222222222222222222222222",
