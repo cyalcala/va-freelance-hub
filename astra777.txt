@@ -16,6 +16,8 @@ MATH-01–13 completion is certified.
   runner39409286844 wrote d88365ed to SSM then GitHub. Main23b9202a passed
   full CI39410570310 with production deployment skipped. GitLab was mirrored
   manually; unattended GitLab and recurring continuity remain unproven.
+  Memory/read-only-report maincdc12194 subsequently matched all three hosts and
+  passed CI39419521183 with production migration/deployment explicitly skipped.
 - Branch: `codex/verified-flow-directory-checkpoint`. Preserve unrelated dirty
   `.agents/teamwork/orchestrator_13/progress.md`. Fetch/restate HEAD per slice.
 - Actual Pages production since 2026-10-20 11:28:54.036Z: deployment
@@ -74,14 +76,25 @@ permission. Trace each real caller before attributing a result to this model.
   active eligible matches,17 misses (Hunt16,Crew1). Raw location rows must not
   inflate job counts. This is not an independently adjudicated recall denominator.
   Trace retained exact misses under ordinary acquisition after deployment.
-- Post-release reads at 11:36:50-11:38:22Z verify five SELECTs/zero writes,
-  public HTTP 200 and six matching header/meta pairs. Actual attempts: Coconut
-  32/Crew 152 at 11:32, Hello Rache 3/Pearl 286 at 11:36, robots enforce/allowed;
-  Pineapple held. These counts are fetched metadata, not newly published jobs.
-  Crew opening 5902EBE6B1 is stored as id 9686, inactive and
-  policy-rejected/ineligible/country_locked with
-  Pakistan location, despite a retained PH variant of that same opening. This
-  is an exact location-variant false negative; an isolated correction is underway.
+- Post-release reads verify all six admitted tenants fetched once: Coconut32/
+  Crew152 at11:32Z, Hello Rache3/Pearl286 at11:36Z, Hunt143/Rocket10 at11:41Z,
+  all robots enforce/allowed. Pineapple remains held. Caller identity and a sole
+  scheduler are unproven; these are metadata counts, not publication counts.
+- At11:44-11:45Z, the17 retained misses resolve to2 public Hunt IDs9745/9746,
+  11 Hunt pending-triage rows,3 absent Hunt URLs and Crew9686 policy-rejected.
+  Both public details returned200 with exact titles/source links; ordinary
+  filtered-board GETs subsequently contain both IDs from snapshot11:45:19Z,
+  total1794 jobs. Their Oct20/Oct7 original dates are retained. These are observed
+  newly stored public candidates, not lifetime-first or independent certification.
+  Pending9749 records provider failures (Gemini/Groq429; remaining detail truncated);
+  ten others explicitly record AI subrequest budget exhaustion.
+- Crew5902EBE6B1/id9686 retains Pakistan, country_locked/ineligible, tag
+  geo-gate-rejected and exact location-pin evidence despite a current PH variant.
+  Native baseline reproduces rejected-sibling URL poisoning. Parser consolidation
+  prevents new poisoning but does not recover already-policy-rejected9686.
+  A separate current-evidence requeue contract is needed; never blanket-reactivate
+  policy rejections or skip the role triage that this row never passed.
+  Receipts: docs/evidence/workable-flow-acceptance-2026-10-20/.
 - Existing insert receipts retain empty ID arrays; do not sum their counts
   into certified new publications. Global writer/cap closure remains unproven.
 - Full trusted-employer recall, PH false-negative rate, complete publication
@@ -137,9 +150,11 @@ Do not relax the complete Autonomy Cutover Predicate or source-specific scope.
 ## ACTIVE / NEXT
 
 Highest-value next action: correct the demonstrated same-opening location-variant
-loss in the next isolated release, then trace the 17 unique misses through actual
-D1/public outcomes. Keep observing ordinary attempts; their caller identity is
-unproven, and no 17-miss recovery or certified daily flow is claimed.
+loss in the next isolated release, retain actual insert-ID receipts, and expose
+source-stated dayshift through the existing classifier. Integrate only accepted
+compatible slices, then run a fresh combined regression/build and ordinary-flow
+acceptance. Keep observing the remaining15 misses; no complete cohort recovery,
+independent PH precision, cross-writer cap closure or daily certification is claimed.
 Retain canonical identities, two slots/60min, robots enforcement,
 US/onsite/stale/future/invalid-date controls, current admissions, caps and rollback.
 

@@ -1,0 +1,66 @@
+{
+  "scope": "NATIVE_INPUT_SQL_AND_PUBLIC_METADATA_VALIDATION_NO_NETWORK_OR_PRODUCTION_CALLS",
+  "recordedAt": "2026-10-20T11:35:25.428Z",
+  "bun": "1.3.14",
+  "helperSha256": "602fb03ac54290d7b7154201f3a97a9ce1e6073417ac20f4840da91049c29752",
+  "checks": {
+    "validInputs": true,
+    "noPathTraversal": true,
+    "noInjectedSince": true,
+    "noImpossibleDate": true,
+    "noOmittedTimezone": true,
+    "exact17TwoSources": true,
+    "noUntrustedSqlUrl": true,
+    "noOtherSource": true,
+    "noChangedCohort": true,
+    "fiveSingleSelects": true,
+    "nativeSql0054Compatible": true,
+    "actualPublicPredicate": true,
+    "ftsPresenceObserved": true,
+    "sixHeaderMetaPairs": true,
+    "linkCountNotWholeHtml": true,
+    "detectsHeaderMetaMismatch": true
+  },
+  "passed": true,
+  "nativeRowIds": [
+    4,
+    2,
+    1,
+    3
+  ],
+  "publicPredicateRowIds": [
+    2,
+    1
+  ],
+  "queries": [
+    {
+      "kind": "exactMissOpportunities",
+      "limit": 68,
+      "sha256": "c33853d2d03bb8142ddf3c1fc19c7f1e03a406982bc0b3068b3fa4965bc5d194"
+    },
+    {
+      "kind": "sourceState",
+      "limit": 7,
+      "sha256": "86ffe304d366bc2b674bcb6066547e10f416f2f1528b8ca4ffc93fd6a3126ad7"
+    },
+    {
+      "kind": "recentFetchEvents",
+      "limit": 120,
+      "sha256": "6c4b1d250bf2e9917bae7150709da181fdb8bcd168fe5a2e4fe09d6b3a566f59"
+    },
+    {
+      "kind": "recentPublicationLedger",
+      "limit": 100,
+      "sha256": "53041bddf6edd199faf49a80bd235dcf3e3d01c279ff26a3853f89d97984ed9c"
+    },
+    {
+      "kind": "snapshotMetadata",
+      "limit": 1,
+      "sha256": "96a1ccef4d9e748ba8298ae181ad0cf55cbe3cf6a1c7ebd7dc65f61fcd33cc8a"
+    }
+  ],
+  "limitations": [
+    "No actual D1 read or public GET was issued",
+    "This verifies native0054 SQL shape and strict validation, not deployed runtime acceptance"
+  ]
+}

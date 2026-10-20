@@ -1,0 +1,91 @@
+{
+  "scope": "EXISTING_FULL_CURRENT_ADMISSION_VALIDATOR_ON_FRESH_READ_ONLY_CAPTURE",
+  "observedStart": "2026-10-20T11:31:40.826Z",
+  "observedAt": "2026-10-20T11:31:49.836Z",
+  "validatorSha256": "60803a0055dcda9e51712dd75716c3155d381cc54565b42084c593adfb3c07a6",
+  "query": "SELECT\r\n json_object('sourceId',s.source_id,'providerId',s.provider_id,'displayName',s.display_name,\r\n 'endpointUrl',s.endpoint_url,'companyToken',s.company_token,'discoveryProvenance',s.discovery_provenance,\r\n 'complianceState',s.compliance_state,'operationalState',s.operational_state,'reviewDeadline',s.review_deadline,\r\n 'policyExpiry',s.policy_expiry,'canaryMaxNewItemsPerTick',s.canary_max_new_items_per_tick,\r\n 'optOut',s.opt_out,'governanceRevision',s.governance_revision,'lastTransitionHash',s.last_transition_hash) AS sourceJson,\r\n CASE WHEN p.id IS NULL THEN NULL ELSE json_object('id',p.id,'providerFamily',p.provider_family,\r\n 'mechanism',p.mechanism,'authClass',p.auth_class,'endpointPattern',p.endpoint_pattern,'allowedHosts',p.allowed_hosts,\r\n 'evidenceUrl',p.evidence_url,'evidenceHash',p.evidence_hash,'evidenceCapturedAt',p.evidence_captured_at,\r\n 'visibilityFilter',p.visibility_filter,'contentScope',p.content_scope,'cadenceMinMinutes',p.cadence_min_minutes,\r\n 'cadenceMaxMinutes',p.cadence_max_minutes,'rateGuidance',p.rate_guidance,'robotsHandling',p.robots_handling,\r\n 'removalSemantics',p.removal_semantics,'evidenceLeaseDays',p.evidence_lease_days,'governanceRevision',p.governance_revision) END AS providerJson,\r\n CASE WHEN e.id IS NULL THEN NULL ELSE json_object('id',e.id,'sourceId',e.source_id,'providerId',e.provider_id,\r\n 'sourceGovernanceRevision',e.source_governance_revision,'providerGovernanceRevision',e.provider_governance_revision,\r\n 'endpointUrl',e.endpoint_url,'policyVersion',e.policy_version,'capturedAt',e.captured_at,'expiresAt',e.expires_at,\r\n 'adjudicationRef',e.adjudication_ref,'packetJson',e.packet_json,'packetSha256',e.packet_sha256) END AS evidenceJson,\r\n EXISTS(SELECT 1 FROM source_opt_outs o WHERE o.source_id=s.source_id) AS durableOptOut\r\n FROM source_registry s LEFT JOIN provider_profiles p ON p.id=s.provider_id\r\n LEFT JOIN source_admission_evidence e ON e.id=(SELECT MAX(latest.id) FROM source_admission_evidence latest WHERE latest.source_id=s.source_id)\r\n WHERE s.source_id IN ('workable:coconutva','workable:crewbloom','workable:hello-rache','workable:hunt-st','workable:pearltalent','workable:pineapple-staffing','workable:rocketams')",
+  "querySha256": "0da9fb0c7ec93191a72e106edbb5d5491795f1710d4e86fa53cff02d2c0aab47",
+  "meta": {
+    "served_by": "v3-prod",
+    "served_by_region": "APAC",
+    "served_by_colo": "SIN",
+    "served_by_primary": true,
+    "timings": {
+      "sql_duration_ms": 4.0173
+    },
+    "duration": 4.0173,
+    "changes": 0,
+    "last_row_id": 0,
+    "changed_db": false,
+    "size_after": 92303360,
+    "rows_read": 35,
+    "rows_written": 0,
+    "total_attempts": 1
+  },
+  "checks": [
+    {
+      "sourceId": "workable:coconutva",
+      "ok": true,
+      "evidenceId": 17,
+      "packetSha256": "63982de44dca2df557858a00b52a9c189237c879a273d1f0992b459cb71d8c09",
+      "sourceRevision": 1,
+      "providerRevision": 2,
+      "expiresAt": "2027-03-10T21:31:09.551Z"
+    },
+    {
+      "sourceId": "workable:crewbloom",
+      "ok": true,
+      "evidenceId": 18,
+      "packetSha256": "2a9388de27003eac1f2922120e73f8cadac10489c82c1e70e033dc61ed54aad0",
+      "sourceRevision": 1,
+      "providerRevision": 2,
+      "expiresAt": "2027-03-10T21:31:09.551Z"
+    },
+    {
+      "sourceId": "workable:hello-rache",
+      "ok": true,
+      "evidenceId": 22,
+      "packetSha256": "3c797c4ecead6cd5c419ea02eaa9c8191deabd4cdba40dae7bcfd697422bfe51",
+      "sourceRevision": 1,
+      "providerRevision": 2,
+      "expiresAt": "2027-03-10T21:31:09.551Z"
+    },
+    {
+      "sourceId": "workable:hunt-st",
+      "ok": true,
+      "evidenceId": 20,
+      "packetSha256": "0ef332b5695d59f2199b48f1c626aba271eb2f1e5bdb7e7a66d8ca16e05c1871",
+      "sourceRevision": 4,
+      "providerRevision": 2,
+      "expiresAt": "2027-03-10T21:31:09.551Z"
+    },
+    {
+      "sourceId": "workable:pearltalent",
+      "ok": true,
+      "evidenceId": 19,
+      "packetSha256": "e065f35b8367b65e9915ee8738ae973701ca1cbddd5ac018535bdf9fcd803d17",
+      "sourceRevision": 1,
+      "providerRevision": 2,
+      "expiresAt": "2027-03-10T21:31:09.551Z"
+    },
+    {
+      "sourceId": "workable:pineapple-staffing",
+      "ok": false,
+      "reason": "immutable evidence metadata does not match the packet and current identity"
+    },
+    {
+      "sourceId": "workable:rocketams",
+      "ok": true,
+      "evidenceId": 21,
+      "packetSha256": "57beefbbb23f365162e6b3cb92d4460b986dfc2e2193ff42c53873700f1cbea1",
+      "sourceRevision": 4,
+      "providerRevision": 2,
+      "expiresAt": "2027-03-10T21:31:09.551Z"
+    }
+  ],
+  "expectedSixCurrentAndPineappleHeld": true,
+  "limitations": [
+    "Sequential SELECT and in-memory validation, not mutation authority at a future instant",
+    "No packet renewal, source fetch, grant or publication performed"
+  ]
+}

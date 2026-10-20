@@ -1,0 +1,93 @@
+{
+  "scope": "OBSERVED_REAL_ACQUISITION_AND_TWO_EXACT_PUBLIC_DETAILS_NOT_CERTIFIED_DAILY_THROUGHPUT",
+  "recordedAt": "2026-10-20T12:04:50.621743+00:00",
+  "sourceSha": "f34965b0c7bbfb76395259ccce0b60ad4533eee0",
+  "deploymentId": "347d95ae-c9f2-45d5-9cc9-73fb42eafdd2",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 31,
+      "sha256": "87883c9fd2e229176548d81f6e6887f848f97d0b4628cccaffd9f14c8ab2e847"
+    },
+    {
+      "path": "canonical-memory-main-activation-2026-10-20.json",
+      "bytes": 2677,
+      "sha256": "4ee91b7363ae9edcf2147adeef6bc7d147df5c7bf379323202f2b9bb031fa030"
+    },
+    {
+      "path": "canonical-memory-main-ci-2026-10-20.json",
+      "bytes": 7912,
+      "sha256": "f16e448e96320ca064089a975a3cc4327b40082f80ab35530efc393042975a29"
+    },
+    {
+      "path": "verify-recovered-index-2026-10-20.ts",
+      "bytes": 1792,
+      "sha256": "63bb3341a7a119f3386eadf0c499ce63493177a8294d481bd62fb676a82fe878"
+    },
+    {
+      "path": "verify-recovered-public-2026-10-20.ts",
+      "bytes": 2363,
+      "sha256": "883293cf282b8f4d71f7bf61725ac650dabd6b5b1b5da5418bd1133bb611896d"
+    },
+    {
+      "path": "workable-exact-loss-reasons-2026-10-20.json",
+      "bytes": 14256,
+      "sha256": "6fb6b7b31e963320901ef92a91db408ff4082c5cf94f9bf37eb99d5a9da5ed70"
+    },
+    {
+      "path": "workable-exact-loss-reasons-2026-10-20.ts",
+      "bytes": 1724,
+      "sha256": "81548b88befd6e36b1f1e1ffc57081b85892008254f503a3a20ad72a23d3eedf"
+    },
+    {
+      "path": "workable-postrelease-admissions-2026-10-20.json",
+      "bytes": 5132,
+      "sha256": "f9a0254be6647915772691b7ba55032a139c8f4713f4ae54fa1507ba94a29451"
+    },
+    {
+      "path": "workable-postrelease-admissions-2026-10-20.ts",
+      "bytes": 2442,
+      "sha256": "8185b3ac9a599a64b6716958b3918128754a6574865acb78fe21e96d7febe7df"
+    },
+    {
+      "path": "workable-postrelease-afterhunt-2026-10-20.json",
+      "bytes": 43090,
+      "sha256": "687664b78b28522bdc109f23ff66ee387ed8d88f5de14ef80f6ba3d3fd90d326"
+    },
+    {
+      "path": "workable-postrelease-firstclock-2026-10-20.json",
+      "bytes": 31022,
+      "sha256": "8421526bfc1813760928cbc1b6592f67f531c6d5fe1a54da4dae34c9e637f1cb"
+    },
+    {
+      "path": "workable-postrelease-observe-2026-10-20.ts",
+      "bytes": 13028,
+      "sha256": "602fb03ac54290d7b7154201f3a97a9ce1e6073417ac20f4840da91049c29752"
+    },
+    {
+      "path": "workable-postrelease-observer-native-validation-2026-10-20.json",
+      "bytes": 1827,
+      "sha256": "e5984a89d10dd33c866561418b5181c3755c4fcda89e25b03f95fcd97c0cf85f"
+    },
+    {
+      "path": "workable-postrelease-secondclock-2026-10-20.json",
+      "bytes": 34616,
+      "sha256": "6d7eee371761e48566baa4cf83d6a0598905b2c06a1313f76ad642b73ea1546f"
+    },
+    {
+      "path": "workable-recovered-index-2026-10-20.json",
+      "bytes": 5001,
+      "sha256": "457ccfab54f3b140824e2dd45b2298ee06dd6aef20dd394391da88e05b01f0da"
+    },
+    {
+      "path": "workable-recovered-public-details-2026-10-20.json",
+      "bytes": 2617,
+      "sha256": "775704bebdbbdbf7ebee7425457b38dfcd243ebfa39bc5ce96fd2634d61832e3"
+    }
+  ],
+  "limitations": [
+    "Retained original observer scripts use their original root-relative paths and refuse overwriting receipts; copies are provenance rather than relocated executable entrypoints",
+    "Source API observations contain location variants; group by exact source+URL for opening denominators",
+    "Current labels/public visibility are not independent eligibility or lifetime first-publication certification"
+  ]
+}

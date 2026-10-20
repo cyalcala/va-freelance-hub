@@ -1,0 +1,62 @@
+{
+  "scope": "TWO_EXACT_NEWLY_STORED_PUBLIC_CANDIDATES_ORDINARY_DETAIL_GETS",
+  "observedStart": "2026-10-20T11:47:30.907Z",
+  "sourceReceiptSha256": "687664b78b28522bdc109f23ff66ee387ed8d88f5de14ef80f6ba3d3fd90d326",
+  "jobs": [
+    {
+      "id": 9746,
+      "url": "https://remotejobs-ph.pages.dev/jobs/9746",
+      "status": 200,
+      "observedAt": "2026-10-20T11:47:31.717Z",
+      "sourceId": "workable:hunt-st",
+      "sourceUrl": "https://apply.workable.com/j/49BD316DAE",
+      "title": "Admin / Level 1 Helpdesk Support (030-1385)",
+      "postedAt": "2026-10-07T00:00:00.000Z",
+      "scrapedAt": "2026-10-20T11:41:01.234Z",
+      "locationRaw": "Philippines",
+      "currentPhLabel": "eligible_verified",
+      "sourceLinkPresent": true,
+      "detailTitlePresent": true,
+      "htmlSha256": "550bef61292994391770ea4ce470d2f9fa21a1e5ae07cbaccafe2a75ff0ee18e",
+      "snapshotHeaders": {
+        "x-public-snapshot": "fresh",
+        "x-public-snapshot-age-seconds": "126",
+        "x-public-snapshot-companies": "766",
+        "x-public-snapshot-generated-at": "2026-10-20T11:45:19.926Z",
+        "x-public-snapshot-jobs": "1794",
+        "x-public-snapshot-source": "edge"
+      }
+    },
+    {
+      "id": 9745,
+      "url": "https://remotejobs-ph.pages.dev/jobs/9745",
+      "status": 200,
+      "observedAt": "2026-10-20T11:47:31.358Z",
+      "sourceId": "workable:hunt-st",
+      "sourceUrl": "https://apply.workable.com/j/7C685D947F",
+      "title": "Admin & Client Support Coordinator (0010-1433)",
+      "postedAt": "2026-10-20T00:00:00.000Z",
+      "scrapedAt": "2026-10-20T11:41:01.234Z",
+      "locationRaw": "Philippines",
+      "currentPhLabel": "eligible_verified",
+      "sourceLinkPresent": true,
+      "detailTitlePresent": true,
+      "htmlSha256": "404e9c8b193a8517d4e77c53e8539f375dc587dd2b31639b1ef4e527de8ff1a5",
+      "snapshotHeaders": {
+        "x-public-snapshot": "fresh",
+        "x-public-snapshot-age-seconds": "126",
+        "x-public-snapshot-companies": "766",
+        "x-public-snapshot-generated-at": "2026-10-20T11:45:19.926Z",
+        "x-public-snapshot-jobs": "1794",
+        "x-public-snapshot-source": "d1"
+      }
+    }
+  ],
+  "observedEnd": "2026-10-20T11:47:31.724Z",
+  "publicDetailsVerified": true,
+  "limitations": [
+    "Source facts, dates, stored eligibility labels and public GETs are observed; no independent full-role or lifetime first-publication certification",
+    "Provider opening pages were not refetched by this observer",
+    "Detail visibility can precede board snapshot regeneration; never infer index membership merely from a detail200"
+  ]
+}

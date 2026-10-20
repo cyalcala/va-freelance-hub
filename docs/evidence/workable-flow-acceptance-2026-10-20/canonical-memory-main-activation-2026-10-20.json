@@ -1,0 +1,64 @@
+{
+  "scope": "ROOT_APPROVED_NORMAL_CANONICAL_FIRST_MEMORY_MAIN_PROMOTION",
+  "commit": "cdc121947516c8a91ea9ac2c8c8e98f4d340fbf9",
+  "reviewedParent": "8b22c50601bb208c87c9319a0d8bb6781025e75f",
+  "namedRef": "refs/heads/codex/canonical-memory-report-main-2026-10-20",
+  "startedAtUtc": "2026-10-20T12:03:33.231276+00:00",
+  "operations": [
+    {
+      "remote": "origin",
+      "ref": "refs/heads/codex/canonical-memory-report-main-2026-10-20",
+      "pushExitCode": 0,
+      "expectedCommit": "cdc121947516c8a91ea9ac2c8c8e98f4d340fbf9",
+      "actualReadback": "cdc121947516c8a91ea9ac2c8c8e98f4d340fbf9",
+      "verifiedAtUtc": "2026-10-20T12:03:56.822801+00:00"
+    },
+    {
+      "remote": "origin",
+      "ref": "refs/heads/main",
+      "pushExitCode": 0,
+      "expectedCommit": "cdc121947516c8a91ea9ac2c8c8e98f4d340fbf9",
+      "actualReadback": "cdc121947516c8a91ea9ac2c8c8e98f4d340fbf9",
+      "verifiedAtUtc": "2026-10-20T12:04:12.111063+00:00"
+    },
+    {
+      "remote": "github",
+      "ref": "refs/heads/codex/canonical-memory-report-main-2026-10-20",
+      "pushExitCode": 0,
+      "expectedCommit": "cdc121947516c8a91ea9ac2c8c8e98f4d340fbf9",
+      "actualReadback": "cdc121947516c8a91ea9ac2c8c8e98f4d340fbf9",
+      "verifiedAtUtc": "2026-10-20T12:04:22.913473+00:00"
+    },
+    {
+      "remote": "github",
+      "ref": "refs/heads/main",
+      "pushExitCode": 0,
+      "expectedCommit": "cdc121947516c8a91ea9ac2c8c8e98f4d340fbf9",
+      "actualReadback": "cdc121947516c8a91ea9ac2c8c8e98f4d340fbf9",
+      "verifiedAtUtc": "2026-10-20T12:04:31.974143+00:00"
+    },
+    {
+      "remote": "gitlab",
+      "ref": "refs/heads/codex/canonical-memory-report-main-2026-10-20",
+      "pushExitCode": 0,
+      "expectedCommit": "cdc121947516c8a91ea9ac2c8c8e98f4d340fbf9",
+      "actualReadback": "cdc121947516c8a91ea9ac2c8c8e98f4d340fbf9",
+      "verifiedAtUtc": "2026-10-20T12:04:54.433410+00:00"
+    },
+    {
+      "remote": "gitlab",
+      "ref": "refs/heads/main",
+      "pushExitCode": 0,
+      "expectedCommit": "cdc121947516c8a91ea9ac2c8c8e98f4d340fbf9",
+      "actualReadback": "cdc121947516c8a91ea9ac2c8c8e98f4d340fbf9",
+      "verifiedAtUtc": "2026-10-20T12:05:11.400701+00:00"
+    }
+  ],
+  "forceUsed": false,
+  "deployOrMigrationCommandIssued": false,
+  "initialCanonicalMain": "8b22c50601bb208c87c9319a0d8bb6781025e75f",
+  "initialGithubMain": "8b22c50601bb208c87c9319a0d8bb6781025e75f",
+  "callerHeadBranchIndexAndDirtUnchanged": true,
+  "unrelatedProgressSha256": "5088b2b840bfe8253fedb7a930c766993f9cc65d2ffaa2f18ee54048371cd786",
+  "completedAtUtc": "2026-10-20T12:05:11.940804+00:00"
+}

@@ -1,0 +1,150 @@
+{
+  "scope": "ORDINARY_FILTERED_BOARD_GETS_FOR_EXACT_RECOVERED_IDS",
+  "observedEnd": "2026-10-20T12:07:57.085Z",
+  "jobs": [
+    {
+      "id": 9746,
+      "url": "https://remotejobs-ph.pages.dev/opportunities?q=Admin+%2F+Level+1+Helpdesk+Support+%28030-1385%29",
+      "status": 200,
+      "observedAt": "2026-10-20T12:07:56.871Z",
+      "expectedJobLinkPresent": true,
+      "headers": {
+        "X-Public-Snapshot": "stale",
+        "X-Public-Snapshot-Generated-At": "2026-10-20T11:45:19.926Z",
+        "X-Public-Snapshot-Source": "edge",
+        "X-Public-Snapshot-Age-Seconds": "1351",
+        "X-Public-Snapshot-Jobs": "1794",
+        "X-Public-Snapshot-Companies": "766",
+        "Age": null,
+        "Cache-Control": "no-store",
+        "CF-Cache-Status": null,
+        "Date": "Tue, 20 Oct 2026 12:07:51 GMT",
+        "ETag": null
+      },
+      "snapshot": [
+        {
+          "header": "X-Public-Snapshot",
+          "meta": "va-hub:snapshot-status",
+          "headerValue": "stale",
+          "metaValue": "stale",
+          "matches": true
+        },
+        {
+          "header": "X-Public-Snapshot-Generated-At",
+          "meta": "va-hub:snapshot-generated-at",
+          "headerValue": "2026-10-20T11:45:19.926Z",
+          "metaValue": "2026-10-20T11:45:19.926Z",
+          "matches": true
+        },
+        {
+          "header": "X-Public-Snapshot-Source",
+          "meta": "va-hub:snapshot-source",
+          "headerValue": "edge",
+          "metaValue": "edge",
+          "matches": true
+        },
+        {
+          "header": "X-Public-Snapshot-Age-Seconds",
+          "meta": "va-hub:snapshot-age-seconds",
+          "headerValue": "1351",
+          "metaValue": "1351",
+          "matches": true
+        },
+        {
+          "header": "X-Public-Snapshot-Jobs",
+          "meta": "va-hub:snapshot-jobs",
+          "headerValue": "1794",
+          "metaValue": "1794",
+          "matches": true
+        },
+        {
+          "header": "X-Public-Snapshot-Companies",
+          "meta": "va-hub:snapshot-companies",
+          "headerValue": "766",
+          "metaValue": "766",
+          "matches": true
+        }
+      ],
+      "allSixHeaderMetaPairsMatch": true,
+      "htmlSha256": "86a227e20cfb78b7e2218057bc8ced22e4ef859ccf0148eb381d15a8fa54d686",
+      "htmlUtf8Bytes": 14311,
+      "renderedUniqueJobLinkCount": 1,
+      "presentAgeSeconds": 1356
+    },
+    {
+      "id": 9745,
+      "url": "https://remotejobs-ph.pages.dev/opportunities?q=Admin+%26+Client+Support+Coordinator+%280010-1433%29",
+      "status": 200,
+      "observedAt": "2026-10-20T12:07:57.075Z",
+      "expectedJobLinkPresent": true,
+      "headers": {
+        "X-Public-Snapshot": "stale",
+        "X-Public-Snapshot-Generated-At": "2026-10-20T11:45:19.926Z",
+        "X-Public-Snapshot-Source": "edge",
+        "X-Public-Snapshot-Age-Seconds": "1351",
+        "X-Public-Snapshot-Jobs": "1794",
+        "X-Public-Snapshot-Companies": "766",
+        "Age": null,
+        "Cache-Control": "no-store",
+        "CF-Cache-Status": null,
+        "Date": "Tue, 20 Oct 2026 12:07:51 GMT",
+        "ETag": null
+      },
+      "snapshot": [
+        {
+          "header": "X-Public-Snapshot",
+          "meta": "va-hub:snapshot-status",
+          "headerValue": "stale",
+          "metaValue": "stale",
+          "matches": true
+        },
+        {
+          "header": "X-Public-Snapshot-Generated-At",
+          "meta": "va-hub:snapshot-generated-at",
+          "headerValue": "2026-10-20T11:45:19.926Z",
+          "metaValue": "2026-10-20T11:45:19.926Z",
+          "matches": true
+        },
+        {
+          "header": "X-Public-Snapshot-Source",
+          "meta": "va-hub:snapshot-source",
+          "headerValue": "edge",
+          "metaValue": "edge",
+          "matches": true
+        },
+        {
+          "header": "X-Public-Snapshot-Age-Seconds",
+          "meta": "va-hub:snapshot-age-seconds",
+          "headerValue": "1351",
+          "metaValue": "1351",
+          "matches": true
+        },
+        {
+          "header": "X-Public-Snapshot-Jobs",
+          "meta": "va-hub:snapshot-jobs",
+          "headerValue": "1794",
+          "metaValue": "1794",
+          "matches": true
+        },
+        {
+          "header": "X-Public-Snapshot-Companies",
+          "meta": "va-hub:snapshot-companies",
+          "headerValue": "766",
+          "metaValue": "766",
+          "matches": true
+        }
+      ],
+      "allSixHeaderMetaPairsMatch": true,
+      "htmlSha256": "3b8a17d434ccac665e1e50ae62d3c31328776b5f7e679eee5d80b9b7b4f10890",
+      "htmlUtf8Bytes": 14346,
+      "renderedUniqueJobLinkCount": 1,
+      "presentAgeSeconds": 1357
+    }
+  ],
+  "exactIndexLinksVerified": true,
+  "limitations": [
+    "Filtered board membership is observed only at these GET clocks",
+    "Snapshots may be stale and age headers can reflect render time; retain generation timestamps",
+    "No certified daily throughput, independent eligibility adjudication or lifetime first-publication claim"
+  ]
+}
