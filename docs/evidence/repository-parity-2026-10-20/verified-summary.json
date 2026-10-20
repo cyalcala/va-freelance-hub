@@ -1,0 +1,55 @@
+{
+  "scope": "POINT_IN_TIME_ALL_ADVERTISED_HEAD_AND_TAG_PARITY_REPAIR_NOT_UNATTENDED_MIRRORING",
+  "derivedFrom": [
+    "all-ref-inventory-2026-10-20.json",
+    "ref-push-trigger-audit-2026-10-20.json",
+    "ref-push-trigger-audit-utf8-2026-10-20.json",
+    "ref-backup-plan-2026-10-20.json",
+    "ref-backup-repair-2026-10-20.json",
+    "gitlab-ref-transport-probe-2026-10-20.json",
+    "gitlab-single-ref-push-probe-2026-10-20.json",
+    "ref-backup-repair-bounded-2026-10-20.json",
+    "all-ref-inventory-after-2026-10-20.json",
+    "canonical-ref-recheck-2026-10-20.json",
+    "all-ref-inventory-final-2026-10-20.json"
+  ],
+  "finalObservation": {
+    "start": "2026-10-20T12:29:43.769Z",
+    "end": "2026-10-20T12:29:54.197Z",
+    "perHost": {
+      "ssm": {
+        "observedAt": "2026-10-20T12:29:51.394Z",
+        "status": "OK",
+        "heads": 161,
+        "tags": 45
+      },
+      "github": {
+        "observedAt": "2026-10-20T12:29:48.284Z",
+        "status": "OK",
+        "heads": 161,
+        "tags": 45
+      },
+      "gitlab": {
+        "observedAt": "2026-10-20T12:29:54.139Z",
+        "status": "OK",
+        "heads": 161,
+        "tags": 45
+      }
+    },
+    "heads": 161,
+    "tagRefs": 45,
+    "peeledTagTargets": 45,
+    "advertisedEntries": 251,
+    "main": "216b7124c4c7fdfbb9b563f478f13002421c35b0",
+    "exactAllAdvertisedRefsEqual": true
+  },
+  "limitations": [
+    "Independent sequential observations, not cross-host atomic locking",
+    "Later main advances, including operator-reported fe3599 economics change, require separate readbacks",
+    "No proof of unattended all-ref mirroring or external webhook behavior",
+    "GitLab atomic25 failure unclassified; later one-ref and bounded success do not identify the cause",
+    "SSM default-transport read failure followed by isolated HTTP1 success does not establish protocol causality",
+    "GitLab push options skipped CI/pipelines/integrations only; no new grant, force or deletion",
+    "Original Unicode decoding audit and unavailable/failed receipts preserved byte-for-byte"
+  ]
+}

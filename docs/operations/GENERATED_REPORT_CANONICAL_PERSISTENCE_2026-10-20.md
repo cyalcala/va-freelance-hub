@@ -2,8 +2,10 @@
 
 Initial source base: `8078a260aab0650e815e780209f4598b94af9e29` on
 `codex/verified-flow-directory-checkpoint`. This receipt covers local source
-verification, CI-only activation, and a subsequent clean-runner CI repair;
-**actual report persisted-write acceptance remains separate**. The earlier
+verification, CI-only activation, and a subsequent clean-runner CI repair.
+Selected actual SSM-first report writes are now verified; see the final section
+and [economics runtime receipt](SOURCE_ECONOMICS_RUNTIME_ACCEPTANCE_2026-10-20.md).
+The earlier
 [SSM capability diagnostic](SSM_RUNTIME_CAPABILITY_PROBE_2026-10-18.md) passed
 GitHub run `39142613038`, but read/dry-run negotiation is not a main-write proof.
 
@@ -111,7 +113,8 @@ Verification used the pinned Bun `1.3.14` executable:
   duplicating the generated report: **2/0/15**, 40.12s, retained in
   `tmp/independent-canonical-counterexamples.log`. No external remote was written.
 
-Until an actual selected main job stores and reads back a new report commit in
+At the initial local verification checkpoint, until a selected main job stored
+and read back a new report commit in
 SSM, then GitHub, persisted-write/main authorization and recurrent continuity
 remain unverified. A suitable acceptance run uses an existing read-only aggregate
 report job after the exact infrastructure slice is backed up and activated.
@@ -172,7 +175,7 @@ fixture then reproduced CI's missing-package failure before the source repair.
   (`.tmp-canonical-legacy-guardrail-exact.log`). All four production/governance
   audits passed with explicit exit zero; scoped whitespace checks passed.
 
-This follow-up is pending its own review/activation and a new full CI result.
+At that repair checkpoint, the follow-up awaited its own review/activation and a new full CI result.
 It does not convert the failed full CI run into a pass, prove report persistence,
 or establish GitLab unattended credentials. No timeout or dependency was added;
 no test was disabled.
@@ -181,3 +184,24 @@ References checked against primary documentation:
 [composite actions](https://docs.github.com/en/actions/tutorials/create-actions/create-a-composite-action),
 [GitHub contexts](https://docs.github.com/en/actions/reference/workflows-and-actions/contexts),
 [Git rebase](https://git-scm.com/docs/git-rebase).
+
+## Actual activation and retained report writes
+
+The dependency-free repair was activated as main `23b9202a35aa43883dea4af8e21ad59577eb656d`.
+[CI 39410570310](https://github.com/cyalcala/va-freelance-hub/actions/runs/39410570310)
+passed, with production migration and deployment skipped. The later bounded
+memory/read-only-report graft `cdc121947516c8a91ea9ac2c8c8e98f4d340fbf9`
+passed [CI 39419521183](https://github.com/cyalcala/va-freelance-hub/actions/runs/39419521183),
+also without production migration/deployment.
+
+Actual report runner `39409286844` wrote `d88365ed` to SSM and then GitHub.
+Subsequent directory main `216b7124c4c7fdfbb9b563f478f13002421c35b0` and
+economics main `fe3599d4617e7d573a391e8596cc0988ff5b25f5` were also retained
+in canonical history. The economics run's six read-only query artifacts
+reproduce its committed Markdown byte for byte. This establishes selected
+real persisted writes beyond the earlier dry-run capability probe.
+
+At `2026-10-20T12:49:42.633Z`, a normal manual GitLab fast-forward and independent
+main readbacks matched `fe3599d4` on all three hosts. This is a bounded main
+observation. GitLab still has no configured runtime credential for these report
+jobs; unattended three-host continuity and global runtime health remain unproved.

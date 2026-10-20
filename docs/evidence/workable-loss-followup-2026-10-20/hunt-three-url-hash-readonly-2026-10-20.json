@@ -1,0 +1,29 @@
+{
+  "scope": "THREE_RETAINED_HUNT_URLS_AND_PARSER_HASHES_CURRENT_D1_CONFLICT_CHECK",
+  "observedAt": "2026-10-20T12:27:04.196Z",
+  "query": "SELECT id,source_id,source_url,title,content_hash,is_active,inactive_reason,ph_eligibility,geo_scope,posted_at,scraped_at,updated_at,CASE WHEN source_url IN ('https://apply.workable.com/j/8902E9B839','https://apply.workable.com/j/13FFDFE94E','https://apply.workable.com/j/BB4A8BD9FA') THEN 'EXACT_URL' ELSE 'HASH_ONLY' END AS match_basis FROM opportunities WHERE source_url IN ('https://apply.workable.com/j/8902E9B839','https://apply.workable.com/j/13FFDFE94E','https://apply.workable.com/j/BB4A8BD9FA') OR content_hash IN ('4a139740470ccf2f','9842df5277a49f53','c3bd749ac0336b0b') ORDER BY id LIMIT 7;\n",
+  "querySha256": "fa694282243b1e4a3ea54d5a82086e0d9b6700baf2d6b1f3c40b9072a0496051",
+  "results": [],
+  "meta": {
+    "served_by": "v3-prod",
+    "served_by_region": "APAC",
+    "served_by_colo": "SIN",
+    "served_by_primary": true,
+    "timings": {
+      "sql_duration_ms": 1.2029
+    },
+    "duration": 1.2029,
+    "changes": 0,
+    "last_row_id": 0,
+    "changed_db": false,
+    "size_after": 92524544,
+    "rows_read": 7,
+    "rows_written": 0,
+    "total_attempts": 1
+  },
+  "limitReached": false,
+  "limitations": [
+    "Current records cannot prove the historical contents of the store at the11:41invocation",
+    "No source fetch, AI call, mutation or inferred missing-opening reason"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "scope": "SINGLE_EXACT_STORED_ROW_READ_WITH_EXISTING_PURE_HARD_VETO_PROJECTION_NO_REPAIR",
+  "observedStart": "2026-10-20T12:20:00.269Z",
+  "observedEnd": "2026-10-20T12:20:14.966Z",
+  "query": "SELECT id,source_id,source_url,title,description,posted_at,scraped_at,location_raw,location_type,tags,ph_eligibility,geo_scope,geo_evidence,inactive_reason,is_active,company,application_url FROM opportunities WHERE id=9686 AND source_id='workable:crewbloom' AND source_url='https://apply.workable.com/j/5902EBE6B1' LIMIT 1",
+  "querySha256": "86850f615ef23b9d0b01a134b6e46547bc56760c536b1d16202c40615a760b99",
+  "meta": {
+    "served_by": "v3-prod",
+    "served_by_region": "APAC",
+    "served_by_colo": "SIN",
+    "served_by_primary": true,
+    "timings": {
+      "sql_duration_ms": 0.2968
+    },
+    "duration": 0.2968,
+    "changes": 0,
+    "last_row_id": 0,
+    "changed_db": false,
+    "size_after": 92508160,
+    "rows_read": 1,
+    "rows_written": 0,
+    "total_attempts": 1
+  },
+  "row": {
+    "id": 9686,
+    "source_id": "workable:crewbloom",
+    "source_url": "https://apply.workable.com/j/5902EBE6B1",
+    "title": "Sales Development Representative",
+    "posted_at": "2026-10-08T00:00:00.000Z",
+    "scraped_at": "2026-10-20T11:32:03.536Z",
+    "location_raw": "Pakistan",
+    "location_type": "remote",
+    "tags": "[\"crewbloom\",\"geo-gate-rejected\"]",
+    "ph_eligibility": "ineligible",
+    "geo_scope": "country_locked",
+    "geo_evidence": "Location pinned: \"Pakistan\" in \"Pakistan\"",
+    "inactive_reason": "policy-rejected",
+    "is_active": 0,
+    "company": "CrewBloom",
+    "application_url": "https://apply.workable.com/j/5902EBE6B1"
+  },
+  "descriptionState": {
+    "isNull": true,
+    "characters": 0,
+    "sha256": null,
+    "fullTextRetained": false
+  },
+  "existingPureChecks": {
+    "obviousGeoRestriction": false,
+    "obviousNonEnglishOrLocalOnly": false
+  },
+  "triageSourceSha256": "a8cac29a3f65cac72b605aa51fff4d1099729c3f6f8b6baf2d158da88cb13330",
+  "limitations": [
+    "Actual stored description is read in memory; only null/length/hash and pure checks retained",
+    "No current source opening was fetched or source authority renewed",
+    "False hard-veto booleans are not role approval or publication authorization",
+    "No source request, model call or production mutation"
+  ]
+}

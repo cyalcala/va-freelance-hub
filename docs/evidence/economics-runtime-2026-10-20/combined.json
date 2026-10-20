@@ -1,0 +1,1438 @@
+{
+  "meta": {
+    "unit": "SP-02",
+    "asOf": "2026-10-20T12:30:11.630Z",
+    "cut7Unix": 1791894611,
+    "cut14Unix": 1791289811,
+    "cut30Unix": 1789907411,
+    "queryOrder": [
+      "qualified_supply",
+      "identity_coverage",
+      "supply_totals",
+      "source_supply",
+      "fetch_outcomes_7d",
+      "triage_outcomes_7d"
+    ]
+  },
+  "byName": {
+    "qualified_supply": [
+      {
+        "qualified_active": 1794,
+        "qualified_new_7d": 305,
+        "qualified_new_30d": 1491
+      }
+    ],
+    "identity_coverage": [
+      {
+        "total": 7713,
+        "active": 1794,
+        "inactive": 5919,
+        "with_source_id": 7713,
+        "null_source_id": 0,
+        "active_with_source_id": 1794,
+        "active_null_source_id": 0
+      }
+    ],
+    "supply_totals": [
+      {
+        "active": 1794,
+        "net_new_7d": 305,
+        "net_new_14d": 501,
+        "net_new_30d": 1491
+      }
+    ],
+    "source_supply": [
+      {
+        "source_id": "we-work-remotely",
+        "source_platform": "WeWorkRemotely",
+        "active": 516,
+        "net_new_7d": 130,
+        "net_new_14d": 241,
+        "net_new_30d": 430,
+        "inactive": 1347
+      },
+      {
+        "source_id": "workable:hunt-st",
+        "source_platform": "Hunt St",
+        "active": 207,
+        "net_new_7d": 32,
+        "net_new_14d": 46,
+        "net_new_30d": 207,
+        "inactive": 15
+      },
+      {
+        "source_id": "breezy:20four7va",
+        "source_platform": "20Four7VA",
+        "active": 148,
+        "net_new_7d": 10,
+        "net_new_14d": 20,
+        "net_new_30d": 86,
+        "inactive": 128
+      },
+      {
+        "source_id": "real-work-from-anywhere",
+        "source_platform": "RealWorkFromAnywhere",
+        "active": 146,
+        "net_new_7d": 35,
+        "net_new_14d": 54,
+        "net_new_30d": 105,
+        "inactive": 528
+      },
+      {
+        "source_id": "greenhouse:canonical",
+        "source_platform": "Canonical",
+        "active": 124,
+        "net_new_7d": 0,
+        "net_new_14d": 2,
+        "net_new_30d": 124,
+        "inactive": 188
+      },
+      {
+        "source_id": "breezy:sourcefit",
+        "source_platform": "Breezy/sourcefit",
+        "active": 107,
+        "net_new_7d": 7,
+        "net_new_14d": 18,
+        "net_new_30d": 76,
+        "inactive": 148
+      },
+      {
+        "source_id": "ashby:multiplymii",
+        "source_platform": "Ashby/multiplymii",
+        "active": 79,
+        "net_new_7d": 8,
+        "net_new_14d": 17,
+        "net_new_30d": 79,
+        "inactive": 0
+      },
+      {
+        "source_id": "remote-ok",
+        "source_platform": "RemoteOK",
+        "active": 64,
+        "net_new_7d": 14,
+        "net_new_14d": 22,
+        "net_new_30d": 42,
+        "inactive": 1198
+      },
+      {
+        "source_id": "jobicy-supporting-apac",
+        "source_platform": "Jobicy",
+        "active": 51,
+        "net_new_7d": 4,
+        "net_new_14d": 8,
+        "net_new_30d": 12,
+        "inactive": 97
+      },
+      {
+        "source_id": "workable:coconutva",
+        "source_platform": "Coconut VA",
+        "active": 43,
+        "net_new_7d": 2,
+        "net_new_14d": 2,
+        "net_new_30d": 43,
+        "inactive": 24
+      },
+      {
+        "source_id": "workable:crewbloom",
+        "source_platform": "CrewBloom",
+        "active": 38,
+        "net_new_7d": 3,
+        "net_new_14d": 3,
+        "net_new_30d": 38,
+        "inactive": 32
+      },
+      {
+        "source_id": "ashby:foundry-for-good",
+        "source_platform": "Ashby/foundry-for-good",
+        "active": 27,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 27,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:vacancies",
+        "source_platform": "Lever/vacancies",
+        "active": 20,
+        "net_new_7d": 20,
+        "net_new_14d": 20,
+        "net_new_30d": 20,
+        "inactive": 0
+      },
+      {
+        "source_id": "workable:pearltalent",
+        "source_platform": "Pearl Talent",
+        "active": 19,
+        "net_new_7d": 1,
+        "net_new_14d": 1,
+        "net_new_30d": 19,
+        "inactive": 35
+      },
+      {
+        "source_id": "lever:truezerotech",
+        "source_platform": "Lever/truezerotech",
+        "active": 17,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 17,
+        "inactive": 0
+      },
+      {
+        "source_id": "breezy:remote-craft",
+        "source_platform": "Remote Craft",
+        "active": 14,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 14,
+        "inactive": 1
+      },
+      {
+        "source_id": "greenhouse:remotecom",
+        "source_platform": "Remote.com",
+        "active": 14,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 8,
+        "inactive": 608
+      },
+      {
+        "source_id": "remotive",
+        "source_platform": "Remotive",
+        "active": 14,
+        "net_new_7d": 1,
+        "net_new_14d": 1,
+        "net_new_30d": 3,
+        "inactive": 90
+      },
+      {
+        "source_id": "lever:snappr",
+        "source_platform": "Lever/snappr",
+        "active": 13,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 13,
+        "inactive": 0
+      },
+      {
+        "source_id": "breezy:yokly",
+        "source_platform": "Yokly",
+        "active": 12,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 12,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:tenna",
+        "source_platform": "Lever/tenna",
+        "active": 11,
+        "net_new_7d": 11,
+        "net_new_14d": 11,
+        "net_new_30d": 11,
+        "inactive": 0
+      },
+      {
+        "source_id": "breezy:value-virtual-assistants",
+        "source_platform": "VALUE Virtual Assistants",
+        "active": 10,
+        "net_new_7d": 0,
+        "net_new_14d": 1,
+        "net_new_30d": 10,
+        "inactive": 1
+      },
+      {
+        "source_id": "lever:deliverect",
+        "source_platform": "Lever/deliverect",
+        "active": 9,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 9,
+        "inactive": 0
+      },
+      {
+        "source_id": "workable:rocketams",
+        "source_platform": "RocketAMS",
+        "active": 8,
+        "net_new_7d": 1,
+        "net_new_14d": 1,
+        "net_new_30d": 8,
+        "inactive": 2
+      },
+      {
+        "source_id": "greenhouse:gitlab",
+        "source_platform": "GitLab",
+        "active": 6,
+        "net_new_7d": 3,
+        "net_new_14d": 5,
+        "net_new_30d": 6,
+        "inactive": 553
+      },
+      {
+        "source_id": "jobicy-admin-support-apac",
+        "source_platform": "Jobicy",
+        "active": 6,
+        "net_new_7d": 2,
+        "net_new_14d": 2,
+        "net_new_30d": 2,
+        "inactive": 8
+      },
+      {
+        "source_id": "lever:applydigital",
+        "source_platform": "Lever/applydigital",
+        "active": 6,
+        "net_new_7d": 6,
+        "net_new_14d": 6,
+        "net_new_30d": 6,
+        "inactive": 0
+      },
+      {
+        "source_id": "ashby:gradient",
+        "source_platform": "Ashby/gradient",
+        "active": 5,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 5,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:brafton",
+        "source_platform": "Lever/brafton",
+        "active": 5,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 5,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:decilegroup",
+        "source_platform": "Lever/decilegroup",
+        "active": 5,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 5,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:outsourcedstaff",
+        "source_platform": "Lever/outsourcedstaff",
+        "active": 5,
+        "net_new_7d": 5,
+        "net_new_14d": 5,
+        "net_new_30d": 5,
+        "inactive": 0
+      },
+      {
+        "source_id": "ashby:payscale",
+        "source_platform": "Ashby/payscale",
+        "active": 4,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 4,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:lwolf",
+        "source_platform": "Lever/lwolf",
+        "active": 4,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 4,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:willowinc",
+        "source_platform": "Lever/willowinc",
+        "active": 4,
+        "net_new_7d": 4,
+        "net_new_14d": 4,
+        "net_new_30d": 4,
+        "inactive": 0
+      },
+      {
+        "source_id": "ashby:circulareconomysystems",
+        "source_platform": "Ashby/circulareconomysystems",
+        "active": 3,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 3,
+        "inactive": 0
+      },
+      {
+        "source_id": "ashby:molecule",
+        "source_platform": "Ashby/molecule",
+        "active": 3,
+        "net_new_7d": 0,
+        "net_new_14d": 3,
+        "net_new_30d": 3,
+        "inactive": 0
+      },
+      {
+        "source_id": "ashby:the-studio",
+        "source_platform": "Ashby/the-studio",
+        "active": 3,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 3,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:gushwork",
+        "source_platform": "Lever/gushwork",
+        "active": 3,
+        "net_new_7d": 3,
+        "net_new_14d": 3,
+        "net_new_30d": 3,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:repurposeglobal",
+        "source_platform": "Lever/repurposeglobal",
+        "active": 3,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 3,
+        "inactive": 0
+      },
+      {
+        "source_id": "ashby:getground",
+        "source_platform": "Ashby/getground",
+        "active": 2,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 2,
+        "inactive": 0
+      },
+      {
+        "source_id": "ashby:luxor",
+        "source_platform": "Ashby/luxor",
+        "active": 2,
+        "net_new_7d": 2,
+        "net_new_14d": 2,
+        "net_new_30d": 2,
+        "inactive": 0
+      },
+      {
+        "source_id": "greenhouse:janes",
+        "source_platform": "Greenhouse/janes",
+        "active": 2,
+        "net_new_7d": 0,
+        "net_new_14d": 2,
+        "net_new_30d": 2,
+        "inactive": 0
+      },
+      {
+        "source_id": "himalayas:remote-jobs",
+        "source_platform": "Himalayas",
+        "active": 2,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 2,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:beaverprocess",
+        "source_platform": "Lever/beaverprocess",
+        "active": 2,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 2,
+        "inactive": 0
+      },
+      {
+        "source_id": "ashby:finch",
+        "source_platform": "Ashby/finch",
+        "active": 1,
+        "net_new_7d": 1,
+        "net_new_14d": 1,
+        "net_new_30d": 1,
+        "inactive": 0
+      },
+      {
+        "source_id": "ashby:homera-health",
+        "source_platform": "Ashby/homera-health",
+        "active": 1,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 1,
+        "inactive": 0
+      },
+      {
+        "source_id": "greenhouse:ghost",
+        "source_platform": "Ghost",
+        "active": 1,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 10
+      },
+      {
+        "source_id": "greenhouse:trainingthestreet",
+        "source_platform": "Greenhouse/trainingthestreet",
+        "active": 1,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 1,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:90seconds",
+        "source_platform": "Lever/90seconds",
+        "active": 1,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 1,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:hso",
+        "source_platform": "Lever/hso",
+        "active": 1,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 1,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:trustarc",
+        "source_platform": "Lever/trustarc",
+        "active": 1,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 1,
+        "inactive": 0
+      },
+      {
+        "source_id": "workable:hello-rache",
+        "source_platform": "Hello Rache",
+        "active": 1,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 1,
+        "inactive": 3
+      },
+      {
+        "source_id": "ashby:amplify",
+        "source_platform": "Amplify",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 87
+      },
+      {
+        "source_id": "ashby:ashby",
+        "source_platform": "Ashby",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 92
+      },
+      {
+        "source_id": "ashby:camunda",
+        "source_platform": "Camunda",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 67
+      },
+      {
+        "source_id": "ashby:supabase",
+        "source_platform": "Supabase",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 84
+      },
+      {
+        "source_id": "ashby:tremendous",
+        "source_platform": "Tremendous",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 31
+      },
+      {
+        "source_id": "authentic-jobs",
+        "source_platform": "AuthenticJobs",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 10
+      },
+      {
+        "source_id": "breezy:time-etc",
+        "source_platform": "Time Etc",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 2
+      },
+      {
+        "source_id": "dribbble",
+        "source_platform": "Dribbble",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 113
+      },
+      {
+        "source_id": "greenhouse:grafanalabs",
+        "source_platform": "Grafana Labs",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 359
+      },
+      {
+        "source_id": "greenhouse:nearform",
+        "source_platform": "Nearform",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 55
+      },
+      {
+        "source_id": "workable:pineapple-staffing",
+        "source_platform": "Pineapple Staffing",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 3
+      }
+    ],
+    "fetch_outcomes_7d": [
+      {
+        "source_id": "remotive",
+        "real_fetches": 162,
+        "unchanged": 783,
+        "skips": 0,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 2166
+      },
+      {
+        "source_id": "ashby:multiplymii",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 8539
+      },
+      {
+        "source_id": "breezy:20four7va",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 1743,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 17036
+      },
+      {
+        "source_id": "breezy:remote-craft",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 2205
+      },
+      {
+        "source_id": "breezy:sourcefit",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 12988
+      },
+      {
+        "source_id": "breezy:time-etc",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 147
+      },
+      {
+        "source_id": "breezy:value-virtual-assistants",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 1617
+      },
+      {
+        "source_id": "breezy:yokly",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 19,
+        "items": 1408
+      },
+      {
+        "source_id": "greenhouse:canonical",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 45504
+      },
+      {
+        "source_id": "greenhouse:ghost",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 882
+      },
+      {
+        "source_id": "greenhouse:gitlab",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 33033
+      },
+      {
+        "source_id": "greenhouse:grafanalabs",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 16675
+      },
+      {
+        "source_id": "greenhouse:nearform",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 797,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 3237
+      },
+      {
+        "source_id": "real-work-from-anywhere",
+        "real_fetches": 146,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 1,
+        "zero_yield": 0,
+        "items": 7300
+      },
+      {
+        "source_id": "we-work-remotely",
+        "real_fetches": 125,
+        "unchanged": 811,
+        "skips": 0,
+        "failures": 9,
+        "zero_yield": 0,
+        "items": 11022
+      },
+      {
+        "source_id": "remote-ok",
+        "real_fetches": 40,
+        "unchanged": 106,
+        "skips": 798,
+        "failures": 1,
+        "zero_yield": 0,
+        "items": 1662
+      },
+      {
+        "source_id": "greenhouse:remotecom",
+        "real_fetches": 35,
+        "unchanged": 0,
+        "skips": 797,
+        "failures": 112,
+        "zero_yield": 35,
+        "items": 0
+      },
+      {
+        "source_id": "jobicy-supporting-apac",
+        "real_fetches": 20,
+        "unchanged": 123,
+        "skips": 800,
+        "failures": 2,
+        "zero_yield": 0,
+        "items": 800
+      },
+      {
+        "source_id": "jobicy-admin-support-apac",
+        "real_fetches": 6,
+        "unchanged": 139,
+        "skips": 800,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 21
+      },
+      {
+        "source_id": "workable:coconutva",
+        "real_fetches": 1,
+        "unchanged": 0,
+        "skips": 944,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 32
+      },
+      {
+        "source_id": "workable:crewbloom",
+        "real_fetches": 1,
+        "unchanged": 0,
+        "skips": 944,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 152
+      },
+      {
+        "source_id": "workable:hello-rache",
+        "real_fetches": 1,
+        "unchanged": 0,
+        "skips": 944,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 3
+      },
+      {
+        "source_id": "workable:hunt-st",
+        "real_fetches": 1,
+        "unchanged": 0,
+        "skips": 944,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 143
+      },
+      {
+        "source_id": "workable:pearltalent",
+        "real_fetches": 1,
+        "unchanged": 0,
+        "skips": 944,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 286
+      },
+      {
+        "source_id": "workable:rocketams",
+        "real_fetches": 1,
+        "unchanged": 0,
+        "skips": 944,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 10
+      },
+      {
+        "source_id": "ashby:amplify",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:ashby",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:camunda",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:circulareconomysystems",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:foundry-for-good",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:getground",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:gradient",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:luxor",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 473,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:molecule",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:payscale",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:supabase",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:the-studio",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:tremendous",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "authentic-jobs",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "breezy:vaaphilippines-recruitment",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "dribbble",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "jobspresso",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:applydigital",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 575,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:beaverprocess",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:brafton",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:decilegroup",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:deliverect",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:gushwork",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 193,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:lwolf",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:outsourcedstaff",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 270,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:repurposeglobal",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:snappr",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:tenna",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 575,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:truezerotech",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:vacancies",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 87,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:vaultoutsourcing",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:willowinc",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 87,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "onlinejobs-ph",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "problogger",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "remote-co",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:connectos",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:global-strategic",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:myoutdesk",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:outsource-access",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:pineapple-staffing",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:staff-domain-inc",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:superstaff",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:virtualstaff365",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      }
+    ],
+    "triage_outcomes_7d": [
+      {
+        "source_id": "we-work-remotely",
+        "eligible": 130,
+        "unclear": 0,
+        "ineligible": 21,
+        "policy_rejected": 21,
+        "total_stored": 151
+      },
+      {
+        "source_id": "workable:hunt-st",
+        "eligible": 32,
+        "unclear": 11,
+        "ineligible": 1,
+        "policy_rejected": 1,
+        "total_stored": 44
+      },
+      {
+        "source_id": "greenhouse:gitlab",
+        "eligible": 3,
+        "unclear": 0,
+        "ineligible": 34,
+        "policy_rejected": 34,
+        "total_stored": 37
+      },
+      {
+        "source_id": "real-work-from-anywhere",
+        "eligible": 35,
+        "unclear": 1,
+        "ineligible": 1,
+        "policy_rejected": 2,
+        "total_stored": 37
+      },
+      {
+        "source_id": "greenhouse:grafanalabs",
+        "eligible": 0,
+        "unclear": 0,
+        "ineligible": 35,
+        "policy_rejected": 35,
+        "total_stored": 35
+      },
+      {
+        "source_id": "remote-ok",
+        "eligible": 14,
+        "unclear": 6,
+        "ineligible": 6,
+        "policy_rejected": 12,
+        "total_stored": 26
+      },
+      {
+        "source_id": "workable:crewbloom",
+        "eligible": 3,
+        "unclear": 0,
+        "ineligible": 19,
+        "policy_rejected": 19,
+        "total_stored": 22
+      },
+      {
+        "source_id": "lever:vacancies",
+        "eligible": 20,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 20
+      },
+      {
+        "source_id": "lever:tenna",
+        "eligible": 11,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 11
+      },
+      {
+        "source_id": "breezy:20four7va",
+        "eligible": 10,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 10
+      },
+      {
+        "source_id": "workable:pearltalent",
+        "eligible": 1,
+        "unclear": 0,
+        "ineligible": 9,
+        "policy_rejected": 9,
+        "total_stored": 10
+      },
+      {
+        "source_id": "ashby:multiplymii",
+        "eligible": 8,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 8
+      },
+      {
+        "source_id": "jobicy-supporting-apac",
+        "eligible": 4,
+        "unclear": 0,
+        "ineligible": 4,
+        "policy_rejected": 4,
+        "total_stored": 8
+      },
+      {
+        "source_id": "breezy:sourcefit",
+        "eligible": 7,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 3,
+        "total_stored": 7
+      },
+      {
+        "source_id": "lever:applydigital",
+        "eligible": 6,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 6
+      },
+      {
+        "source_id": "lever:outsourcedstaff",
+        "eligible": 5,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 5
+      },
+      {
+        "source_id": "workable:coconutva",
+        "eligible": 2,
+        "unclear": 3,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 5
+      },
+      {
+        "source_id": "lever:willowinc",
+        "eligible": 4,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 4
+      },
+      {
+        "source_id": "lever:gushwork",
+        "eligible": 3,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 3
+      },
+      {
+        "source_id": "ashby:luxor",
+        "eligible": 2,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 2
+      },
+      {
+        "source_id": "jobicy-admin-support-apac",
+        "eligible": 2,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 2
+      },
+      {
+        "source_id": "ashby:finch",
+        "eligible": 1,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 1
+      },
+      {
+        "source_id": "remotive",
+        "eligible": 1,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 1
+      },
+      {
+        "source_id": "workable:rocketams",
+        "eligible": 1,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 1
+      }
+    ]
+  },
+  "reconciliation": {
+    "ok": true,
+    "deltas": {
+      "total_vs_active_plus_inactive": 0,
+      "total_vs_with_plus_null_source_id": 0,
+      "active_vs_active_with_plus_null_source_id": 0,
+      "supply_totals_active_vs_identity": 0,
+      "source_active_sum_vs_active": 0,
+      "source_inactive_sum_vs_inactive": 0,
+      "source_net7_sum_vs_totals": 0,
+      "source_net14_sum_vs_totals": 0,
+      "source_net30_sum_vs_totals": 0,
+      "triage_stored_sum_vs_outcomes": 0
+    },
+    "notes": []
+  }
+}

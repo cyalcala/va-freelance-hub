@@ -1,0 +1,28 @@
+{
+  "scope": "NORMAL_FAST_FORWARD_MAIN_BACKUP_AFTER_SSM_FIRST_REPORT_WRITE",
+  "startedAt": "2026-10-20T12:48:47.594Z",
+  "operations": [
+    {
+      "repository": "github",
+      "status": "ALREADY_MATCHED"
+    },
+    {
+      "repository": "gitlab",
+      "status": "NORMAL_FF_PUSH",
+      "oldSha": "216b7124c4c7fdfbb9b563f478f13002421c35b0",
+      "newSha": "fe3599d4617e7d573a391e8596cc0988ff5b25f5"
+    }
+  ],
+  "before": {
+    "ssm": "fe3599d4617e7d573a391e8596cc0988ff5b25f5",
+    "github": "fe3599d4617e7d573a391e8596cc0988ff5b25f5",
+    "gitlab": "216b7124c4c7fdfbb9b563f478f13002421c35b0"
+  },
+  "after": {
+    "ssm": "fe3599d4617e7d573a391e8596cc0988ff5b25f5",
+    "github": "fe3599d4617e7d573a391e8596cc0988ff5b25f5",
+    "gitlab": "fe3599d4617e7d573a391e8596cc0988ff5b25f5"
+  },
+  "exactMainParity": true,
+  "finishedAt": "2026-10-20T12:49:42.633Z"
+}

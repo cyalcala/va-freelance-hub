@@ -1,0 +1,88 @@
+{
+  "scope": "ACTUAL_READ_ONLY_REPORT_WORKFLOW_AND_LOCAL_BYTE_REPLAY_MAIN_MIRROR_READBACK",
+  "runId": 39422707911,
+  "files": [
+    {
+      "source": "tmp/economics-runtime-proof-2026-10-20.json",
+      "path": "runtime-replay.json",
+      "bytes": 3436,
+      "sha256": "d2eee9b00eab74716674d3a2e3e374e2a60419fedd955cb8e9d68f8b0ec71551"
+    },
+    {
+      "source": "tmp/economics-main-mirror-2026-10-20.json",
+      "path": "main-mirror-readback.json",
+      "bytes": 864,
+      "sha256": "2cc5b290e86f9937e61301fb089847d202801bd5214df670fd9e318001447a45"
+    },
+    {
+      "source": "tmp/economics-runtime-run-39422707911.json",
+      "path": "workflow-run.json",
+      "bytes": 5094,
+      "sha256": "f5c300eaff4838bf5479cd0eb81ee059f612ff00044f55ba78cba0e736cdfbe3"
+    },
+    {
+      "source": ".tmp-economics-runtime-proof-2026-10-20.ts",
+      "path": "renderer-replay.ts",
+      "bytes": 3154,
+      "sha256": "531e886255d0feb5d86987aea12bde47f9027bc402ae42e06245927e7c1c6f0f"
+    },
+    {
+      "source": ".tmp-economics-main-mirror-2026-10-20.ts",
+      "path": "main-mirror-verifier.ts",
+      "bytes": 2531,
+      "sha256": "1e47c8788f3ea60e8bb9531b49bffa405c1df3ca78ed66797a78add9378c72c0"
+    },
+    {
+      "source": "tmp/economics-runtime-39422707911/_temp/economics/combined.json",
+      "path": "combined.json",
+      "bytes": 33781,
+      "sha256": "0e168e3e4f0ec45c27e22bbb772cfe78e114062ee421b59d7838df1af94b55e4"
+    },
+    {
+      "source": "tmp/economics-runtime-39422707911/_temp/economics/economics-meta.json",
+      "path": "economics-meta.json",
+      "bytes": 304,
+      "sha256": "fbcfe4b8668cddcc237c0c21e6da9b03469ad2c1b227c1b80a24963227f087a8"
+    },
+    {
+      "source": "tmp\\economics-runtime-39422707911\\_temp\\economics\\results\\fetch_outcomes_7d.json",
+      "path": "results/fetch_outcomes_7d.json",
+      "bytes": 14130,
+      "sha256": "9ad96dd350179434a4a95ad40fd30d1154d62c2aa2af2a5697405f0a2ff2a148"
+    },
+    {
+      "source": "tmp\\economics-runtime-39422707911\\_temp\\economics\\results\\identity_coverage.json",
+      "path": "results/identity_coverage.json",
+      "bytes": 698,
+      "sha256": "78f7c62fd9c0af41a3da846b20782cc7042b0bd5eeaa4c81500d8d3d484cd755"
+    },
+    {
+      "source": "tmp\\economics-runtime-39422707911\\_temp\\economics\\results\\qualified_supply.json",
+      "path": "results/qualified_supply.json",
+      "bytes": 587,
+      "sha256": "6cac3334e9ab03af3bdac622bf709aed7c1d1c2dfc8d7b353ec5e0453cf16b29"
+    },
+    {
+      "source": "tmp\\economics-runtime-39422707911\\_temp\\economics\\results\\source_supply.json",
+      "path": "results/source_supply.json",
+      "bytes": 14607,
+      "sha256": "c7f2edae8b8b0d451287b409e30b7f3123936e5938f25303fed0ce1157faf579"
+    },
+    {
+      "source": "tmp\\economics-runtime-39422707911\\_temp\\economics\\results\\supply_totals.json",
+      "path": "results/supply_totals.json",
+      "bytes": 593,
+      "sha256": "8c5955f4bcab603f80b012ae6b47c734a22ac5730644fa86cbb0572770069c5f"
+    },
+    {
+      "source": "tmp\\economics-runtime-39422707911\\_temp\\economics\\results\\triage_outcomes_7d.json",
+      "path": "results/triage_outcomes_7d.json",
+      "bytes": 4930,
+      "sha256": "f9d7160cf04bf54df6b4e5078e8143b36bc1360f749e6f1264addc6440a8cc80"
+    }
+  ],
+  "limitations": [
+    "Workspace-relative imports in copied helpers are provenance; use original root paths or adapt them explicitly",
+    "No credential values or production job descriptions retained"
+  ]
+}

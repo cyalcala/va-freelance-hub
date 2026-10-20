@@ -1,0 +1,591 @@
+[
+  {
+    "results": [
+      {
+        "source_id": "we-work-remotely",
+        "source_platform": "WeWorkRemotely",
+        "active": 516,
+        "net_new_7d": 130,
+        "net_new_14d": 241,
+        "net_new_30d": 430,
+        "inactive": 1347
+      },
+      {
+        "source_id": "workable:hunt-st",
+        "source_platform": "Hunt St",
+        "active": 207,
+        "net_new_7d": 32,
+        "net_new_14d": 46,
+        "net_new_30d": 207,
+        "inactive": 15
+      },
+      {
+        "source_id": "breezy:20four7va",
+        "source_platform": "20Four7VA",
+        "active": 148,
+        "net_new_7d": 10,
+        "net_new_14d": 20,
+        "net_new_30d": 86,
+        "inactive": 128
+      },
+      {
+        "source_id": "real-work-from-anywhere",
+        "source_platform": "RealWorkFromAnywhere",
+        "active": 146,
+        "net_new_7d": 35,
+        "net_new_14d": 54,
+        "net_new_30d": 105,
+        "inactive": 528
+      },
+      {
+        "source_id": "greenhouse:canonical",
+        "source_platform": "Canonical",
+        "active": 124,
+        "net_new_7d": 0,
+        "net_new_14d": 2,
+        "net_new_30d": 124,
+        "inactive": 188
+      },
+      {
+        "source_id": "breezy:sourcefit",
+        "source_platform": "Breezy/sourcefit",
+        "active": 107,
+        "net_new_7d": 7,
+        "net_new_14d": 18,
+        "net_new_30d": 76,
+        "inactive": 148
+      },
+      {
+        "source_id": "ashby:multiplymii",
+        "source_platform": "Ashby/multiplymii",
+        "active": 79,
+        "net_new_7d": 8,
+        "net_new_14d": 17,
+        "net_new_30d": 79,
+        "inactive": 0
+      },
+      {
+        "source_id": "remote-ok",
+        "source_platform": "RemoteOK",
+        "active": 64,
+        "net_new_7d": 14,
+        "net_new_14d": 22,
+        "net_new_30d": 42,
+        "inactive": 1198
+      },
+      {
+        "source_id": "jobicy-supporting-apac",
+        "source_platform": "Jobicy",
+        "active": 51,
+        "net_new_7d": 4,
+        "net_new_14d": 8,
+        "net_new_30d": 12,
+        "inactive": 97
+      },
+      {
+        "source_id": "workable:coconutva",
+        "source_platform": "Coconut VA",
+        "active": 43,
+        "net_new_7d": 2,
+        "net_new_14d": 2,
+        "net_new_30d": 43,
+        "inactive": 24
+      },
+      {
+        "source_id": "workable:crewbloom",
+        "source_platform": "CrewBloom",
+        "active": 38,
+        "net_new_7d": 3,
+        "net_new_14d": 3,
+        "net_new_30d": 38,
+        "inactive": 32
+      },
+      {
+        "source_id": "ashby:foundry-for-good",
+        "source_platform": "Ashby/foundry-for-good",
+        "active": 27,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 27,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:vacancies",
+        "source_platform": "Lever/vacancies",
+        "active": 20,
+        "net_new_7d": 20,
+        "net_new_14d": 20,
+        "net_new_30d": 20,
+        "inactive": 0
+      },
+      {
+        "source_id": "workable:pearltalent",
+        "source_platform": "Pearl Talent",
+        "active": 19,
+        "net_new_7d": 1,
+        "net_new_14d": 1,
+        "net_new_30d": 19,
+        "inactive": 35
+      },
+      {
+        "source_id": "lever:truezerotech",
+        "source_platform": "Lever/truezerotech",
+        "active": 17,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 17,
+        "inactive": 0
+      },
+      {
+        "source_id": "breezy:remote-craft",
+        "source_platform": "Remote Craft",
+        "active": 14,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 14,
+        "inactive": 1
+      },
+      {
+        "source_id": "greenhouse:remotecom",
+        "source_platform": "Remote.com",
+        "active": 14,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 8,
+        "inactive": 608
+      },
+      {
+        "source_id": "remotive",
+        "source_platform": "Remotive",
+        "active": 14,
+        "net_new_7d": 1,
+        "net_new_14d": 1,
+        "net_new_30d": 3,
+        "inactive": 90
+      },
+      {
+        "source_id": "lever:snappr",
+        "source_platform": "Lever/snappr",
+        "active": 13,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 13,
+        "inactive": 0
+      },
+      {
+        "source_id": "breezy:yokly",
+        "source_platform": "Yokly",
+        "active": 12,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 12,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:tenna",
+        "source_platform": "Lever/tenna",
+        "active": 11,
+        "net_new_7d": 11,
+        "net_new_14d": 11,
+        "net_new_30d": 11,
+        "inactive": 0
+      },
+      {
+        "source_id": "breezy:value-virtual-assistants",
+        "source_platform": "VALUE Virtual Assistants",
+        "active": 10,
+        "net_new_7d": 0,
+        "net_new_14d": 1,
+        "net_new_30d": 10,
+        "inactive": 1
+      },
+      {
+        "source_id": "lever:deliverect",
+        "source_platform": "Lever/deliverect",
+        "active": 9,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 9,
+        "inactive": 0
+      },
+      {
+        "source_id": "workable:rocketams",
+        "source_platform": "RocketAMS",
+        "active": 8,
+        "net_new_7d": 1,
+        "net_new_14d": 1,
+        "net_new_30d": 8,
+        "inactive": 2
+      },
+      {
+        "source_id": "greenhouse:gitlab",
+        "source_platform": "GitLab",
+        "active": 6,
+        "net_new_7d": 3,
+        "net_new_14d": 5,
+        "net_new_30d": 6,
+        "inactive": 553
+      },
+      {
+        "source_id": "jobicy-admin-support-apac",
+        "source_platform": "Jobicy",
+        "active": 6,
+        "net_new_7d": 2,
+        "net_new_14d": 2,
+        "net_new_30d": 2,
+        "inactive": 8
+      },
+      {
+        "source_id": "lever:applydigital",
+        "source_platform": "Lever/applydigital",
+        "active": 6,
+        "net_new_7d": 6,
+        "net_new_14d": 6,
+        "net_new_30d": 6,
+        "inactive": 0
+      },
+      {
+        "source_id": "ashby:gradient",
+        "source_platform": "Ashby/gradient",
+        "active": 5,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 5,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:brafton",
+        "source_platform": "Lever/brafton",
+        "active": 5,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 5,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:decilegroup",
+        "source_platform": "Lever/decilegroup",
+        "active": 5,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 5,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:outsourcedstaff",
+        "source_platform": "Lever/outsourcedstaff",
+        "active": 5,
+        "net_new_7d": 5,
+        "net_new_14d": 5,
+        "net_new_30d": 5,
+        "inactive": 0
+      },
+      {
+        "source_id": "ashby:payscale",
+        "source_platform": "Ashby/payscale",
+        "active": 4,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 4,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:lwolf",
+        "source_platform": "Lever/lwolf",
+        "active": 4,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 4,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:willowinc",
+        "source_platform": "Lever/willowinc",
+        "active": 4,
+        "net_new_7d": 4,
+        "net_new_14d": 4,
+        "net_new_30d": 4,
+        "inactive": 0
+      },
+      {
+        "source_id": "ashby:circulareconomysystems",
+        "source_platform": "Ashby/circulareconomysystems",
+        "active": 3,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 3,
+        "inactive": 0
+      },
+      {
+        "source_id": "ashby:molecule",
+        "source_platform": "Ashby/molecule",
+        "active": 3,
+        "net_new_7d": 0,
+        "net_new_14d": 3,
+        "net_new_30d": 3,
+        "inactive": 0
+      },
+      {
+        "source_id": "ashby:the-studio",
+        "source_platform": "Ashby/the-studio",
+        "active": 3,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 3,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:gushwork",
+        "source_platform": "Lever/gushwork",
+        "active": 3,
+        "net_new_7d": 3,
+        "net_new_14d": 3,
+        "net_new_30d": 3,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:repurposeglobal",
+        "source_platform": "Lever/repurposeglobal",
+        "active": 3,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 3,
+        "inactive": 0
+      },
+      {
+        "source_id": "ashby:getground",
+        "source_platform": "Ashby/getground",
+        "active": 2,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 2,
+        "inactive": 0
+      },
+      {
+        "source_id": "ashby:luxor",
+        "source_platform": "Ashby/luxor",
+        "active": 2,
+        "net_new_7d": 2,
+        "net_new_14d": 2,
+        "net_new_30d": 2,
+        "inactive": 0
+      },
+      {
+        "source_id": "greenhouse:janes",
+        "source_platform": "Greenhouse/janes",
+        "active": 2,
+        "net_new_7d": 0,
+        "net_new_14d": 2,
+        "net_new_30d": 2,
+        "inactive": 0
+      },
+      {
+        "source_id": "himalayas:remote-jobs",
+        "source_platform": "Himalayas",
+        "active": 2,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 2,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:beaverprocess",
+        "source_platform": "Lever/beaverprocess",
+        "active": 2,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 2,
+        "inactive": 0
+      },
+      {
+        "source_id": "ashby:finch",
+        "source_platform": "Ashby/finch",
+        "active": 1,
+        "net_new_7d": 1,
+        "net_new_14d": 1,
+        "net_new_30d": 1,
+        "inactive": 0
+      },
+      {
+        "source_id": "ashby:homera-health",
+        "source_platform": "Ashby/homera-health",
+        "active": 1,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 1,
+        "inactive": 0
+      },
+      {
+        "source_id": "greenhouse:ghost",
+        "source_platform": "Ghost",
+        "active": 1,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 10
+      },
+      {
+        "source_id": "greenhouse:trainingthestreet",
+        "source_platform": "Greenhouse/trainingthestreet",
+        "active": 1,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 1,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:90seconds",
+        "source_platform": "Lever/90seconds",
+        "active": 1,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 1,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:hso",
+        "source_platform": "Lever/hso",
+        "active": 1,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 1,
+        "inactive": 0
+      },
+      {
+        "source_id": "lever:trustarc",
+        "source_platform": "Lever/trustarc",
+        "active": 1,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 1,
+        "inactive": 0
+      },
+      {
+        "source_id": "workable:hello-rache",
+        "source_platform": "Hello Rache",
+        "active": 1,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 1,
+        "inactive": 3
+      },
+      {
+        "source_id": "ashby:amplify",
+        "source_platform": "Amplify",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 87
+      },
+      {
+        "source_id": "ashby:ashby",
+        "source_platform": "Ashby",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 92
+      },
+      {
+        "source_id": "ashby:camunda",
+        "source_platform": "Camunda",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 67
+      },
+      {
+        "source_id": "ashby:supabase",
+        "source_platform": "Supabase",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 84
+      },
+      {
+        "source_id": "ashby:tremendous",
+        "source_platform": "Tremendous",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 31
+      },
+      {
+        "source_id": "authentic-jobs",
+        "source_platform": "AuthenticJobs",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 10
+      },
+      {
+        "source_id": "breezy:time-etc",
+        "source_platform": "Time Etc",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 2
+      },
+      {
+        "source_id": "dribbble",
+        "source_platform": "Dribbble",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 113
+      },
+      {
+        "source_id": "greenhouse:grafanalabs",
+        "source_platform": "Grafana Labs",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 359
+      },
+      {
+        "source_id": "greenhouse:nearform",
+        "source_platform": "Nearform",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 55
+      },
+      {
+        "source_id": "workable:pineapple-staffing",
+        "source_platform": "Pineapple Staffing",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 3
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 61.6446
+      },
+      "duration": 61.6446,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 92524544,
+      "rows_read": 15489,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

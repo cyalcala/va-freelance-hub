@@ -1,0 +1,664 @@
+{
+  "scope": "CANONICAL_MISSING_OR_BEHIND_GITHUB_REF_PUSH_TRIGGER_REVIEW_NO_WRITES",
+  "observedAt": "2026-10-20T11:39:40.414906+00:00",
+  "refs": [
+    {
+      "ref": "refs/heads/codex/apex-capacity-acceptance",
+      "sha": "c3f5951ae387ad0a6f9023d4bbe48dc618678841",
+      "workflowFiles": 19,
+      "potentialPushWorkflows": [
+        {
+          "path": ".github/workflows/gha-chef-pulse.yml",
+          "blob": "f67e6f8d1583c8259bdd5a3c14c7fb3823d034ed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-deploy-cron-worker.yml",
+          "blob": "eefcaff3e8992a3557ff5cda55f2ad9e173f875e",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-directory-pulse.yml",
+          "blob": "c4a3f14d26ebc53f8fdb57384fe6c554a9e125ae",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-hunter-pulse.yml",
+          "blob": "3c553bcb26011b0b123ad0e2d14be9be17233f4a",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-medic-pulse.yml",
+          "blob": "fd262e0bf734aea2a5c1a0a3d5fcd907508505d9",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-sentinel-pulse.yml",
+          "blob": "29c723c568e3473d0dc9e08b4dbb6cb1a74d225d",
+          "parseError": "UnicodeDecodeError"
+        }
+      ],
+      "classification": "REQUIRES_REVIEW"
+    },
+    {
+      "ref": "refs/heads/codex/apex-state-write-diagnostics",
+      "sha": "63e18983ae6d5231d4aea37a553a8fca7b8e8d8f",
+      "workflowFiles": 12,
+      "potentialPushWorkflows": [
+        {
+          "path": ".github/workflows/gha-chef-pulse.yml",
+          "blob": "f67e6f8d1583c8259bdd5a3c14c7fb3823d034ed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-deploy-cron-worker.yml",
+          "blob": "eefcaff3e8992a3557ff5cda55f2ad9e173f875e",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-directory-pulse.yml",
+          "blob": "ecc320d4b6a822be1d163d122a7eaefc467193c1",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-hunter-pulse.yml",
+          "blob": "03529021d3e73436734b1981aa04a6d03c71d049",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-medic-pulse.yml",
+          "blob": "fd262e0bf734aea2a5c1a0a3d5fcd907508505d9",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-sentinel-pulse.yml",
+          "blob": "2bb84327653b660b0d9ee651a177a609a7ba964a",
+          "parseError": "UnicodeDecodeError"
+        }
+      ],
+      "classification": "REQUIRES_REVIEW"
+    },
+    {
+      "ref": "refs/heads/codex/comp01b-canary",
+      "sha": "69e538fe985aab6937980aaf1acb01ce8b941f70",
+      "workflowFiles": 14,
+      "potentialPushWorkflows": [
+        {
+          "path": ".github/workflows/gha-chef-pulse.yml",
+          "blob": "f67e6f8d1583c8259bdd5a3c14c7fb3823d034ed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-deploy-cron-worker.yml",
+          "blob": "eefcaff3e8992a3557ff5cda55f2ad9e173f875e",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-directory-pulse.yml",
+          "blob": "c4a3f14d26ebc53f8fdb57384fe6c554a9e125ae",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-hunter-pulse.yml",
+          "blob": "a34c6a12fd7cafb7f974cf8b3f1e8b95eb871d33",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-medic-pulse.yml",
+          "blob": "fd262e0bf734aea2a5c1a0a3d5fcd907508505d9",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-sentinel-pulse.yml",
+          "blob": "29c723c568e3473d0dc9e08b4dbb6cb1a74d225d",
+          "parseError": "UnicodeDecodeError"
+        }
+      ],
+      "classification": "REQUIRES_REVIEW"
+    },
+    {
+      "ref": "refs/heads/codex/comp01b-expand",
+      "sha": "4f5e8dd0dae02a8f81e302063e8dec10cb3ea44f",
+      "workflowFiles": 14,
+      "potentialPushWorkflows": [
+        {
+          "path": ".github/workflows/gha-chef-pulse.yml",
+          "blob": "f67e6f8d1583c8259bdd5a3c14c7fb3823d034ed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-deploy-cron-worker.yml",
+          "blob": "eefcaff3e8992a3557ff5cda55f2ad9e173f875e",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-directory-pulse.yml",
+          "blob": "c4a3f14d26ebc53f8fdb57384fe6c554a9e125ae",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-hunter-pulse.yml",
+          "blob": "a34c6a12fd7cafb7f974cf8b3f1e8b95eb871d33",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-medic-pulse.yml",
+          "blob": "fd262e0bf734aea2a5c1a0a3d5fcd907508505d9",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-sentinel-pulse.yml",
+          "blob": "29c723c568e3473d0dc9e08b4dbb6cb1a74d225d",
+          "parseError": "UnicodeDecodeError"
+        }
+      ],
+      "classification": "REQUIRES_REVIEW"
+    },
+    {
+      "ref": "refs/heads/codex/comp01b-rollback",
+      "sha": "bf9a17e8b4bde25a7850d6b88a46d104f7b02b56",
+      "workflowFiles": 14,
+      "potentialPushWorkflows": [
+        {
+          "path": ".github/workflows/gha-chef-pulse.yml",
+          "blob": "f67e6f8d1583c8259bdd5a3c14c7fb3823d034ed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-deploy-cron-worker.yml",
+          "blob": "eefcaff3e8992a3557ff5cda55f2ad9e173f875e",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-directory-pulse.yml",
+          "blob": "c4a3f14d26ebc53f8fdb57384fe6c554a9e125ae",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-hunter-pulse.yml",
+          "blob": "a34c6a12fd7cafb7f974cf8b3f1e8b95eb871d33",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-medic-pulse.yml",
+          "blob": "fd262e0bf734aea2a5c1a0a3d5fcd907508505d9",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-sentinel-pulse.yml",
+          "blob": "29c723c568e3473d0dc9e08b4dbb6cb1a74d225d",
+          "parseError": "UnicodeDecodeError"
+        }
+      ],
+      "classification": "REQUIRES_REVIEW"
+    },
+    {
+      "ref": "refs/heads/codex/db-01",
+      "sha": "ca1ca77d87601657be1bad87c09f833b5a86d3e7",
+      "workflowFiles": 13,
+      "potentialPushWorkflows": [
+        {
+          "path": ".github/workflows/gha-chef-pulse.yml",
+          "blob": "f67e6f8d1583c8259bdd5a3c14c7fb3823d034ed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-deploy-cron-worker.yml",
+          "blob": "eefcaff3e8992a3557ff5cda55f2ad9e173f875e",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-directory-pulse.yml",
+          "blob": "728f93e86fd91e350b1f67d0d1aa371e8a98e90c",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-hunter-pulse.yml",
+          "blob": "51240fc022b62b8c9197af4247c8fec3f315b9e4",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-medic-pulse.yml",
+          "blob": "fd262e0bf734aea2a5c1a0a3d5fcd907508505d9",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-sentinel-pulse.yml",
+          "blob": "6f1074f1ad0adc28edec1128b14076f6ed4eed6e",
+          "parseError": "UnicodeDecodeError"
+        }
+      ],
+      "classification": "REQUIRES_REVIEW"
+    },
+    {
+      "ref": "refs/heads/codex/pigment-paper-complete",
+      "sha": "7f7ceec0d3f0168f4d4115557afcf3f6bce33d9d",
+      "workflowFiles": 23,
+      "potentialPushWorkflows": [
+        {
+          "path": ".github/workflows/gha-chef-pulse.yml",
+          "blob": "f67e6f8d1583c8259bdd5a3c14c7fb3823d034ed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-deploy-cron-worker.yml",
+          "blob": "cede5c4d67e921abccb47b7d90864bbad8eaf0cd",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-directory-pulse.yml",
+          "blob": "c4a3f14d26ebc53f8fdb57384fe6c554a9e125ae",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-hunter-pulse.yml",
+          "blob": "9f3567be87792567501e9fc044bcf89423ffbaed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-medic-pulse.yml",
+          "blob": "b1d6581dc15406d1ca0b6c8fcc638c689d0dabf7",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-sentinel-pulse.yml",
+          "blob": "e71a448772f5edb5fcabf34bafeb66cb5860f679",
+          "parseError": "UnicodeDecodeError"
+        }
+      ],
+      "classification": "REQUIRES_REVIEW"
+    },
+    {
+      "ref": "refs/heads/codex/publication-lock-recovery",
+      "sha": "34e3bd1efa34dc3a2c31f2cc3e5b6c5b04790e83",
+      "workflowFiles": 23,
+      "potentialPushWorkflows": [
+        {
+          "path": ".github/workflows/gha-chef-pulse.yml",
+          "blob": "f67e6f8d1583c8259bdd5a3c14c7fb3823d034ed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-deploy-cron-worker.yml",
+          "blob": "cede5c4d67e921abccb47b7d90864bbad8eaf0cd",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-directory-pulse.yml",
+          "blob": "c4a3f14d26ebc53f8fdb57384fe6c554a9e125ae",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-hunter-pulse.yml",
+          "blob": "9f3567be87792567501e9fc044bcf89423ffbaed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-medic-pulse.yml",
+          "blob": "b1d6581dc15406d1ca0b6c8fcc638c689d0dabf7",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-sentinel-pulse.yml",
+          "blob": "e71a448772f5edb5fcabf34bafeb66cb5860f679",
+          "parseError": "UnicodeDecodeError"
+        }
+      ],
+      "classification": "REQUIRES_REVIEW"
+    },
+    {
+      "ref": "refs/heads/codex/sp-01-acceptance",
+      "sha": "56e01218308e9812bbbefa893b98eabff66f4521",
+      "workflowFiles": 14,
+      "potentialPushWorkflows": [
+        {
+          "path": ".github/workflows/gha-chef-pulse.yml",
+          "blob": "f67e6f8d1583c8259bdd5a3c14c7fb3823d034ed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-deploy-cron-worker.yml",
+          "blob": "eefcaff3e8992a3557ff5cda55f2ad9e173f875e",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-directory-pulse.yml",
+          "blob": "c4a3f14d26ebc53f8fdb57384fe6c554a9e125ae",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-hunter-pulse.yml",
+          "blob": "a34c6a12fd7cafb7f974cf8b3f1e8b95eb871d33",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-medic-pulse.yml",
+          "blob": "fd262e0bf734aea2a5c1a0a3d5fcd907508505d9",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-sentinel-pulse.yml",
+          "blob": "29c723c568e3473d0dc9e08b4dbb6cb1a74d225d",
+          "parseError": "UnicodeDecodeError"
+        }
+      ],
+      "classification": "REQUIRES_REVIEW"
+    },
+    {
+      "ref": "refs/heads/codex/sp-01-source-identity",
+      "sha": "ec57ba5fbd2a33b46f72702c19bd8ed9ca528545",
+      "workflowFiles": 14,
+      "potentialPushWorkflows": [
+        {
+          "path": ".github/workflows/gha-chef-pulse.yml",
+          "blob": "f67e6f8d1583c8259bdd5a3c14c7fb3823d034ed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-deploy-cron-worker.yml",
+          "blob": "eefcaff3e8992a3557ff5cda55f2ad9e173f875e",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-directory-pulse.yml",
+          "blob": "c4a3f14d26ebc53f8fdb57384fe6c554a9e125ae",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-hunter-pulse.yml",
+          "blob": "a34c6a12fd7cafb7f974cf8b3f1e8b95eb871d33",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-medic-pulse.yml",
+          "blob": "fd262e0bf734aea2a5c1a0a3d5fcd907508505d9",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-sentinel-pulse.yml",
+          "blob": "29c723c568e3473d0dc9e08b4dbb6cb1a74d225d",
+          "parseError": "UnicodeDecodeError"
+        }
+      ],
+      "classification": "REQUIRES_REVIEW"
+    },
+    {
+      "ref": "refs/heads/codex/sp-02-source-economics",
+      "sha": "36a24e330d5540152d63ecf343db3b6ad597c5d9",
+      "workflowFiles": 14,
+      "potentialPushWorkflows": [
+        {
+          "path": ".github/workflows/gha-chef-pulse.yml",
+          "blob": "f67e6f8d1583c8259bdd5a3c14c7fb3823d034ed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-deploy-cron-worker.yml",
+          "blob": "eefcaff3e8992a3557ff5cda55f2ad9e173f875e",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-directory-pulse.yml",
+          "blob": "c4a3f14d26ebc53f8fdb57384fe6c554a9e125ae",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-hunter-pulse.yml",
+          "blob": "a34c6a12fd7cafb7f974cf8b3f1e8b95eb871d33",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-medic-pulse.yml",
+          "blob": "fd262e0bf734aea2a5c1a0a3d5fcd907508505d9",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-sentinel-pulse.yml",
+          "blob": "29c723c568e3473d0dc9e08b4dbb6cb1a74d225d",
+          "parseError": "UnicodeDecodeError"
+        }
+      ],
+      "classification": "REQUIRES_REVIEW"
+    },
+    {
+      "ref": "refs/heads/codex/talent-diagnostics-acceptance",
+      "sha": "3065f0d709d5a1950c247d5a11df542b07721bcb",
+      "workflowFiles": 23,
+      "potentialPushWorkflows": [
+        {
+          "path": ".github/workflows/gha-chef-pulse.yml",
+          "blob": "f67e6f8d1583c8259bdd5a3c14c7fb3823d034ed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-deploy-cron-worker.yml",
+          "blob": "cede5c4d67e921abccb47b7d90864bbad8eaf0cd",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-directory-pulse.yml",
+          "blob": "c4a3f14d26ebc53f8fdb57384fe6c554a9e125ae",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-hunter-pulse.yml",
+          "blob": "9f3567be87792567501e9fc044bcf89423ffbaed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-medic-pulse.yml",
+          "blob": "b1d6581dc15406d1ca0b6c8fcc638c689d0dabf7",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-sentinel-pulse.yml",
+          "blob": "e71a448772f5edb5fcabf34bafeb66cb5860f679",
+          "parseError": "UnicodeDecodeError"
+        }
+      ],
+      "classification": "REQUIRES_REVIEW"
+    },
+    {
+      "ref": "refs/heads/feature/ex-06-lever-leverdemo",
+      "sha": "c1b903ce481f33832d0b7201ec940f3ded098b4d",
+      "workflowFiles": 17,
+      "potentialPushWorkflows": [
+        {
+          "path": ".github/workflows/gha-chef-pulse.yml",
+          "blob": "f67e6f8d1583c8259bdd5a3c14c7fb3823d034ed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-deploy-cron-worker.yml",
+          "blob": "eefcaff3e8992a3557ff5cda55f2ad9e173f875e",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-directory-pulse.yml",
+          "blob": "c4a3f14d26ebc53f8fdb57384fe6c554a9e125ae",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-hunter-pulse.yml",
+          "blob": "3c553bcb26011b0b123ad0e2d14be9be17233f4a",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-medic-pulse.yml",
+          "blob": "fd262e0bf734aea2a5c1a0a3d5fcd907508505d9",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-sentinel-pulse.yml",
+          "blob": "29c723c568e3473d0dc9e08b4dbb6cb1a74d225d",
+          "parseError": "UnicodeDecodeError"
+        }
+      ],
+      "classification": "REQUIRES_REVIEW"
+    },
+    {
+      "ref": "refs/heads/mirror/gitlab/main",
+      "sha": "fbeff64a2b47f32550ba426af92a2795a1507181",
+      "workflowFiles": 0,
+      "potentialPushWorkflows": [],
+      "classification": "NO_MATCHING_PUSH_TRIGGER_IN_INSPECTED_WORKFLOWS"
+    },
+    {
+      "ref": "refs/heads/savepoint/pre-ux-elevation",
+      "sha": "9f9c4b3799b495d4e8e6148737d291816565b710",
+      "workflowFiles": 19,
+      "potentialPushWorkflows": [
+        {
+          "path": ".github/workflows/gha-chef-pulse.yml",
+          "blob": "f67e6f8d1583c8259bdd5a3c14c7fb3823d034ed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-deploy-cron-worker.yml",
+          "blob": "eefcaff3e8992a3557ff5cda55f2ad9e173f875e",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-directory-pulse.yml",
+          "blob": "c4a3f14d26ebc53f8fdb57384fe6c554a9e125ae",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-hunter-pulse.yml",
+          "blob": "3c553bcb26011b0b123ad0e2d14be9be17233f4a",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-medic-pulse.yml",
+          "blob": "fd262e0bf734aea2a5c1a0a3d5fcd907508505d9",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-sentinel-pulse.yml",
+          "blob": "29c723c568e3473d0dc9e08b4dbb6cb1a74d225d",
+          "parseError": "UnicodeDecodeError"
+        }
+      ],
+      "classification": "REQUIRES_REVIEW"
+    },
+    {
+      "ref": "refs/tags/savepoint-ux-elevation",
+      "sha": "2cc4cc5680751bb9a8864cb60c7a41b538a73d2d",
+      "workflowFiles": 19,
+      "potentialPushWorkflows": [
+        {
+          "path": ".github/workflows/gha-chef-pulse.yml",
+          "blob": "f67e6f8d1583c8259bdd5a3c14c7fb3823d034ed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-deploy-cron-worker.yml",
+          "blob": "eefcaff3e8992a3557ff5cda55f2ad9e173f875e",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-directory-pulse.yml",
+          "blob": "c4a3f14d26ebc53f8fdb57384fe6c554a9e125ae",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-hunter-pulse.yml",
+          "blob": "3c553bcb26011b0b123ad0e2d14be9be17233f4a",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-medic-pulse.yml",
+          "blob": "fd262e0bf734aea2a5c1a0a3d5fcd907508505d9",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-sentinel-pulse.yml",
+          "blob": "29c723c568e3473d0dc9e08b4dbb6cb1a74d225d",
+          "parseError": "UnicodeDecodeError"
+        }
+      ],
+      "classification": "REQUIRES_REVIEW"
+    },
+    {
+      "ref": "refs/heads/codex/master-operating-prompt",
+      "sha": "8a87f1b263c13a801aee946170cff7c753ed576e",
+      "workflowFiles": 19,
+      "potentialPushWorkflows": [
+        {
+          "path": ".github/workflows/gha-chef-pulse.yml",
+          "blob": "f67e6f8d1583c8259bdd5a3c14c7fb3823d034ed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-deploy-cron-worker.yml",
+          "blob": "eefcaff3e8992a3557ff5cda55f2ad9e173f875e",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-directory-pulse.yml",
+          "blob": "c4a3f14d26ebc53f8fdb57384fe6c554a9e125ae",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-hunter-pulse.yml",
+          "blob": "3c553bcb26011b0b123ad0e2d14be9be17233f4a",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-medic-pulse.yml",
+          "blob": "fd262e0bf734aea2a5c1a0a3d5fcd907508505d9",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-sentinel-pulse.yml",
+          "blob": "29c723c568e3473d0dc9e08b4dbb6cb1a74d225d",
+          "parseError": "UnicodeDecodeError"
+        }
+      ],
+      "classification": "REQUIRES_REVIEW"
+    },
+    {
+      "ref": "refs/heads/codex/recent-progress-backup",
+      "sha": "3065f0d709d5a1950c247d5a11df542b07721bcb",
+      "workflowFiles": 23,
+      "potentialPushWorkflows": [
+        {
+          "path": ".github/workflows/gha-chef-pulse.yml",
+          "blob": "f67e6f8d1583c8259bdd5a3c14c7fb3823d034ed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-deploy-cron-worker.yml",
+          "blob": "cede5c4d67e921abccb47b7d90864bbad8eaf0cd",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-directory-pulse.yml",
+          "blob": "c4a3f14d26ebc53f8fdb57384fe6c554a9e125ae",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-hunter-pulse.yml",
+          "blob": "9f3567be87792567501e9fc044bcf89423ffbaed",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-medic-pulse.yml",
+          "blob": "b1d6581dc15406d1ca0b6c8fcc638c689d0dabf7",
+          "parseError": "UnicodeDecodeError"
+        },
+        {
+          "path": ".github/workflows/gha-sentinel-pulse.yml",
+          "blob": "e71a448772f5edb5fcabf34bafeb66cb5860f679",
+          "parseError": "UnicodeDecodeError"
+        }
+      ],
+      "classification": "REQUIRES_REVIEW"
+    }
+  ],
+  "limitations": [
+    "Conservative fnmatch projection; flagged events require human/agent source review",
+    "Does not inspect external webhooks or app integrations",
+    "Only named refs and their tracked workflow files were read"
+  ]
+}

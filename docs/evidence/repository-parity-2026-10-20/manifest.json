@@ -1,0 +1,98 @@
+{
+  "scope": "EXACT_BYTE_EVIDENCE_MANIFEST_NO_ARCHIVES_PROCESS_LOGS_OR_CREDENTIALS",
+  "packagedAt": "2026-10-20T12:50:46.176777+00:00",
+  "hashAlgorithm": "SHA-256",
+  "originalEvidenceFiles": 11,
+  "entries": [
+    {
+      "path": "all-ref-inventory-2026-10-20.json",
+      "source": "tmp/all-ref-inventory-2026-10-20.json",
+      "bytes": 102714,
+      "sha256": "1d7fe1817b15216bacbcc85b61b98aa8a4f4eb48e5c30ed6520b08fe8a8c5cfc",
+      "preservedByteForByte": true
+    },
+    {
+      "path": "ref-push-trigger-audit-2026-10-20.json",
+      "source": "tmp/ref-push-trigger-audit-2026-10-20.json",
+      "bytes": 24616,
+      "sha256": "6957d8cdcd8cdfc47d4b4e307014276711c44b608cc1364016ea36f056e21c22",
+      "preservedByteForByte": true
+    },
+    {
+      "path": "ref-push-trigger-audit-utf8-2026-10-20.json",
+      "source": "tmp/ref-push-trigger-audit-utf8-2026-10-20.json",
+      "bytes": 5219,
+      "sha256": "466747752fd538683531e4dffb452547f9024bd470550e0b2513d37e16407b5c",
+      "preservedByteForByte": true
+    },
+    {
+      "path": "ref-backup-plan-2026-10-20.json",
+      "source": "tmp/ref-backup-plan-2026-10-20.json",
+      "bytes": 48742,
+      "sha256": "84a7988f9d2403ecfe2eb167a61d89be6f47b3db9c06bf9c9690604e01239d37",
+      "preservedByteForByte": true
+    },
+    {
+      "path": "ref-backup-repair-2026-10-20.json",
+      "source": "tmp/ref-backup-repair-2026-10-20.json",
+      "bytes": 49256,
+      "sha256": "bbc2fde34b914e233a22cbc631b47801a5a4ca8e8efbf8127ab40b1e2fb1b3fe",
+      "preservedByteForByte": true
+    },
+    {
+      "path": "gitlab-ref-transport-probe-2026-10-20.json",
+      "source": "tmp/gitlab-ref-transport-probe-2026-10-20.json",
+      "bytes": 209,
+      "sha256": "8eeae3b4fdf78809b7f03733238ba96c031cd9c08bc8618b8eba56659a74d372",
+      "preservedByteForByte": true
+    },
+    {
+      "path": "gitlab-single-ref-push-probe-2026-10-20.json",
+      "source": "tmp/gitlab-single-ref-push-probe-2026-10-20.json",
+      "bytes": 671,
+      "sha256": "41e96d743eb9c09fb48fb268b089ab2545d809de940cd78d8cc5726cf0aa6a2c",
+      "preservedByteForByte": true
+    },
+    {
+      "path": "ref-backup-repair-bounded-2026-10-20.json",
+      "source": "tmp/ref-backup-repair-bounded-2026-10-20.json",
+      "bytes": 46809,
+      "sha256": "5cdb5dbafcfc82cc589550c3c71ddfc89792bbee91e25ab4bb1ce0a8b4a7c8d9",
+      "preservedByteForByte": true
+    },
+    {
+      "path": "all-ref-inventory-after-2026-10-20.json",
+      "source": "tmp/all-ref-inventory-after-2026-10-20.json",
+      "bytes": 50452,
+      "sha256": "521d8bc4be1dd59da3e9d483851d37ac6354b5de6b4fc42ff98a866b538e7496",
+      "preservedByteForByte": true
+    },
+    {
+      "path": "canonical-ref-recheck-2026-10-20.json",
+      "source": "tmp/canonical-ref-recheck-2026-10-20.json",
+      "bytes": 24811,
+      "sha256": "5ddc18b9738352abfa8b140223faa62b92e75ff39a0341a3c9bb6e3d4d2f1dc0",
+      "preservedByteForByte": true
+    },
+    {
+      "path": "all-ref-inventory-final-2026-10-20.json",
+      "source": "tmp/all-ref-inventory-final-2026-10-20.json",
+      "bytes": 102814,
+      "sha256": "6c20840330e9f4485b25db875d05824f5164fdf6fa468abb4522428162890903",
+      "preservedByteForByte": true
+    },
+    {
+      "path": "verified-summary.json",
+      "source": "Derived only from packaged receipts and explicit operator-scope note",
+      "bytes": 2126,
+      "sha256": "a9b613c96b32ae6b3cdd1751748a4c00de47d2d15c3a1000c4517611bc7931d2",
+      "preservedByteForByte": false
+    }
+  ],
+  "exclusions": [
+    "Source/dependency archives",
+    "Raw process commands and logs",
+    "Credential values"
+  ],
+  "validation": "All JSON parsed; all11 copied files matched original byte hashes; full advertised ref maps and final counts compared directly; selected credential-prefix/private-key/URL-userinfo patterns found no matches (not a general secret audit)."
+}

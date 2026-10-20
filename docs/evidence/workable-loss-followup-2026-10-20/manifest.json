@@ -1,0 +1,58 @@
+{
+  "scope": "EXACT_THREE_MISSING_TRACE_CURRENT_HASH_CHECK_ONE_REJECTED_ROW_FACTS_NEXT_ORDINARY_CYCLE",
+  "files": [
+    {
+      "source": "tmp/hunt-three-missing-trace-2026-10-20.md",
+      "path": "hunt-three-missing-trace-2026-10-20.md",
+      "bytes": 7350,
+      "sha256": "3f1cc574a2455ed73e7399860a7b7ad6dac0bf606e14c56f1df68826624f9076"
+    },
+    {
+      "source": "tmp/hunt-three-missing-trace-2026-10-20.json",
+      "path": "hunt-three-missing-trace-2026-10-20.json",
+      "bytes": 10644,
+      "sha256": "b1d7199e829204a66297479b89745478a395c8202b2b0f176bd18141255f8c20"
+    },
+    {
+      "source": "tmp/hunt-three-url-hash-readonly-2026-10-20.json",
+      "path": "hunt-three-url-hash-readonly-2026-10-20.json",
+      "bytes": 1449,
+      "sha256": "79545994ca218819ed1cbcdcbbc4151b7d551e0334bff5a820380bdc70134f38"
+    },
+    {
+      "source": "tmp/hunt-three-url-hash-readonly-2026-10-20.sql",
+      "path": "hunt-three-url-hash-readonly-2026-10-20.sql",
+      "bytes": 604,
+      "sha256": "fa694282243b1e4a3ea54d5a82086e0d9b6700baf2d6b1f3c40b9072a0496051"
+    },
+    {
+      "source": "tmp/crew-rejection-hard-veto-read-2026-10-20.json",
+      "path": "crew-rejection-hard-veto-read-2026-10-20.json",
+      "bytes": 2329,
+      "sha256": "88631fde39693721990d3332225e08a2317d69055c49b48e3cb823fc440e30ac"
+    },
+    {
+      "source": "tmp/workable-postrelease-nextcycle-2026-10-20.json",
+      "path": "workable-postrelease-nextcycle-2026-10-20.json",
+      "bytes": 56232,
+      "sha256": "cd6b73ebc63f89ca5fb527f3135b0f1340fb94d7a59472ef1ec862d103610492"
+    },
+    {
+      "source": "tmp/dayshift-release-proof/trace-hunt-three.ts",
+      "path": "trace-hunt-three.ts",
+      "bytes": 7058,
+      "sha256": "0ffcaf5e58ec84aa737fe2440d363570048ad470033eb7ba7cb68782d85cc8f1"
+    },
+    {
+      "source": ".tmp-crew-rejection-hard-veto-read-2026-10-20.ts",
+      "path": "tmp-crew-rejection-hard-veto-read-2026-10-20.ts",
+      "bytes": 2360,
+      "sha256": "fde92a20a0e7796f0c065433ea29ba37977f82198bf43af548fd7097091bcdea"
+    }
+  ],
+  "limitations": [
+    "Original root-relative paths in helper copies are provenance, not relocated executable entrypoints",
+    "The zero-row current hash check is not a reconstruction of the earlier publication invocation",
+    "Stored description is null; no full private text retained"
+  ]
+}

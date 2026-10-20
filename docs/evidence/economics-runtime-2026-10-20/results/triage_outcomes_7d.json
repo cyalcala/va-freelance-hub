@@ -1,0 +1,216 @@
+[
+  {
+    "results": [
+      {
+        "source_id": "we-work-remotely",
+        "eligible": 130,
+        "unclear": 0,
+        "ineligible": 21,
+        "policy_rejected": 21,
+        "total_stored": 151
+      },
+      {
+        "source_id": "workable:hunt-st",
+        "eligible": 32,
+        "unclear": 11,
+        "ineligible": 1,
+        "policy_rejected": 1,
+        "total_stored": 44
+      },
+      {
+        "source_id": "greenhouse:gitlab",
+        "eligible": 3,
+        "unclear": 0,
+        "ineligible": 34,
+        "policy_rejected": 34,
+        "total_stored": 37
+      },
+      {
+        "source_id": "real-work-from-anywhere",
+        "eligible": 35,
+        "unclear": 1,
+        "ineligible": 1,
+        "policy_rejected": 2,
+        "total_stored": 37
+      },
+      {
+        "source_id": "greenhouse:grafanalabs",
+        "eligible": 0,
+        "unclear": 0,
+        "ineligible": 35,
+        "policy_rejected": 35,
+        "total_stored": 35
+      },
+      {
+        "source_id": "remote-ok",
+        "eligible": 14,
+        "unclear": 6,
+        "ineligible": 6,
+        "policy_rejected": 12,
+        "total_stored": 26
+      },
+      {
+        "source_id": "workable:crewbloom",
+        "eligible": 3,
+        "unclear": 0,
+        "ineligible": 19,
+        "policy_rejected": 19,
+        "total_stored": 22
+      },
+      {
+        "source_id": "lever:vacancies",
+        "eligible": 20,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 20
+      },
+      {
+        "source_id": "lever:tenna",
+        "eligible": 11,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 11
+      },
+      {
+        "source_id": "breezy:20four7va",
+        "eligible": 10,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 10
+      },
+      {
+        "source_id": "workable:pearltalent",
+        "eligible": 1,
+        "unclear": 0,
+        "ineligible": 9,
+        "policy_rejected": 9,
+        "total_stored": 10
+      },
+      {
+        "source_id": "ashby:multiplymii",
+        "eligible": 8,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 8
+      },
+      {
+        "source_id": "jobicy-supporting-apac",
+        "eligible": 4,
+        "unclear": 0,
+        "ineligible": 4,
+        "policy_rejected": 4,
+        "total_stored": 8
+      },
+      {
+        "source_id": "breezy:sourcefit",
+        "eligible": 7,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 3,
+        "total_stored": 7
+      },
+      {
+        "source_id": "lever:applydigital",
+        "eligible": 6,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 6
+      },
+      {
+        "source_id": "lever:outsourcedstaff",
+        "eligible": 5,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 5
+      },
+      {
+        "source_id": "workable:coconutva",
+        "eligible": 2,
+        "unclear": 3,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 5
+      },
+      {
+        "source_id": "lever:willowinc",
+        "eligible": 4,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 4
+      },
+      {
+        "source_id": "lever:gushwork",
+        "eligible": 3,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 3
+      },
+      {
+        "source_id": "ashby:luxor",
+        "eligible": 2,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 2
+      },
+      {
+        "source_id": "jobicy-admin-support-apac",
+        "eligible": 2,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 2
+      },
+      {
+        "source_id": "ashby:finch",
+        "eligible": 1,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 1
+      },
+      {
+        "source_id": "remotive",
+        "eligible": 1,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 1
+      },
+      {
+        "source_id": "workable:rocketams",
+        "eligible": 1,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 1
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 13.5448
+      },
+      "duration": 13.5448,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 92524544,
+      "rows_read": 8193,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

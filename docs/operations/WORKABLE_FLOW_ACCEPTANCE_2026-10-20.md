@@ -88,3 +88,36 @@ deploy job was explicitly skipped. This is not the Pages source SHA. The running
 Pages deployment remains347d95ae, sourcef34965b0, schema0054. Math1–13 acceptance,
 cross-writer caps, GCP containment, complete recall/precision and100–150 verified
 new publications/day remain unproven.
+
+## Later ordinary-cycle and missing-opening evidence
+
+The `12:48–12:49Z` observer again executed five bounded zero-write SELECTs plus
+one ordinary public GET. The seventeen-opening cohort remains two public IDs,
+eleven pending rows, Crew9686 rejected, and three Hunt URLs absent. All six
+snapshot header/meta pairs match and the board reports1,794 jobs. Coconut and
+Crew fetched again at `12:41:01.232Z` (32 and152 metadata rows), with robots
+enforced/allowed. Coconut's ledger records two IDs `[9693,9694]`, then two
+further proposals blocked at zero. This is bounded evidence of that tick's cap;
+it neither certifies new-job yield nor closes every production writer.
+
+Each of the three absent Hunt URLs has one explicit PH/remote variant in the
+retained capture. The actual deployed parser, normalizer, geo predicate and
+original-date guard accept that retained input. At `12:27Z`, one current exact
+URL/hash query returns zero records with seven rows read and zero written.
+This rules out current exact-key collisions. The first missing causal link is
+membership in the actual `11:41Z` source response; aggregate count143 does not
+prove per-opening membership. The live dedup and shared-intake decisions are
+also unretained. Their loss reason remains **UNKNOWN**. A restricted retained
+Hunt-only replay selecting all three is not the actual multi-source invocation.
+
+A separate exact read proves Crew9686's stored description is null and the
+existing pure hard local/geo vetoes both return false. Those facts close an
+earlier fixture-data uncertainty; they do not approve its role or authorize
+publication. Parser prevention still cannot repair the existing rejected row.
+Any later correction must requeue under current evidence and preserve role AI
+triage, including exclusion from the existing no-AI pending fallback.
+
+Exact receipts and the stage trace are retained under
+[`docs/evidence/workable-loss-followup-2026-10-20`](../evidence/workable-loss-followup-2026-10-20/manifest.json).
+No provider fetch, manual scrape, real AI call or direct production write was
+performed by these follow-up diagnostics.

@@ -1,0 +1,303 @@
+{
+  "checkedAt": "2026-10-20T12:27:18.785Z",
+  "scope": "RETAINED_INPUT_ACTUAL_F349_PARSER_NORMALIZER_GATES_NO_LIVE_SOURCE_AI_DB_ACCESS",
+  "f349": "f34965b0c7bbfb76395259ccce0b60ad4533eee0",
+  "captureObservedEnd": "2026-10-20T10:14:54.274Z",
+  "postReadObservedEnd": "2026-10-20T12:00:23.109Z",
+  "inputs": [
+    {
+      "path": "workable-observation.json",
+      "sha256": "c2897964d774765ef4988c528a36167e9bd288724f1865cd573c9dd880a8363c"
+    },
+    {
+      "path": "workable-reconciliation.json",
+      "sha256": "921a073ed76a5a3d4294b010062fb67cc116f21820fc005759586461bac6aa56"
+    },
+    {
+      "path": "workable-grouped-cohort.json",
+      "sha256": "38d5352d2d991eb307b84f89724bab937c265be53d81bd445f70511e4b996c33"
+    }
+  ],
+  "syntheticTransportRequests": 1,
+  "normalization": {
+    "allHuntRetainedRows": 143,
+    "parsed": 143,
+    "normalized": 143,
+    "droppedNoUrl": 0,
+    "quarantinedApplicationUrls": 0
+  },
+  "restrictedCohortOnlyReplay": {
+    "scope": "RETAINED_HUNT_ONLY_AND_BOUNDED_PRIOR_D1_ROWS_NOT_PRODUCTION_ALL_SOURCE_STATE",
+    "retainedStoredRows": 259,
+    "freshHuntRows": 89,
+    "newByRetainedUrlSet": 18,
+    "limit": 50,
+    "selected": 18,
+    "deferred": 0
+  },
+  "facts": [
+    {
+      "shortcode": "8902E9B839",
+      "sourceUrl": "https://apply.workable.com/j/8902E9B839",
+      "variants": [
+        {
+          "title": "Admin Assistant (013-1371)",
+          "shortcode": "8902E9B839",
+          "url": "https://apply.workable.com/j/8902E9B839",
+          "city": "",
+          "state": "",
+          "country": "Philippines",
+          "telecommuting": true,
+          "published_on": "2026-10-07",
+          "created_at": "2026-10-07"
+        }
+      ],
+      "parserRows": 1,
+      "normalizedRows": 1,
+      "normalized": {
+        "title": "Admin Assistant (013-1371)",
+        "sourceId": "workable:hunt-st",
+        "sourceUrl": "https://apply.workable.com/j/8902E9B839",
+        "applicationUrl": "https://apply.workable.com/j/8902E9B839",
+        "postedAt": "2026-10-07T00:00:00.000Z",
+        "locationRaw": "Philippines",
+        "locationType": "remote",
+        "tags": [
+          "hunt st"
+        ],
+        "description": null,
+        "contentHash": "4a139740470ccf2f"
+      },
+      "freshnessAtCapture": {
+        "state": "WITHIN_WINDOW",
+        "postedAt": "2026-10-07T00:00:00.000Z"
+      },
+      "freshnessAtPostRead": {
+        "state": "WITHIN_WINDOW",
+        "postedAt": "2026-10-07T00:00:00.000Z"
+      },
+      "geoGate": {
+        "geoScope": "ph_only",
+        "phEligibility": "eligible_verified",
+        "evidence": "Philippines-targeted: location \"Philippines\""
+      },
+      "metadataHold": null,
+      "preReleaseRetainedDetail": [
+        {
+          "sourceUrl": "https://apply.workable.com/j/8902E9B839",
+          "title": "Admin Assistant (013-1371)",
+          "postedAt": "2026-10-07T00:00:00.000Z",
+          "locationRaw": "Philippines",
+          "currentMetadataHold": null,
+          "exactStored": [],
+          "exactActiveEligibleStored": false
+        }
+      ],
+      "groupedRetainedDetail": [
+        {
+          "sourceUrl": "https://apply.workable.com/j/8902E9B839",
+          "title": "Admin Assistant (013-1371)",
+          "locationVariants": 1,
+          "metadataHoldCodes": [
+            null
+          ],
+          "hasPlausiblePhVariant": true,
+          "exactActiveEligibleStored": false,
+          "allCurrentDatesStale": false
+        }
+      ],
+      "postReadExactRows": [],
+      "retainedRawIndex": 6,
+      "retainedHuntHashMatches": [
+        {
+          "title": "Admin Assistant (013-1371)",
+          "sourceUrl": "https://apply.workable.com/j/8902E9B839"
+        }
+      ],
+      "restrictedCohortOnlyNewIndex": 2,
+      "restrictedCohortOnlyIntakeSelected": true,
+      "calculatedHash": "4a139740470ccf2f"
+    },
+    {
+      "shortcode": "13FFDFE94E",
+      "sourceUrl": "https://apply.workable.com/j/13FFDFE94E",
+      "variants": [
+        {
+          "title": "AI Automation & Admin Specialist (027 - 1423)",
+          "shortcode": "13FFDFE94E",
+          "url": "https://apply.workable.com/j/13FFDFE94E",
+          "city": "",
+          "state": "",
+          "country": "Philippines",
+          "telecommuting": true,
+          "published_on": "2026-10-20",
+          "created_at": "2026-10-20"
+        }
+      ],
+      "parserRows": 1,
+      "normalizedRows": 1,
+      "normalized": {
+        "title": "AI Automation & Admin Specialist (027 - 1423)",
+        "sourceId": "workable:hunt-st",
+        "sourceUrl": "https://apply.workable.com/j/13FFDFE94E",
+        "applicationUrl": "https://apply.workable.com/j/13FFDFE94E",
+        "postedAt": "2026-10-20T00:00:00.000Z",
+        "locationRaw": "Philippines",
+        "locationType": "remote",
+        "tags": [
+          "hunt st"
+        ],
+        "description": null,
+        "contentHash": "9842df5277a49f53"
+      },
+      "freshnessAtCapture": {
+        "state": "WITHIN_WINDOW",
+        "postedAt": "2026-10-20T00:00:00.000Z"
+      },
+      "freshnessAtPostRead": {
+        "state": "WITHIN_WINDOW",
+        "postedAt": "2026-10-20T00:00:00.000Z"
+      },
+      "geoGate": {
+        "geoScope": "ph_only",
+        "phEligibility": "eligible_verified",
+        "evidence": "Philippines-targeted: location \"Philippines\""
+      },
+      "metadataHold": null,
+      "preReleaseRetainedDetail": [
+        {
+          "sourceUrl": "https://apply.workable.com/j/13FFDFE94E",
+          "title": "AI Automation & Admin Specialist (027 - 1423)",
+          "postedAt": "2026-10-20T00:00:00.000Z",
+          "locationRaw": "Philippines",
+          "currentMetadataHold": null,
+          "exactStored": [],
+          "exactActiveEligibleStored": false
+        }
+      ],
+      "groupedRetainedDetail": [
+        {
+          "sourceUrl": "https://apply.workable.com/j/13FFDFE94E",
+          "title": "AI Automation & Admin Specialist (027 - 1423)",
+          "locationVariants": 1,
+          "metadataHoldCodes": [
+            null
+          ],
+          "hasPlausiblePhVariant": true,
+          "exactActiveEligibleStored": false,
+          "allCurrentDatesStale": false
+        }
+      ],
+      "postReadExactRows": [],
+      "retainedRawIndex": 8,
+      "retainedHuntHashMatches": [
+        {
+          "title": "AI Automation & Admin Specialist (027 - 1423)",
+          "sourceUrl": "https://apply.workable.com/j/13FFDFE94E"
+        }
+      ],
+      "restrictedCohortOnlyNewIndex": 3,
+      "restrictedCohortOnlyIntakeSelected": true,
+      "calculatedHash": "9842df5277a49f53"
+    },
+    {
+      "shortcode": "BB4A8BD9FA",
+      "sourceUrl": "https://apply.workable.com/j/BB4A8BD9FA",
+      "variants": [
+        {
+          "title": "AU Assistant Accountant (012-1440)",
+          "shortcode": "BB4A8BD9FA",
+          "url": "https://apply.workable.com/j/BB4A8BD9FA",
+          "city": "",
+          "state": "",
+          "country": "Philippines",
+          "telecommuting": true,
+          "published_on": "2026-10-20",
+          "created_at": "2026-10-20"
+        }
+      ],
+      "parserRows": 1,
+      "normalizedRows": 1,
+      "normalized": {
+        "title": "AU Assistant Accountant (012-1440)",
+        "sourceId": "workable:hunt-st",
+        "sourceUrl": "https://apply.workable.com/j/BB4A8BD9FA",
+        "applicationUrl": "https://apply.workable.com/j/BB4A8BD9FA",
+        "postedAt": "2026-10-20T00:00:00.000Z",
+        "locationRaw": "Philippines",
+        "locationType": "remote",
+        "tags": [
+          "hunt st"
+        ],
+        "description": null,
+        "contentHash": "c3bd749ac0336b0b"
+      },
+      "freshnessAtCapture": {
+        "state": "WITHIN_WINDOW",
+        "postedAt": "2026-10-20T00:00:00.000Z"
+      },
+      "freshnessAtPostRead": {
+        "state": "WITHIN_WINDOW",
+        "postedAt": "2026-10-20T00:00:00.000Z"
+      },
+      "geoGate": {
+        "geoScope": "ph_only",
+        "phEligibility": "eligible_verified",
+        "evidence": "Philippines-targeted: location \"Philippines\""
+      },
+      "metadataHold": null,
+      "preReleaseRetainedDetail": [
+        {
+          "sourceUrl": "https://apply.workable.com/j/BB4A8BD9FA",
+          "title": "AU Assistant Accountant (012-1440)",
+          "postedAt": "2026-10-20T00:00:00.000Z",
+          "locationRaw": "Philippines",
+          "currentMetadataHold": null,
+          "exactStored": [],
+          "exactActiveEligibleStored": false
+        }
+      ],
+      "groupedRetainedDetail": [
+        {
+          "sourceUrl": "https://apply.workable.com/j/BB4A8BD9FA",
+          "title": "AU Assistant Accountant (012-1440)",
+          "locationVariants": 1,
+          "metadataHoldCodes": [
+            null
+          ],
+          "hasPlausiblePhVariant": true,
+          "exactActiveEligibleStored": false,
+          "allCurrentDatesStale": false
+        }
+      ],
+      "postReadExactRows": [],
+      "retainedRawIndex": 20,
+      "retainedHuntHashMatches": [
+        {
+          "title": "AU Assistant Accountant (012-1440)",
+          "sourceUrl": "https://apply.workable.com/j/BB4A8BD9FA"
+        }
+      ],
+      "restrictedCohortOnlyNewIndex": 7,
+      "restrictedCohortOnlyIntakeSelected": true,
+      "calculatedHash": "c3bd749ac0336b0b"
+    }
+  ],
+  "query": "SELECT id,source_id,source_url,title,content_hash,is_active,inactive_reason,ph_eligibility,geo_scope,posted_at,scraped_at,updated_at,CASE WHEN source_url IN ('https://apply.workable.com/j/8902E9B839','https://apply.workable.com/j/13FFDFE94E','https://apply.workable.com/j/BB4A8BD9FA') THEN 'EXACT_URL' ELSE 'HASH_ONLY' END AS match_basis FROM opportunities WHERE source_url IN ('https://apply.workable.com/j/8902E9B839','https://apply.workable.com/j/13FFDFE94E','https://apply.workable.com/j/BB4A8BD9FA') OR content_hash IN ('4a139740470ccf2f','9842df5277a49f53','c3bd749ac0336b0b') ORDER BY id LIMIT 7",
+  "queryExecuted": true,
+  "limitations": [
+    "Captured10:14widget is not per-opening evidence of the11:41live response",
+    "No complete production newItems list, intake order, per-URL outcome or hash conflict receipt is retained",
+    "Initial259-row D1 capture is a bounded same-source read, not a complete simultaneous production batch or all-source state"
+  ],
+  "rootExecutedReadOnlyQuery": {
+    "path": "tmp/hunt-three-url-hash-readonly-2026-10-20.json",
+    "sha256": "79545994ca218819ed1cbcdcbbc4151b7d551e0334bff5a820380bdc70134f38",
+    "observedAt": "2026-10-20T12:27:04.196Z",
+    "results": [],
+    "rowsRead": 7,
+    "rowsWritten": 0,
+    "limitReached": false,
+    "causalLimit": "Current store only; not the historical11:41 invocation state"
+  }
+}

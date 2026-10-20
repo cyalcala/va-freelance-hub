@@ -1,0 +1,636 @@
+[
+  {
+    "results": [
+      {
+        "source_id": "remotive",
+        "real_fetches": 162,
+        "unchanged": 783,
+        "skips": 0,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 2166
+      },
+      {
+        "source_id": "ashby:multiplymii",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 8539
+      },
+      {
+        "source_id": "breezy:20four7va",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 1743,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 17036
+      },
+      {
+        "source_id": "breezy:remote-craft",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 2205
+      },
+      {
+        "source_id": "breezy:sourcefit",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 12988
+      },
+      {
+        "source_id": "breezy:time-etc",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 147
+      },
+      {
+        "source_id": "breezy:value-virtual-assistants",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 1617
+      },
+      {
+        "source_id": "breezy:yokly",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 19,
+        "items": 1408
+      },
+      {
+        "source_id": "greenhouse:canonical",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 45504
+      },
+      {
+        "source_id": "greenhouse:ghost",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 882
+      },
+      {
+        "source_id": "greenhouse:gitlab",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 33033
+      },
+      {
+        "source_id": "greenhouse:grafanalabs",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 16675
+      },
+      {
+        "source_id": "greenhouse:nearform",
+        "real_fetches": 147,
+        "unchanged": 0,
+        "skips": 797,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 3237
+      },
+      {
+        "source_id": "real-work-from-anywhere",
+        "real_fetches": 146,
+        "unchanged": 0,
+        "skips": 798,
+        "failures": 1,
+        "zero_yield": 0,
+        "items": 7300
+      },
+      {
+        "source_id": "we-work-remotely",
+        "real_fetches": 125,
+        "unchanged": 811,
+        "skips": 0,
+        "failures": 9,
+        "zero_yield": 0,
+        "items": 11022
+      },
+      {
+        "source_id": "remote-ok",
+        "real_fetches": 40,
+        "unchanged": 106,
+        "skips": 798,
+        "failures": 1,
+        "zero_yield": 0,
+        "items": 1662
+      },
+      {
+        "source_id": "greenhouse:remotecom",
+        "real_fetches": 35,
+        "unchanged": 0,
+        "skips": 797,
+        "failures": 112,
+        "zero_yield": 35,
+        "items": 0
+      },
+      {
+        "source_id": "jobicy-supporting-apac",
+        "real_fetches": 20,
+        "unchanged": 123,
+        "skips": 800,
+        "failures": 2,
+        "zero_yield": 0,
+        "items": 800
+      },
+      {
+        "source_id": "jobicy-admin-support-apac",
+        "real_fetches": 6,
+        "unchanged": 139,
+        "skips": 800,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 21
+      },
+      {
+        "source_id": "workable:coconutva",
+        "real_fetches": 1,
+        "unchanged": 0,
+        "skips": 944,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 32
+      },
+      {
+        "source_id": "workable:crewbloom",
+        "real_fetches": 1,
+        "unchanged": 0,
+        "skips": 944,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 152
+      },
+      {
+        "source_id": "workable:hello-rache",
+        "real_fetches": 1,
+        "unchanged": 0,
+        "skips": 944,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 3
+      },
+      {
+        "source_id": "workable:hunt-st",
+        "real_fetches": 1,
+        "unchanged": 0,
+        "skips": 944,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 143
+      },
+      {
+        "source_id": "workable:pearltalent",
+        "real_fetches": 1,
+        "unchanged": 0,
+        "skips": 944,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 286
+      },
+      {
+        "source_id": "workable:rocketams",
+        "real_fetches": 1,
+        "unchanged": 0,
+        "skips": 944,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 10
+      },
+      {
+        "source_id": "ashby:amplify",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:ashby",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:camunda",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:circulareconomysystems",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:foundry-for-good",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:getground",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:gradient",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:luxor",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 473,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:molecule",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:payscale",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:supabase",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:the-studio",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:tremendous",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "authentic-jobs",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "breezy:vaaphilippines-recruitment",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "dribbble",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "jobspresso",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:applydigital",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 575,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:beaverprocess",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:brafton",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:decilegroup",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:deliverect",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:gushwork",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 193,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:lwolf",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:outsourcedstaff",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 270,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:repurposeglobal",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:snappr",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:tenna",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 575,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:truezerotech",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:vacancies",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 87,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:vaultoutsourcing",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:willowinc",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 87,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "onlinejobs-ph",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "problogger",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "remote-co",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:connectos",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:global-strategic",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:myoutdesk",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:outsource-access",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:pineapple-staffing",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:staff-domain-inc",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:superstaff",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:virtualstaff365",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 945,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 883.9499
+      },
+      "duration": 883.9499,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 92524544,
+      "rows_read": 98455,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

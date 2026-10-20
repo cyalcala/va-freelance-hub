@@ -1,0 +1,113 @@
+{
+  "scope": "DOWNLOADED_ACTUAL_WORKFLOW_ARTIFACT_REPLAY_NO_NETWORK_OR_DATABASE_MUTATION",
+  "observedAt": "2026-10-20T12:49:08.595Z",
+  "runId": 39422707911,
+  "workflowHead": "216b7124c4c7fdfbb9b563f478f13002421c35b0",
+  "reportCommit": "fe3599d4617e7d573a391e8596cc0988ff5b25f5",
+  "asOf": "2026-10-20T12:30:11.630Z",
+  "queries": [
+    {
+      "name": "qualified_supply",
+      "sha256": "6cac3334e9ab03af3bdac622bf709aed7c1d1c2dfc8d7b353ec5e0453cf16b29",
+      "success": true,
+      "rowsWritten": 0,
+      "changedDb": false,
+      "changes": 0,
+      "rowsRead": 1797,
+      "combinedRowsMatch": true
+    },
+    {
+      "name": "identity_coverage",
+      "sha256": "78f7c62fd9c0af41a3da846b20782cc7042b0bd5eeaa4c81500d8d3d484cd755",
+      "success": true,
+      "rowsWritten": 0,
+      "changedDb": false,
+      "changes": 0,
+      "rowsRead": 7713,
+      "combinedRowsMatch": true
+    },
+    {
+      "name": "supply_totals",
+      "sha256": "8c5955f4bcab603f80b012ae6b47c734a22ac5730644fa86cbb0572770069c5f",
+      "success": true,
+      "rowsWritten": 0,
+      "changedDb": false,
+      "changes": 0,
+      "rowsRead": 1794,
+      "combinedRowsMatch": true
+    },
+    {
+      "name": "source_supply",
+      "sha256": "c7f2edae8b8b0d451287b409e30b7f3123936e5938f25303fed0ce1157faf579",
+      "success": true,
+      "rowsWritten": 0,
+      "changedDb": false,
+      "changes": 0,
+      "rowsRead": 15489,
+      "combinedRowsMatch": true
+    },
+    {
+      "name": "fetch_outcomes_7d",
+      "sha256": "9ad96dd350179434a4a95ad40fd30d1154d62c2aa2af2a5697405f0a2ff2a148",
+      "success": true,
+      "rowsWritten": 0,
+      "changedDb": false,
+      "changes": 0,
+      "rowsRead": 98455,
+      "combinedRowsMatch": true
+    },
+    {
+      "name": "triage_outcomes_7d",
+      "sha256": "f9d7160cf04bf54df6b4e5078e8143b36bc1360f749e6f1264addc6440a8cc80",
+      "success": true,
+      "rowsWritten": 0,
+      "changedDb": false,
+      "changes": 0,
+      "rowsRead": 8193,
+      "combinedRowsMatch": true
+    }
+  ],
+  "allSixReadOnly": true,
+  "committedReportSha256": "fce8748df3859fa9d5d4a0422bc857d6c7dc208c4d8b106fe52ce1f2d87b1fe6",
+  "renderedSha256": "fce8748df3859fa9d5d4a0422bc857d6c7dc208c4d8b106fe52ce1f2d87b1fe6",
+  "exactBytesMatch": true,
+  "matchAllowingCRLFAndOneTerminalLF": true,
+  "yieldRows": 69,
+  "unknownRatioCells": 106,
+  "storedOnlySourceRows": [
+    [
+      "ashby:finch",
+      "UNKNOWN",
+      "UNKNOWN",
+      "1",
+      "UNKNOWN",
+      "UNKNOWN"
+    ]
+  ],
+  "qualifiedFirstStoredProxy": {
+    "qualified_active": 1794,
+    "qualified_new_7d": 305,
+    "qualified_new_30d": 1491
+  },
+  "reconciliation": {
+    "ok": true,
+    "deltas": {
+      "total_vs_active_plus_inactive": 0,
+      "total_vs_with_plus_null_source_id": 0,
+      "active_vs_active_with_plus_null_source_id": 0,
+      "supply_totals_active_vs_identity": 0,
+      "source_active_sum_vs_active": 0,
+      "source_inactive_sum_vs_inactive": 0,
+      "source_net7_sum_vs_totals": 0,
+      "source_net14_sum_vs_totals": 0,
+      "source_net30_sum_vs_totals": 0,
+      "triage_stored_sum_vs_outcomes": 0
+    },
+    "notes": []
+  },
+  "limitations": [
+    "Stored eligibility counts and fetch cohorts do not certify verified marginal first-publication yield",
+    "Workflow Git persistence is not GCP or Pages runtime acceptance",
+    "No provider fetch, model call, deployment, migration or production write was made by this replay"
+  ]
+}

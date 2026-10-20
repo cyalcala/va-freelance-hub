@@ -9,15 +9,15 @@ MATH-01–13 completion is certified.
 
 - Google Secure Source Manager (`origin`) is canonical Git. GitHub (`github`)
   and GitLab (`gitlab`) are mirrors/continuity. SSM default HEAD is `main`.
-- GitHub-only bot reports repeatedly advanced beyond SSM. The initial 27 and
-  later 20 descendants were preserved. October 20 10:20Z main readback matched
-  `5c46edf4` on all three hosts. This is named-ref equality, not all-ref or
-  unattended parity. Shared SSM-first report persistence is active on main:
-  runner39409286844 wrote d88365ed to SSM then GitHub. Main23b9202a passed
-  full CI39410570310 with production deployment skipped. GitLab was mirrored
-  manually; unattended GitLab and recurring continuity remain unproven.
-  Memory/read-only-report maincdc12194 subsequently matched all three hosts and
-  passed CI39419521183 with production migration/deployment explicitly skipped.
+- Previously GitHub-only report descendants were preserved. Shared SSM-first
+  report persistence is active: actual runner39409286844 wrote d88365ed and
+  economics39422707911 wrote fe3599d4 to SSM then GitHub. The latter's six
+  zero-write query artifacts reproduce committed Markdown byte for byte.
+  Main23b9202a and memory/read-only-report cdc12194 passed full CI39410570310 /
+  39419521183 with production migration/deployment skipped. Complete independent
+  ref maps matched at12:29Z:161heads/45tags, including45peeled targets. Later
+  mainfe3599d4 matched all three hosts at12:49:42Z after manual GitLab FF.
+  These are dated readbacks; unattended GitLab/all-ref continuity is unproved.
 - Branch: `codex/verified-flow-directory-checkpoint`. Preserve unrelated dirty
   `.agents/teamwork/orchestrator_13/progress.md`. Fetch/restate HEAD per slice.
 - Actual Pages production since 2026-10-20 11:28:54.036Z: deployment
@@ -80,6 +80,9 @@ permission. Trace each real caller before attributing a result to this model.
   Crew152 at11:32Z, Hello Rache3/Pearl286 at11:36Z, Hunt143/Rocket10 at11:41Z,
   all robots enforce/allowed. Pineapple remains held. Caller identity and a sole
   scheduler are unproven; these are metadata counts, not publication counts.
+  Coconut/Crew ordinary recurrence at12:41Z again succeeded32/152; other tenants'
+  later recurrence was not yet observed in the12:49 read. Coconut's same-tick
+  ledger records two IDs then blocks extra proposals; no new-yield credit.
 - At11:44-11:45Z, the17 retained misses resolve to2 public Hunt IDs9745/9746,
   11 Hunt pending-triage rows,3 absent Hunt URLs and Crew9686 policy-rejected.
   Both public details returned200 with exact titles/source links; ordinary
@@ -149,11 +152,12 @@ Do not relax the complete Autonomy Cutover Predicate or source-specific scope.
 
 ## ACTIVE / NEXT
 
-Highest-value next action: correct the demonstrated same-opening location-variant
-loss in the next isolated release, retain actual insert-ID receipts, and expose
-source-stated dayshift through the existing classifier. Integrate only accepted
-compatible slices, then run a fresh combined regression/build and ordinary-flow
-acceptance. Keep observing the remaining15 misses; no complete cohort recovery,
+Highest-value next action: finish the fresh combined proof for isolated source
+bcfdbdce (actual INSERT IDs, per-opening location consolidation, existing day-shift
+classifier filter and dependency-free archived CLI), then fresh control/artifact
+checks and ordinary-flow acceptance. Its14-path union is reviewed; test/build
+acceptance and deployment are pending. Keep observing the remaining15 misses;
+no complete cohort recovery,
 independent PH precision, cross-writer cap closure or daily certification is claimed.
 Retain canonical identities, two slots/60min, robots enforcement,
 US/onsite/stale/future/invalid-date controls, current admissions, caps and rollback.
@@ -177,10 +181,10 @@ Two actual minimal-field positives also pass native SQLite/public/FTS replay;
 authority, AI and transport remain synthetic. Source is backed up on a dedicated
 SSM release branch. Exact compatible artifact deployment succeeded11:28:54Z after
 81dist/19source hashes were rechecked; refreshed preflight8/8 and post-control5/5
-pass. Real ordinary-clock/public acceptance remains pending; keep root scope separate.
-The manual Hunt/Crew observations count toward the existing hourly cadence:
-first recurrent collection must be after 2026-10-20T11:14:42.417Z (use11:14:43Z).
-No collector attempt was fabricated to advance its clock. Artifact readiness and
+pass. Six first ordinary fetches and two exact public candidates are observed;
+complete cohort recovery/independent verification remain pending. Keep root scope
+separate. Manual observations counted toward hourly cadence; no collector attempt
+was fabricated to advance its clock. Artifact readiness and
 the supported 8c649da0 rollback are retained in the isolated proof directory.
 
 Parallel next work: preserve/report canonical/mirror refs per bounded checkpoint;
@@ -194,6 +198,8 @@ canonical MATH/SSAE proof cards without claiming implementation is acceptance.
 Read AGENTS.md, current SYSTEM_SAVEPOINT, source constitution/masterplan and sole
 Source Perpetuity queue before admissions. Relevant current receipts:
 - docs/operations/REPOSITORY_PARITY_2026-10-18.md
+- docs/operations/REPOSITORY_ALL_REF_PARITY_2026-10-20.md
+- docs/operations/SOURCE_ECONOMICS_RUNTIME_ACCEPTANCE_2026-10-20.md
 - docs/operations/CONTINUATION_EVIDENCE_2026-10-20.md
 - docs/operations/GENERATED_REPORT_CANONICAL_PERSISTENCE_2026-10-20.md
 - docs/operations/AUTONOMOUS_IMPROVEMENT_2026-10-18.md (combined proof/commits)

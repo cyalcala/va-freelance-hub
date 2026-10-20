@@ -1,0 +1,29 @@
+[
+  {
+    "results": [
+      {
+        "qualified_active": 1794,
+        "qualified_new_7d": 305,
+        "qualified_new_30d": 1491
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 2.3596
+      },
+      "duration": 2.3596,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 92524544,
+      "rows_read": 1797,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]
