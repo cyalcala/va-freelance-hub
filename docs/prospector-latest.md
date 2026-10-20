@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-10-20
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39415517183
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39462199406
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 10 |
-| Auto-added this run | 3 |
+| Candidates considered | 7 |
+| Auto-added this run | 0 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 6 |
 | Rejected for quality | 1 |
@@ -23,9 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39415517
 
 ## Auto-added companies
 
-- Samsara
-- Roblox
-- Carrot
+- (none this run)
 
 ## Durable candidate queue (SP-06, non-publishing)
 
