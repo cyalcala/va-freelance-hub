@@ -27,6 +27,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -39,22 +40,9 @@ jobs:
       - name: Run Workable Preprocessor
         run: bun scripts/gha/workable-preprocessor.ts
 
-      - name: Commit Updated Evidence Digest
-        if: github.ref == 'refs/heads/main'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          if [ -f docs/workable-candidates-latest.md ]; then
-            git add docs/workable-candidates-latest.md
-            if ! git diff --staged --quiet; then
-              git commit -m "docs: update workable global feed candidates digest [skip ci]"
-              for attempt in 1 2 3; do
-                git fetch origin main
-                git rebase origin/main
-                if git push origin HEAD:main; then exit 0; fi
-              done
-              exit 1
-            else
-              echo "No changes in candidate feed digest."
-            fi
-          fi
+      - name: Persist generated report in canonical SSM
+        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: ./.github/actions/persist-generated-report
+        with:
+          report-key: workable
+          gcp-credentials-json: ${{ secrets.GCP_SA_KEY }}

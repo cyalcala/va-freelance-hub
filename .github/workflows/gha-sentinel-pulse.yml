@@ -742,6 +742,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Query Source Health (read-only, last 24h)
         working-directory: apps/web
@@ -768,7 +769,6 @@ jobs:
         run: |
           set -euo pipefail
 
-          git pull --ff-only origin main
 
           TODAY=$(date -u +"%Y-%m-%d")
           RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
@@ -806,26 +806,10 @@ jobs:
             fi
           } > docs/source-health-latest.md
 
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/source-health-latest.md
 
-          if git diff --cached --quiet; then
-            echo "No source-health rollup changes to commit."
-            exit 0
-          fi
-
-          git commit -m "docs: update daily source health"
-
-          # Bounded rebase-retry: Medic, Prospector and Directory bots also push
-          # to main. This job owns its own file, so rebases are conflict-free.
-          pushed=false
-          for attempt in 1 2 3 4 5; do
-            if git push origin HEAD:main; then pushed=true; break; fi
-            echo "Push rejected (attempt $attempt); rebasing on main and retrying."
-            git pull --rebase origin main
-          done
-          if [ "$pushed" != true ]; then
-            echo "::error title=Rollup push failed::Source-health rollup could not be pushed after five attempts."
-            exit 1
-          fi
+      - name: Persist generated report in canonical SSM
+        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: ./.github/actions/persist-generated-report
+        with:
+          report-key: sentinel
+          gcp-credentials-json: ${{ secrets.GCP_SA_KEY }}
