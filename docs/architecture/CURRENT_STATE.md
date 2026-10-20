@@ -20,6 +20,10 @@ clocks and the 17 unique misses before claiming flow/recall. Shared reports have
 one actual SSM-first/GitHub runner receipt; GitLab runtime and recurrent
 continuity remain unproven. See the [current evidence](../operations/CONTINUATION_EVIDENCE_2026-10-20.md)
 and [release receipt](../operations/WORKABLE_ROTATION_RELEASE_2026-10-20.md).
+Post-release attempts are observed at 11:32 and 11:36 with robots enforced; caller
+identity is not established. Crew 5902EBE6B1 is stored inactive as id 9686/Pakistan
+despite a retained PH variant. The isolated location-variant correction and exact 17-miss
+trace now precede any recovery/recall acceptance.
 
 ## October 18 historical verified subset
 

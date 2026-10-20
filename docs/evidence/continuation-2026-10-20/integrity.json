@@ -45,6 +45,11 @@
       "path": ".gitattributes",
       "bytes": 43,
       "sha256": "8ee58d82049f85b248fb5fd417bcee18576c7dbda387f46e5540b62759176dde"
+    },
+    {
+      "path": "postrelease-firstclock-2026-10-20.json",
+      "bytes": 31022,
+      "sha256": "8421526bfc1813760928cbc1b6592f67f531c6d5fe1a54da4dae34c9e637f1cb"
     }
   ]
 }

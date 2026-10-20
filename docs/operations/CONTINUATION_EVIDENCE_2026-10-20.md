@@ -27,6 +27,23 @@ and bound by its integrity manifest:
 recovery of the17 unique misses remain separate observation work. Other combined
 root features were not deployed.
 
+## First post-release attempt observation - 11:36-11:38 UTC
+
+The retained `postrelease-firstclock-2026-10-20.json` covers five SELECTs, each
+verified zero-write, and one ordinary public GET returning HTTP 200 with all six
+snapshot header/meta pairs matching. Reads are sequential, not atomic. Events
+show Coconut 32/Crew 152 entries at 11:32 and Hello Rache 3/Pearl 286 at 11:36, with
+robots enforced/allowed and Pineapple held. Their caller identity is unproven;
+do not attribute all four events to one clock or treat fetched entries as jobs.
+
+Crew opening `5902EBE6B1`, one of the 17 retained misses, is now D1 id 9686,
+first stored at 11:32 with original October 8 date, inactive/policy-rejected,
+PH ineligible/country_locked and Pakistan location. The retained same-opening
+widget has a PH variant. This demonstrates an exact location-variant loss,
+not successful recovery; the worker is correcting it in a new isolated source.
+Continue the 17-miss/public trace without declaring recall or daily-flow proof.
+The observer sent no provider request, scraper mutation or AI call.
+
 ## Pre-release actual execution and supply — 10:08–10:12 UTC
 
 At 10:08–10:12 UTC, Pages still reported production deployment

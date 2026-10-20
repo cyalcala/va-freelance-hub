@@ -10,6 +10,9 @@ misses; deployment is not publication or recall acceptance. Other root changes
 were not deployed. Shared SSM-first reports have one actual runner write;
 GitLab runtime/recurrence remain unproven. Continue from [Astra](../astra777.txt)
 and the [current evidence](operations/CONTINUATION_EVIDENCE_2026-10-20.md).
+Real post-release attempts now occur. The exact Crew 5902EBE6B1/PH-variant miss is
+stored inactive as id 9686/Pakistan: prioritize the isolated location-variant repair
+and subsequent ordinary-flow trace; do not claim 17-miss recovery.
 
 ## 2026-10-18 — Reconciled source, runtime and coverage boundary
 

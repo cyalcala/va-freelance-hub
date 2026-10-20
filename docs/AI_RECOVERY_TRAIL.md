@@ -10,6 +10,10 @@ openings and 17 misses. Compatible source `f34965b0` deployed at 11:28:54Z as
 schema 0054/config preserved. Ordinary collection/recovery remains to observe.
 Keep rollback `8c649da0` and unrelated root features separate.
 [Evidence](operations/CONTINUATION_EVIDENCE_2026-10-20.md).
+First bounded post-release reads observed real attempts and an exact duplicate
+location false negative (Crew 5902EBE6B1 -> inactive id 9686/Pakistan, PH variant
+retained). Five SELECTs wrote zero; public/header-meta checks pass. NEXT is its
+isolated correction and 17-miss trace; no caller attribution or recovery claim.
 
 ## 2026-10-18 — Runtime and claimed coverage reconciled
 

@@ -74,6 +74,14 @@ permission. Trace each real caller before attributing a result to this model.
   active eligible matches,17 misses (Hunt16,Crew1). Raw location rows must not
   inflate job counts. This is not an independently adjudicated recall denominator.
   Trace retained exact misses under ordinary acquisition after deployment.
+- Post-release reads at 11:36:50-11:38:22Z verify five SELECTs/zero writes,
+  public HTTP 200 and six matching header/meta pairs. Actual attempts: Coconut
+  32/Crew 152 at 11:32, Hello Rache 3/Pearl 286 at 11:36, robots enforce/allowed;
+  Pineapple held. These counts are fetched metadata, not newly published jobs.
+  Crew opening 5902EBE6B1 is stored as id 9686, inactive and
+  policy-rejected/ineligible/country_locked with
+  Pakistan location, despite a retained PH variant of that same opening. This
+  is an exact location-variant false negative; an isolated correction is underway.
 - Existing insert receipts retain empty ID arrays; do not sum their counts
   into certified new publications. Global writer/cap closure remains unproven.
 - Full trusted-employer recall, PH false-negative rate, complete publication
@@ -128,9 +136,10 @@ Do not relax the complete Autonomy Cutover Predicate or source-specific scope.
 
 ## ACTIVE / NEXT
 
-Highest-value next action: observe ordinary clocks after the live f349 release,
-then trace the17 retained unique misses through permitted fetch -> real fresh PH
-job -> actual D1 IDs -> public visibility. Deployment alone is not flow acceptance.
+Highest-value next action: correct the demonstrated same-opening location-variant
+loss in the next isolated release, then trace the 17 unique misses through actual
+D1/public outcomes. Keep observing ordinary attempts; their caller identity is
+unproven, and no 17-miss recovery or certified daily flow is claimed.
 Retain canonical identities, two slots/60min, robots enforcement,
 US/onsite/stale/future/invalid-date controls, current admissions, caps and rollback.
 

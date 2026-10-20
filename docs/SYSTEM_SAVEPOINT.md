@@ -25,6 +25,12 @@ The shared SSM-first report persistence is active: runner 39409286844 wrote
 passed full CI 39410570310 with deployment skipped. GitLab is manually current;
 unattended GitLab and recurring continuity remain unproven. The goal remains active.
 
+Post-release 11:36-11:38 reads confirm real 11:32 Coconut/Crew and 11:36
+HelloRache/Pearl attempts, with robots enforced and Pineapple held. Crew opening
+5902EBE6B1 now has D1 id 9686 inactive/country_locked/Pakistan although its retained
+widget variants include PH. NEXT is the isolated location-variant correction
+and exact 17-miss/public trace; caller identity and full recovery remain unproven.
+
 ## 2026-10-18 — Runtime reconciled; unsupported completion claims corrected
 
 Mission remains active. Read the current compact [Astra continuation contract](../astra777.txt)

@@ -8,6 +8,9 @@ remains. This deploys only the reviewed compatible correction. Next is ordinary
 clock recovery of the 17 unique employer misses and actual D1/public visibility.
 Certified daily throughput/recall and MATH 0/13 remain unaccepted.
 [Current evidence](operations/CONTINUATION_EVIDENCE_2026-10-20.md).
+Actual post-release attempts are observed; Crew 5902EBE6B1 is inactive id 9686 with a
+Pakistan lock despite its PH variant. The next isolated correction addresses
+that exact variant loss; 17-miss/publication acceptance remains pending.
 
 ## 2026-10-18 — Actual runtime and proof gaps reconciled
 
