@@ -2,6 +2,7 @@ import type { NewOpportunity } from "@va-hub/db";
 import { toContentHash } from "./contentHash";
 import { collectionHeaders } from "./userAgent";
 import { normalizeWorkablePublishedDate } from "./source-posting-date";
+import { sanitizeSourceUrl } from "./urls";
 
 function normalizeText(raw: string | undefined): string {
   if (!raw) return "";
@@ -208,15 +209,16 @@ async function fetchWorkable(token: string, companyName: string): Promise<NewOpp
   if (!res.ok) throw new Error(`Workable HTTP ${res.status}`);
   const data = (await res.json()) as any;
 
-  const jobs = Array.isArray(data?.jobs) ? data.jobs : [];
-  return jobs
+  const jobs: any[] = Array.isArray(data?.jobs) ? data.jobs : [];
+  const variants = jobs
     .filter((job: any) => job && job.title && (job.url || job.shortcode))
     .map((job: any) => {
       const title = normalizeText(job.title);
-      const sourceUrl = job.url || `https://apply.workable.com/${token}/j/${job.shortcode}/`;
+      const sourceUrl = sanitizeSourceUrl(job.url || `https://apply.workable.com/${token}/j/${job.shortcode}/`);
+      if (!sourceUrl) return null;
       const locationParts = [job.city, job.state, job.country].filter(Boolean);
       const locationRaw = normalizeText(locationParts.join(", ")) || (job.telecommuting ? "Remote" : null);
-      return {
+      return { shortcode: job.shortcode, remote: job.telecommuting, item: {
         title,
         company: companyName,
         type: "full-time",
@@ -229,8 +231,35 @@ async function fetchWorkable(token: string, companyName: string): Promise<NewOpp
         postedAt: normalizeWorkablePublishedDate(job.published_on),
         isActive: true,
         contentHash: toContentHash(title, sourceUrl),
-      };
-    });
+      } satisfies NewOpportunity };
+    }).filter((variant): variant is NonNullable<typeof variant> => variant !== null);
+
+  // Widget rows are location alternatives for one opening, not independent jobs.
+  // Preserve all factual locations so the existing geo/triage predicates see PH
+  // alongside alternate countries before URL dedup, intake or an AI decision.
+  const groups = new Map<string, typeof variants>();
+  for (const variant of variants) {
+    const group = groups.get(variant.item.sourceUrl) ?? [];
+    group.push(variant);
+    groups.set(variant.item.sourceUrl, group);
+  }
+  const openings: NewOpportunity[] = [];
+  const holds: Array<{ sourceUrl: string; reason: string }> = [];
+  for (const [sourceUrl, group] of groups) {
+    const codes = group.map(variant => variant.shortcode).filter(code => code != null && code !== "");
+    const pathCode = new URL(sourceUrl).pathname.split("/").filter(Boolean).at(-1);
+    const reason = new Set(group.map(variant => variant.item.title)).size !== 1
+      || new Set(codes).size > 1 || codes.some(code => typeof code !== "string" || code !== pathCode)
+      ? "IDENTITY_CONFLICT"
+      : group.some(variant => typeof variant.remote !== "boolean") ? "REMOTE_UNKNOWN"
+        : new Set(group.map(variant => variant.remote)).size !== 1 ? "REMOTE_CONFLICT"
+          : new Set(group.map(variant => variant.item.postedAt)).size !== 1 ? "POSTING_DATE_CONFLICT" : null;
+    if (reason) { holds.push({ sourceUrl, reason }); continue; }
+    openings.push({ ...group[0]!.item, locationRaw: [...new Set(group.map(variant => variant.item.locationRaw).filter(Boolean))].sort().join("; ") || null });
+  }
+  console.log(JSON.stringify({ event: "WORKABLE_OPENINGS_NORMALIZED", sourceId: `workable:${token}`,
+    rawLocationRecords: jobs.length, canonicalOpeningCount: groups.size, returnedOpenings: openings.length, holds }));
+  return openings;
 }
 
 export async function fetchBreezy(token: string, companyName: string): Promise<NewOpportunity[]> {
