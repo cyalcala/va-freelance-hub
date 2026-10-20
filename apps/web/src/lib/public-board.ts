@@ -1,6 +1,7 @@
 import type { DirectoryCategory } from "./directory-categories";
 import { isDirectoryNiche } from "./directory-categories";
 import type { FreshFilter } from "./public-query";
+import { classifyShift } from "@va-hub/scraper";
 
 /** Public job card plus the fields a detail page can render without another scan. */
 export type PublicJob = {
@@ -124,6 +125,7 @@ export function slicePublicJobs(
     platform?: string;
     geoScope?: string;
     fresh?: FreshFilter | null;
+    shift?: string | null;
     query?: string;
     offset: number;
     limit: number;
@@ -138,6 +140,7 @@ export function slicePublicJobs(
     if (options.geoScope && job.geoScope !== options.geoScope) return false;
     if (options.fresh && !matchesFreshFilter(job.scrapedAt, options.fresh, now)) return false;
     if (options.query && !matchesJobQuery(job, options.query)) return false;
+    if (options.shift === "day_shift" && classifyShift(job).category !== "day_shift") return false;
     return true;
   });
   const ordered = [...filtered].sort(options.fresh ? byScrapedDesc : byEffectiveDesc);
