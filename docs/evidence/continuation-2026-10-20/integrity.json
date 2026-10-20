@@ -1,0 +1,55 @@
+{
+  "scope": "BOUNDED_OCTOBER20_OPERATIONAL_EVIDENCE_NOT_MISSION_ACCEPTANCE",
+  "files": [
+    {
+      "path": "runtime.json",
+      "bytes": 21757,
+      "sha256": "eea9f13183a93891997d7ea97c06498ce94a7493807586d8945e01d2c91bb54f"
+    },
+    {
+      "path": "serving-and-storage.json",
+      "bytes": 6682,
+      "sha256": "70da41f74981697466d5e9d0d6eb0d4f74f810f9669049b0669fd3cd55b516f2"
+    },
+    {
+      "path": "parity-and-capability.json",
+      "bytes": 4989,
+      "sha256": "4ba73ee65ce0c07d607f77f8c7c0b876f205ce81f5ef1573e6690867e08531b7"
+    },
+    {
+      "path": "workable-observation.json",
+      "bytes": 251815,
+      "sha256": "c2897964d774765ef4988c528a36167e9bd288724f1865cd573c9dd880a8363c"
+    },
+    {
+      "path": "workable-reconciliation.json",
+      "bytes": 172875,
+      "sha256": "921a073ed76a5a3d4294b010062fb67cc116f21820fc005759586461bac6aa56"
+    },
+    {
+      "path": "reconcile-projected-widgets.ts",
+      "bytes": 3739,
+      "sha256": "2829aa6ee2c93f8b5e11dd5e2faa3c4fd162929de2f668f7e2b9a474c2202559"
+    },
+    {
+      "path": "workable-grouped-cohort.json",
+      "bytes": 80343,
+      "sha256": "38d5352d2d991eb307b84f89724bab937c265be53d81bd445f70511e4b996c33"
+    },
+    {
+      "path": "group-widget-openings.ts",
+      "bytes": 2265,
+      "sha256": "4af67dc059f4eb9420cc79391f0fc03620ddb08e2c70400bc9e72ec274b4b92e"
+    },
+    {
+      "path": ".gitattributes",
+      "bytes": 43,
+      "sha256": "8ee58d82049f85b248fb5fd417bcee18576c7dbda387f46e5540b62759176dde"
+    },
+    {
+      "path": "postrelease-firstclock-2026-10-20.json",
+      "bytes": 31022,
+      "sha256": "8421526bfc1813760928cbc1b6592f67f531c6d5fe1a54da4dae34c9e637f1cb"
+    }
+  ]
+}

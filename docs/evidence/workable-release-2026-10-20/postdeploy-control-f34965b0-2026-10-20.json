@@ -1,0 +1,184 @@
+{
+  "scope": "POSTDEPLOY_CONTROL_PLANE_AND_PUBLIC_GETS_AND_SCHEMA_SELECT",
+  "observedStart": "2026-10-20T11:29:39.070Z",
+  "beforeReceipt": "tmp/workable-rotation-release-proof/preflight-release-f34965b0-refreshed-2026-10-20.json",
+  "pages": {
+    "status": 200,
+    "success": true,
+    "errorCodes": [],
+    "project": "remotejobs-ph",
+    "productionBranch": "main",
+    "canonical": {
+      "id": "347d95ae-c9f2-45d5-9cc9-73fb42eafdd2",
+      "environment": "production",
+      "createdOn": "2026-10-20T11:28:54.036139Z",
+      "sourceSha": "f34965b0c7bbfb76395259ccce0b60ad4533eee0",
+      "branch": "main",
+      "stage": "success"
+    },
+    "latest": {
+      "id": "347d95ae-c9f2-45d5-9cc9-73fb42eafdd2",
+      "environment": "production",
+      "createdOn": "2026-10-20T11:28:54.036139Z",
+      "sourceSha": "f34965b0c7bbfb76395259ccce0b60ad4533eee0",
+      "branch": "main",
+      "stage": "success"
+    },
+    "config": {
+      "compatibilityDate": "2024-11-01",
+      "compatibilityFlags": [
+        "nodejs_compat"
+      ],
+      "d1Bindings": [
+        {
+          "binding": "DB",
+          "id": "08072f16-d3d1-436a-9104-b057a162db7c"
+        }
+      ],
+      "aiBindings": [
+        "AI"
+      ],
+      "secretNamesAndTypes": [
+        {
+          "name": "GEMINI_API_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "GROQ_API_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "INNGEST_SIGNING_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "OPENROUTER_API_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "PROXY_SECRET",
+          "type": "secret_text"
+        }
+      ]
+    }
+  },
+  "schema": {
+    "results": [
+      {
+        "migration_count": 54,
+        "latest_migration": "0054_public_serving_snapshot.sql",
+        "snapshot_table_present": 1,
+        "current_admission_view_present": 1
+      }
+    ],
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.3836
+      },
+      "duration": 0.3836,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 92303360,
+      "rows_read": 271,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  "public": [
+    {
+      "route": "/",
+      "observedAt": "2026-10-20T11:29:46.758Z",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "text/html",
+        "date": "Tue, 20 Oct 2026 11:29:41 GMT",
+        "x-public-snapshot": "stale",
+        "x-public-snapshot-age-seconds": "4891",
+        "x-public-snapshot-companies": "763",
+        "x-public-snapshot-generated-at": "2026-10-20T10:08:09.388Z",
+        "x-public-snapshot-jobs": "1788",
+        "x-public-snapshot-source": "edge"
+      }
+    },
+    {
+      "route": "/opportunities",
+      "observedAt": "2026-10-20T11:29:46.662Z",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "text/html",
+        "date": "Tue, 20 Oct 2026 11:29:41 GMT",
+        "x-public-snapshot": "stale",
+        "x-public-snapshot-age-seconds": "4891",
+        "x-public-snapshot-companies": "763",
+        "x-public-snapshot-generated-at": "2026-10-20T10:08:09.388Z",
+        "x-public-snapshot-jobs": "1788",
+        "x-public-snapshot-source": "edge"
+      }
+    },
+    {
+      "route": "/directory",
+      "observedAt": "2026-10-20T11:29:46.514Z",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "text/html",
+        "date": "Tue, 20 Oct 2026 11:29:41 GMT",
+        "x-public-snapshot": "stale",
+        "x-public-snapshot-age-seconds": "4891",
+        "x-public-snapshot-companies": "763",
+        "x-public-snapshot-generated-at": "2026-10-20T10:08:09.388Z",
+        "x-public-snapshot-jobs": "1788",
+        "x-public-snapshot-source": "edge"
+      }
+    },
+    {
+      "route": "/data-policy",
+      "observedAt": "2026-10-20T11:29:46.393Z",
+      "status": 200,
+      "headers": {
+        "cache-control": "public, max-age=60, s-maxage=300, stale-while-revalidate=600",
+        "content-type": "text/html",
+        "date": "Tue, 20 Oct 2026 11:29:41 GMT"
+      }
+    },
+    {
+      "route": "/sitemap.xml",
+      "observedAt": "2026-10-20T11:29:46.449Z",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/xml; charset=utf-8",
+        "date": "Tue, 20 Oct 2026 11:29:41 GMT",
+        "x-public-snapshot": "stale",
+        "x-public-snapshot-age-seconds": "4891",
+        "x-public-snapshot-companies": "763",
+        "x-public-snapshot-generated-at": "2026-10-20T10:08:09.388Z",
+        "x-public-snapshot-jobs": "1788",
+        "x-public-snapshot-source": "edge"
+      }
+    }
+  ],
+  "checks": {
+    "canonicalSource": true,
+    "canonicalStage": true,
+    "configurationProjectionUnchanged": true,
+    "schemaUnchanged": true,
+    "publicRoutes": true
+  },
+  "observedEnd": "2026-10-20T11:29:46.759Z",
+  "ready": true,
+  "limitations": [
+    "No secret values retained or functionality attested",
+    "Control-plane source metadata is not remote byte attestation",
+    "Schema and public reads are sequential; scheduled writers may run concurrently",
+    "No migration, source fetch or manual scrape was invoked",
+    "Scheduled collection and real new publication acceptance require separate receipts"
+  ]
+}

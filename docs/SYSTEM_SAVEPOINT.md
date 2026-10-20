@@ -1,5 +1,76 @@
 # System Savepoint
 
+## 2026-10-20 — Actual employer cohort and reviewed compatible release
+
+Read the current [continuation evidence](operations/CONTINUATION_EVIDENCE_2026-10-20.md)
+and [Astra](../astra777.txt). The latest complete-day eligible-storage proxy is
+41.29/day; certified new verified publications remain UNKNOWN. The pre-release baseline shows all seven Workable
+tenants at zero attempts/144 rotation skips over 24 hours. Six current
+admission packets validate; Pineapple's revision binding fails. Two permitted
+widgets expose 295 location records / 204 unique URLs; grouped candidate metadata
+checks identify 93 plausible fresh PH openings, 76 exact active eligible matches
+and 17 retained misses. Do not count location variants as distinct jobs.
+
+Isolated compatible source `f34965b0...` passed 3,156 tests/zero failures,
+typecheck/build/governance and independent review, including the later pending,
+original-date and PH precedence corrections. It is backed up on its dedicated
+SSM release branch. Compatible production deployment succeeded at11:28:54.036Z:
+`347d95ae-c9f2-45d5-9cc9-73fb42eafdd2`, sourcef349, schema0054 unchanged.
+Pre-upload81dist/19source hashes matched; refreshed preflight8/8 and post-control5/5
+passed, with five public routes200 and unchanged config/five secret names/types.
+Rollback8c649da0 remains available. Ordinary-clock recovery of the17 unique misses
+and certified publication flow remain unverified. Do not deploy root/migrations.
+The shared SSM-first report persistence is active: runner 39409286844 wrote
+`d88365ed...` to SSM then GitHub. The follow-up quarantine fix `23b9202a...`
+passed full CI 39410570310 with deployment skipped. GitLab is manually current;
+unattended GitLab and recurring continuity remain unproven. The goal remains active.
+
+Post-release 11:36-11:38 reads confirm real 11:32 Coconut/Crew and 11:36
+HelloRache/Pearl attempts, with robots enforced and Pineapple held. Crew opening
+5902EBE6B1 now has D1 id 9686 inactive/country_locked/Pakistan although its retained
+widget variants include PH. NEXT is the isolated location-variant correction
+and exact 17-miss/public trace; caller identity and full recovery remain unproven.
+
+## 2026-10-18 — Runtime reconciled; unsupported completion claims corrected
+
+Mission remains active. Read the current compact [Astra continuation contract](../astra777.txt)
+and [repository audit](operations/REPOSITORY_PARITY_2026-10-18.md). Start SHA
+`c23a2db0b60b544d3305312b696784eed98a1089`; 27 GitHub-only bot descendants were
+preserved by fast-forward to `be7c493a935cbf023c33db5c3c0398399a4d69c1`, then
+pushed to canonical SSM and GitLab main/checkpoint. Whole-ref and automated
+mirroring parity are not established by that branch receipt.
+
+Actual Pages remains October 13 source `34e3bd1e`, deployment `8c649da0`, schema
+**0054**. Current local features and later gateway migrations are not deployed.
+Seven admitted Workable sources each have 0 attempts/133 rotation skips in 24h.
+Complete October 11–17 eligible-storage proxy averages 35.4/day, not certified
+first publications. GCP has two enabled hourly jobs; sampled publisher output
+is zero and its source label is still October 4. Do not reopen the old outage
+without current failure evidence or deploy the combined checkout blindly.
+
+The October 16 M2/M3 completion language below overstates proof: the employer
+catalog has no scoped/dated hiring authority; all inspected production callers
+omit its identity inputs. PipelineLossTracker has no production consumer and
+its earlier published counts were inferred from expected minus losses. Current
+local corrections remove that employer eligibility branch and fabricated funnel,
+health and recall claims. Missing observations stay UNKNOWN. Targeted verification
+209/0/1618; independent reviews pass. Final combined regression4499/0/331630,
+typecheck/build and all four audits pass. [Commits, proof and limits](operations/AUTONOMOUS_IMPROVEMENT_2026-10-18.md).
+
+The source-economics report correction preserves UNKNOWN for attribution gaps
+and zero denominators; fixed production input now exposes 65 rather than 64
+source rows. [Capture, tests and limits](operations/SOURCE_ECONOMICS_MEASUREMENT_REPAIR_2026-10-18.md).
+
+**NEXT:** finish an
+isolated 0054-compatible Workable rotation/fair-intake/original-date safety release
+with nonempty native job-to-D1 proof, ordinary-clock observation and rollback.
+The old dirty release candidate rejects legitimate date-only Workable dates and
+is not accepted for deployment. Independent review of the new candidate also
+proved current-onsite and stored-stale-date URL reactivation bypasses; repair
+them with native regression proof. Its retained full run is 3103 pass/1 timeout,
+not acceptance. No source admission, migration, deployment,
+certified daily throughput or MATH acceptance is claimed here.
+
 ## 2026-10-16 — Behavioral Bloat Elimination, Trusted PH Employers & Dayshift Scaling
 
 Completed Milestones M1, M2, and M3 of the Behavioral Bloat & Trusted Employer Expansion:

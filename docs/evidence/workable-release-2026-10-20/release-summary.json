@@ -1,0 +1,2204 @@
+{
+  "scope": "LOCAL_ISOLATED_0054_WORKABLE_RELEASE_CANDIDATE_NOT_PRODUCTION_ACCEPTANCE",
+  "recordedAt": "2026-10-20T10:27:41.324Z",
+  "baseline": "34e3bd1efa34dc3a2c31f2cc3e5b6c5b04790e83",
+  "localProofCommit": "f34965b0c7bbfb76395259ccce0b60ad4533eee0",
+  "bun": "1.3.14",
+  "sourceManifest": [
+    {
+      "path": "apps/web/src/lib/conditional-state.ts",
+      "sha256": "cb1ee37a9b41e4fc36352fca52be565995fdcbc2a00b0e87e43a22670bb94a3d",
+      "gitBlob": "d5d884da4206efa9dd8be7130aed7af744097e4a"
+    },
+    {
+      "path": "apps/web/src/lib/workable-admission.ts",
+      "sha256": "0ce547b75f01074f6bf744af6a4750493c7d25593c7841f7c318a5c72f17ca54",
+      "gitBlob": "30079aec3868077ac8b8c05e6a0ef1c2dee96740"
+    },
+    {
+      "path": "apps/web/src/lib/workable-rotation.ts",
+      "sha256": "4d406b7ad621d783a24236ef0444b63ee957166c2c0d136040807b57fd859a7a",
+      "gitBlob": "36ed62429e58163b87ddef38bdab78450cf0527e"
+    },
+    {
+      "path": "apps/web/src/lib/inngest/functions/triage-drain.ts",
+      "sha256": "362c847427f0826eb66e2401d12b54d84f290a16a433df3e0743ae0c190687ee",
+      "gitBlob": "507a7b8cfb6a3049587371012e8ce37dc716bbf6"
+    },
+    {
+      "path": "apps/web/src/pages/api/cron/scrape.ts",
+      "sha256": "4b402f3732086e99b31ba9b747b85a3d4e9a0e12de48326e44062fd03a8efdda",
+      "gitBlob": "f75ceae14d9663020aeff2bfd7860242d8bba48b"
+    },
+    {
+      "path": "packages/scraper/ats.ts",
+      "sha256": "ad237079d005738ae784da50ec1e224ff41fcfb4ae2f21c0fe884a0857a2de5c",
+      "gitBlob": "3185b688ece6f2a5435b7db0d534a200543520b7"
+    },
+    {
+      "path": "packages/scraper/source-posting-date.ts",
+      "sha256": "0b4791a79c57d47fcff02dadcf3523768f5fb852b0d6a083ccf9d1ee243741d0",
+      "gitBlob": "0b49a89804516dc2ddba932acdf19c9afb342930"
+    },
+    {
+      "path": "packages/scraper/publication-freshness.ts",
+      "sha256": "8e57d6dadf7b787ad23337650af4d9e133d4cfeae071d983e6caa00067289d77",
+      "gitBlob": "17e0a822641986e83024776841533ac4fe30a1a6"
+    },
+    {
+      "path": "scripts/ci/check-production-guardrails.ts",
+      "sha256": "4f10758da886ece1becee5da6c9a3f67f2e637940839391718b2069d6d19b0d8",
+      "gitBlob": "10aeb18d2aadcf54b96aa266714a9a87cac00283"
+    },
+    {
+      "path": "scripts/ci/check-production-guardrails.test.ts",
+      "sha256": "e08be0c9cc352c7f12c797329b8680bce7d04221bf5f36ee3d828541eee66327",
+      "gitBlob": "623f5740b5a444951b5d5bf59013ddbb42753efb"
+    },
+    {
+      "path": "apps/web/tests/workable-rotation.test.ts",
+      "sha256": "90e8aa32429a9cc845e0643ac90ec5cb98a48a058d8ded379e15c462cdd92c5a",
+      "gitBlob": "9a16bbee97a2155150130e7baeeab3cfea7eb0ee"
+    },
+    {
+      "path": "apps/web/tests/native-workable-rotation.test.ts",
+      "sha256": "93fc13ac7dff74d21a6022c001b330f52b266771b6833762564993a2f1264c89",
+      "gitBlob": "77e8f7dde574687f24bbd0dc1cde6a06bae02385"
+    },
+    {
+      "path": "apps/web/tests/native-workable-publication.test.ts",
+      "sha256": "4eb2ea408ea14ee1fafd9940f45b9a72d2fea1fe8ddd4ba879a35cf214178fcf",
+      "gitBlob": "1a56e22eb9db26690026043960ced4b9bbffe46e"
+    },
+    {
+      "path": "apps/web/tests/workable-release-boundaries.test.ts",
+      "sha256": "cccdfe4c912f34ba6502451a0886965bd4b59d4fd5347acbf1f2361f7ba0386d",
+      "gitBlob": "6f58a3447062149addef1dcba9df443e365f481c"
+    },
+    {
+      "path": "apps/web/tests/fixtures/native-workable-rotation.ts",
+      "sha256": "a39fecb5ee2ce6106356e57672649972ba1c86849e74f812f84851d720f3e663",
+      "gitBlob": "e52f701660ca4d111c510f3f8cd44c6d6b6a78a6"
+    },
+    {
+      "path": "apps/web/tests/fixtures/native-workable-publication.ts",
+      "sha256": "c2d031b6308f6a7300ed12c400208da56ae22fd5abee1628f15d340dc27d1721",
+      "gitBlob": "e524b33922b35374e183ca7885aae3518a4b37b0"
+    },
+    {
+      "path": "apps/web/tests/fixtures/native-workable-admission.ts",
+      "sha256": "bc6843cdfa5c01549eb8d1aaa6507f992ec74274d73db93b335d8446e56a9e6e",
+      "gitBlob": "a449cffa66a2266f90fdb21014f7af405c19c810"
+    },
+    {
+      "path": "apps/web/tests/fixtures/workable-authority-identities-2026-10-13.json",
+      "sha256": "04a8217ba19b18e102b9b25e7cc1a16e7613ecf9f4d7c4a2965b1aecc8829eeb",
+      "gitBlob": "d6c96789a617c749349852533a24e53ba7f4719d"
+    },
+    {
+      "path": "docs/exceptions/EX-0054-WORKABLE-ROTATION-2026-10-18.md",
+      "sha256": "48ff3667d3a4103cf8e88450e1959a4f7fc6ed161e8fa8a73b957b792717290a",
+      "gitBlob": "ce1c4f76e7a2a44f3a44aba20e0f37be44198351"
+    }
+  ],
+  "finalChecks": [
+    {
+      "name": "full-regression-release-final",
+      "logExists": true,
+      "exit": 0,
+      "sha256": "066337494ec10c229d1da199293a7f7dc7f9f0549a92464a4021efa3d4073d97",
+      "tests": {
+        "pass": 3156,
+        "fail": 0,
+        "errors": 0,
+        "assertions": 320090
+      }
+    },
+    {
+      "name": "typecheck-release-final",
+      "logExists": true,
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests": null
+    },
+    {
+      "name": "build-release-final",
+      "logExists": true,
+      "exit": 0,
+      "sha256": "a57b5b59136f396990b8dda7747dbe1ac7bef39719f880f0ac615c5a3239aaf3",
+      "tests": null
+    },
+    {
+      "name": "guardrails-release-final",
+      "logExists": true,
+      "exit": 0,
+      "sha256": "f73ae5574b1c35dc5c875168326933aae36aff805832dd96c41ab26624ab0f54",
+      "tests": null
+    },
+    {
+      "name": "parameters-release-final",
+      "logExists": true,
+      "exit": 0,
+      "sha256": "ce4e5103d87d0e39537355d66b301b6d9fb1594fecc3414a8322113e93d70ec3",
+      "tests": null
+    },
+    {
+      "name": "constitution-release-final",
+      "logExists": true,
+      "exit": 0,
+      "sha256": "3938033088587d4a6820d3a4e42a0d2a40c6a5dc36862679d4cdf5fff1a29fb9",
+      "tests": null
+    }
+  ],
+  "verificationSucceeded": true,
+  "independentReview": {
+    "verdict": "APPROVE_BOUNDED_SOURCE_CORRECTIONS_ONLY",
+    "sourceHashesMatch": true
+  },
+  "actualMinimalReplay": {
+    "passed": true,
+    "inputSha256": "c2897964d774765ef4988c528a36167e9bd288724f1865cd573c9dd880a8363c",
+    "receiptSha256": "59d3140ead6df15ce9b7382109cf8dc087e390fefb7e3f230182db704a20c1f9"
+  },
+  "artifactManifest": [
+    {
+      "path": "RELEASE_PROOF.md",
+      "sha256": "c7659e335e6937d254cff718332e5f51c62e5f51fb0c444c666472993af3fd94"
+    },
+    {
+      "path": "summarize-release.ts",
+      "sha256": "08b9f341359b191d5884353782126cb68649d8bf67c73496c41c271548f6ce95"
+    },
+    {
+      "path": "workable-release.bundle",
+      "sha256": "4fb98aa0a69f3af773c80563c9671a8e1266fab5f69b890d337cae36a06cec11"
+    },
+    {
+      "path": "replay-actual-workable.ts",
+      "sha256": "c68500cbc43c158f352f3307b77fd8c0871fbaa01fb20c71d1b8651276b2a571"
+    },
+    {
+      "path": "actual-minimal-native-receipt.json",
+      "sha256": "59d3140ead6df15ce9b7382109cf8dc087e390fefb7e3f230182db704a20c1f9"
+    },
+    {
+      "path": "actual-minimal-native-run.log",
+      "sha256": "ac90d8e02d3c0ae3ee2fa1d8493fbf0041aa7aa6adf1f871eb9c9698c144d67a"
+    },
+    {
+      "path": "actual-minimal-native-run.exit",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "actual-minimal-native.stdout.log",
+      "sha256": "98b76b647d73ec289c02a77065b1336d97a4907e0aa9d654918268b7cc418aa8"
+    },
+    {
+      "path": "actual-minimal-native.stderr.log",
+      "sha256": "b73d13f64fb5debee58258a658b7a72fa746d4d9b7ca0a80798033f99a6608e8"
+    },
+    {
+      "path": "actual-minimal-native-setup-first.log",
+      "sha256": "46abe6910803283685d6d5e2c0f1243f6adce0967738b0a566d87f39428e4e5d"
+    },
+    {
+      "path": "actual-minimal-native-setup-first.exit",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "independent-live-review.md",
+      "sha256": "b62acf00dc2270b34119d42d15a03c3e0cd06cf4f678f611cae2bcaec68fc3e9"
+    },
+    {
+      "path": "independent-live-review-receipt.json",
+      "sha256": "01e130b199364d74530e47b32401ac7368aace7323e4a88fcc6dea468e6f2984"
+    },
+    {
+      "path": "pending-original-projection-final.log",
+      "sha256": "6ea194b34f19ea6cafbcb5372d6b153903b26dd14b59a532410d6e8b0f16ad2c"
+    },
+    {
+      "path": "pending-original-projection-final.exit",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    }
+  ],
+  "failedAndEarlierProofs": [
+    {
+      "name": "full-regression",
+      "logExists": true,
+      "exit": null,
+      "sha256": "0d52b0825d6c77d4a42e5c1f1c90e572429798bece8c6745a9802142e51663b6",
+      "tests": {
+        "pass": 3103,
+        "fail": 1,
+        "errors": 0,
+        "assertions": 319538
+      }
+    },
+    {
+      "name": "reactivation-before",
+      "logExists": true,
+      "exit": null,
+      "sha256": "ee82baad2ed1cf4c4b55146b6d129898d17ec1ecdbb02e21fdd8b4e822755a20",
+      "tests": {
+        "pass": 0,
+        "fail": 10,
+        "errors": 0,
+        "assertions": 77
+      }
+    },
+    {
+      "name": "non-workable-before",
+      "logExists": true,
+      "exit": null,
+      "sha256": "52d75beb376edcb22890fc35d4652cb1de281db7b03682e67a9692ba091c75e1",
+      "tests": {
+        "pass": 0,
+        "fail": 1,
+        "errors": 0,
+        "assertions": 7
+      }
+    },
+    {
+      "name": "mixed-cap-before",
+      "logExists": true,
+      "exit": null,
+      "sha256": "ef50903986c87d7eceb2df37175792605ed4f6f519776e610e4d52d24250cf20",
+      "tests": {
+        "pass": 0,
+        "fail": 1,
+        "errors": 0,
+        "assertions": 8
+      }
+    },
+    {
+      "name": "admission-first",
+      "logExists": true,
+      "exit": null,
+      "sha256": "9fb835588441ddfdb13c538c73a328159ea6bd2c59fa76a2fc08929be2993900",
+      "tests": {
+        "pass": 1,
+        "fail": 5,
+        "errors": 0,
+        "assertions": 11
+      }
+    },
+    {
+      "name": "review-fixes-final",
+      "logExists": true,
+      "exit": null,
+      "sha256": "e8fbe616a44e95b8e58d3fc716d7c4e45f854ae6fec79eeebb7b9436fcdcc268",
+      "tests": {
+        "pass": 5,
+        "fail": 1,
+        "errors": 0,
+        "assertions": 72
+      }
+    },
+    {
+      "name": "pending-first",
+      "logExists": true,
+      "exit": 1,
+      "sha256": "745af56719a5d88c95bd704d4583ea58ace03f9425643183a7eb000c35fa21b6",
+      "tests": {
+        "pass": 18,
+        "fail": 1,
+        "errors": 0,
+        "assertions": 143
+      }
+    },
+    {
+      "name": "full-regression-final",
+      "logExists": true,
+      "exit": -1,
+      "sha256": "ecc82a6627d511221837eefbaa3944006286e5619ad514f472fb8af13857fe8f",
+      "tests": null
+    },
+    {
+      "name": "full-regression-reviewed",
+      "logExists": true,
+      "exit": 0,
+      "sha256": "89db27b41601e2c1858cb4f8c3ccf799abd5a57e46103d17f8ab5cea856d4138",
+      "tests": {
+        "pass": 3125,
+        "fail": 0,
+        "errors": 0,
+        "assertions": 319787
+      }
+    },
+    {
+      "name": "full-regression-pending-final",
+      "logExists": true,
+      "exit": 1,
+      "sha256": "020b48d759dac5dde86cd0afe8c5fd840d1b209ff7c2a6e0cf358c98c76af44a",
+      "tests": {
+        "pass": 3136,
+        "fail": 2,
+        "errors": 1,
+        "assertions": 319906
+      }
+    },
+    {
+      "name": "interruption-cases-recheck",
+      "logExists": true,
+      "exit": 0,
+      "sha256": "1c82422cf2278847d9511a37e9064f1cb9eb26207410975d7e5d09a78eb7466e",
+      "tests": {
+        "pass": 2,
+        "fail": 0,
+        "errors": 0,
+        "assertions": 24
+      }
+    },
+    {
+      "name": "full-regression-final-frozen",
+      "logExists": true,
+      "exit": 1,
+      "sha256": "5a45ce1290b893c636c1d16eb3f9dc780f491a1ad7314e75e27274a1a88a19dd",
+      "tests": {
+        "pass": 3138,
+        "fail": 2,
+        "errors": 1,
+        "assertions": 319924
+      }
+    },
+    {
+      "name": "final-frozen-failures-isolated",
+      "logExists": true,
+      "exit": 0,
+      "sha256": "3d7cae0f0a16b0bbbbeab60bd07f68bd2368de2dca0ebb21d2683228cb08daf0",
+      "tests": {
+        "pass": 2,
+        "fail": 0,
+        "errors": 0,
+        "assertions": 22
+      }
+    },
+    {
+      "name": "pending-current-before",
+      "logExists": true,
+      "exit": 1,
+      "sha256": "68ea98e6f7b65199ee1638f2e3fb5ca0452d7a5e9ba273f3283c0169c012ad34",
+      "tests": {
+        "pass": 0,
+        "fail": 8,
+        "errors": 0,
+        "assertions": 56
+      }
+    },
+    {
+      "name": "pending-current-after",
+      "logExists": true,
+      "exit": 0,
+      "sha256": "85452c290a6e616635ccc457cd029642af4ecea74cd27ca0970a77d98c78e09d",
+      "tests": {
+        "pass": 30,
+        "fail": 0,
+        "errors": 0,
+        "assertions": 262
+      }
+    },
+    {
+      "name": "pending-current-final",
+      "logExists": true,
+      "exit": 0,
+      "sha256": "a132bc6c6d50f63cbea8c3264753c4c42222a0d3e6028c21d616f47ac7e6aa45",
+      "tests": {
+        "pass": 16,
+        "fail": 0,
+        "errors": 0,
+        "assertions": 158
+      }
+    },
+    {
+      "name": "pending-current-precedence-before",
+      "logExists": true,
+      "exit": 1,
+      "sha256": "e1d907c52b44e6df6f08280eae5273057da7b4c86b981d3302c8700bffc7dc6d",
+      "tests": {
+        "pass": 0,
+        "fail": 1,
+        "errors": 0,
+        "assertions": 7
+      }
+    },
+    {
+      "name": "pending-original-projection-before",
+      "logExists": true,
+      "exit": 1,
+      "sha256": "69c449356c7fb86a5f4eca19cf2b9daa5e468af95ef651fa73fbaa3a1bdd4715",
+      "tests": {
+        "pass": 0,
+        "fail": 3,
+        "errors": 0,
+        "assertions": 24
+      }
+    },
+    {
+      "name": "pending-original-projection-final",
+      "logExists": true,
+      "exit": 0,
+      "sha256": "6ea194b34f19ea6cafbcb5372d6b153903b26dd14b59a532410d6e8b0f16ad2c",
+      "tests": {
+        "pass": 22,
+        "fail": 0,
+        "errors": 0,
+        "assertions": 215
+      }
+    }
+  ],
+  "nativeScenarioCount": 63,
+  "nativeScenarios": [
+    {
+      "scenario": {
+        "kind": "fresh"
+      },
+      "publicRows": 2,
+      "activeRows": 2,
+      "publicPostingDates": [
+        "2026-10-17T00:00:00.000Z"
+      ],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 2,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "kind": "fresh",
+        "starvation": true,
+        "rssHead": true
+      },
+      "publicRows": 2,
+      "activeRows": 2,
+      "publicPostingDates": [
+        "2026-10-17T00:00:00.000Z"
+      ],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 2,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "kind": "stale"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "kind": "future"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "kind": "impossible"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "kind": "created-only"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "kind": "us"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "kind": "onsite"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "robots": "disallowed",
+        "starvation": true
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "robots": "http503",
+        "starvation": true
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "kind": "mixed",
+        "repeat": true
+      },
+      "publicRows": 6,
+      "activeRows": 6,
+      "publicPostingDates": [
+        "2026-10-17T00:00:00.000Z"
+      ],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z",
+        "2026-10-18T09:00:00.000Z"
+      ],
+      "aiCalls": 8,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 2,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 2,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T09:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T09:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "reactivation": "onsite"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "CURRENT_PH_INELIGIBLE",
+        "CURRENT_PH_INELIGIBLE"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "reactivation": "us"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "CURRENT_PH_INELIGIBLE",
+        "CURRENT_PH_INELIGIBLE"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "reactivation": "stored-stale"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "STORED_POSTING_DATE_STALE",
+        "STORED_POSTING_DATE_STALE"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "reactivation": "stored-missing"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "STORED_POSTING_DATE_UNKNOWN",
+        "STORED_POSTING_DATE_UNKNOWN"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "reactivation": "stored-onsite"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "STORED_NOT_REMOTE",
+        "STORED_NOT_REMOTE"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "reactivation": "stored-restricted"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "STORED_GEO_RESTRICTION",
+        "STORED_GEO_RESTRICTION"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "reactivation": "current-restricted"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "CURRENT_GEO_RESTRICTION",
+        "CURRENT_GEO_RESTRICTION"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "reactivation": "identity"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "SOURCE_IDENTITY_MISMATCH",
+        "SOURCE_IDENTITY_MISMATCH"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "reactivation": "fresh"
+      },
+      "publicRows": 2,
+      "activeRows": 2,
+      "publicPostingDates": [
+        "2026-10-17T00:00:00.000Z"
+      ],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[1]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[2]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "reactivation": "source-race"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": true,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "STORED_FACTS_CHANGED",
+        "STORED_FACTS_CHANGED"
+      ],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "reactivation": "facts-race"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": true,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "STORED_FACTS_CHANGED",
+        "STORED_FACTS_CHANGED"
+      ],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "reactivation": "date-race"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": true,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "STORED_FACTS_CHANGED",
+        "STORED_FACTS_CHANGED"
+      ],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "reactivation": "eligibility-race"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": true,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "STORED_FACTS_CHANGED",
+        "STORED_FACTS_CHANGED"
+      ],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "admission": "missing"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "current immutable admission evidence is unavailable or its digest is invalid",
+        "current immutable admission evidence is unavailable or its digest is invalid",
+        "current immutable admission evidence is unavailable or its digest is invalid",
+        "current immutable admission evidence is unavailable or its digest is invalid",
+        "current immutable admission evidence is unavailable or its digest is invalid",
+        "current immutable admission evidence is unavailable or its digest is invalid",
+        "current immutable admission evidence is unavailable or its digest is invalid"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "admission": "stale-revision"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "immutable evidence metadata does not match the packet and current identity",
+        "immutable evidence metadata does not match the packet and current identity",
+        "immutable evidence metadata does not match the packet and current identity",
+        "immutable evidence metadata does not match the packet and current identity",
+        "immutable evidence metadata does not match the packet and current identity",
+        "immutable evidence metadata does not match the packet and current identity",
+        "immutable evidence metadata does not match the packet and current identity"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "admission": "expired"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "admission packet policy/version or current evidence lease is invalid",
+        "admission packet policy/version or current evidence lease is invalid",
+        "admission packet policy/version or current evidence lease is invalid",
+        "admission packet policy/version or current evidence lease is invalid",
+        "admission packet policy/version or current evidence lease is invalid",
+        "admission packet policy/version or current evidence lease is invalid",
+        "admission packet policy/version or current evidence lease is invalid"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "admission": "publish-race"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [],
+      "aiCalls": 2,
+      "raceInjected": true,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "admission": "reactivate-race",
+        "reactivation": "fresh"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": true,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "CURRENT_ADMISSION_INVALID: immutable evidence metadata does not match the packet and current identity",
+        "CURRENT_ADMISSION_INVALID: immutable evidence metadata does not match the packet and current identity"
+      ],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "nonWorkable": true
+      },
+      "publicRows": 2,
+      "activeRows": 2,
+      "publicPostingDates": [
+        "2026-10-17T00:00:00.000Z"
+      ],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 2,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "kind": "mixed",
+        "reactivation": "fresh",
+        "repeat": true
+      },
+      "publicRows": 6,
+      "activeRows": 6,
+      "publicPostingDates": [
+        "2026-10-17T00:00:00.000Z"
+      ],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z",
+        "2026-10-18T09:00:00.000Z"
+      ],
+      "aiCalls": 12,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[1]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[2]"
+        },
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "blocked",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "blocked",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T09:00:00.000Z",
+          "mode": "capped",
+          "published_count": 2,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T09:00:00.000Z",
+          "mode": "capped",
+          "published_count": 2,
+          "published_ids_json": "[]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "codec": true
+      },
+      "publicRows": 2,
+      "activeRows": 2,
+      "publicPostingDates": [
+        "2026-10-17T00:00:00.000Z"
+      ],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z",
+        "2026-10-20 10:16:18",
+        "2026-10-20 10:16:19"
+      ],
+      "aiCalls": 2,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "pending": "fresh"
+      },
+      "publicRows": 2,
+      "activeRows": 2,
+      "publicPostingDates": [
+        "2026-10-17T00:00:00.000Z"
+      ],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[1]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[2]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "pending": "drain-fresh"
+      },
+      "publicRows": 2,
+      "activeRows": 2,
+      "publicPostingDates": [
+        "2026-10-17T00:00:00.000Z"
+      ],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 2,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[1]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[2]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "pending": "fresh",
+        "admission": "stale-revision"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "immutable evidence metadata does not match the packet and current identity",
+        "immutable evidence metadata does not match the packet and current identity",
+        "immutable evidence metadata does not match the packet and current identity",
+        "immutable evidence metadata does not match the packet and current identity",
+        "immutable evidence metadata does not match the packet and current identity",
+        "immutable evidence metadata does not match the packet and current identity",
+        "immutable evidence metadata does not match the packet and current identity",
+        "CURRENT_OPENING_MISSING_OR_AMBIGUOUS",
+        "CURRENT_OPENING_MISSING_OR_AMBIGUOUS"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "pending": "drain-fresh",
+        "admission": "stale-revision"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "immutable evidence metadata does not match the packet and current identity",
+        "immutable evidence metadata does not match the packet and current identity",
+        "immutable evidence metadata does not match the packet and current identity",
+        "immutable evidence metadata does not match the packet and current identity",
+        "immutable evidence metadata does not match the packet and current identity",
+        "immutable evidence metadata does not match the packet and current identity",
+        "immutable evidence metadata does not match the packet and current identity",
+        "CURRENT_OPENING_MISSING_OR_AMBIGUOUS",
+        "CURRENT_OPENING_MISSING_OR_AMBIGUOUS"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "pending": "stale"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "STORED_POSTING_DATE_STALE",
+        "STORED_POSTING_DATE_STALE"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "pending": "onsite"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "STORED_NOT_REMOTE",
+        "STORED_NOT_REMOTE"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "pending": "drain-stale"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "STORED_POSTING_DATE_STALE",
+        "STORED_POSTING_DATE_STALE"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "pending": "drain-onsite"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "STORED_NOT_REMOTE",
+        "STORED_NOT_REMOTE"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "pending": "facts-race"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": true,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "STORED_FACTS_CHANGED",
+        "STORED_FACTS_CHANGED"
+      ],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "pending": "drain-race"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 2,
+      "raceInjected": true,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "STORED_FACTS_CHANGED",
+        "STORED_FACTS_CHANGED"
+      ],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "pending": "drain-company-race"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 2,
+      "raceInjected": true,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "STORED_FACTS_CHANGED",
+        "STORED_FACTS_CHANGED"
+      ],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "pending": "drain-application-race"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 2,
+      "raceInjected": true,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "STORED_FACTS_CHANGED",
+        "STORED_FACTS_CHANGED"
+      ],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "pending": "mixed",
+        "kind": "mixed"
+      },
+      "publicRows": 2,
+      "activeRows": 2,
+      "publicPostingDates": [
+        "2026-10-17T00:00:00.000Z"
+      ],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 6,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[1]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[2]"
+        },
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "blocked",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "blocked",
+          "published_count": 0,
+          "published_ids_json": "[]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "pending": "durable"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 3,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "DURABLE_WORKABLE_PUBLICATION_NOT_ACCEPTED",
+        "DURABLE_WORKABLE_PUBLICATION_NOT_ACCEPTED"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "pending": "drain-fresh",
+        "unclearPending": true,
+        "currentPendingUnclear": true
+      },
+      "publicRows": 2,
+      "activeRows": 2,
+      "publicPostingDates": [
+        "2026-10-17T00:00:00.000Z"
+      ],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 4,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[1]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[2]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "pending": "fresh",
+        "unclearPending": true
+      },
+      "publicRows": 2,
+      "activeRows": 2,
+      "publicPostingDates": [
+        "2026-10-17T00:00:00.000Z"
+      ],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[1]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[2]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "pending": "fresh",
+        "currentPendingUnclear": true
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "CURRENT_PH_UNCLEAR",
+        "CURRENT_PH_UNCLEAR"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "pending": "fresh",
+        "pendingCurrent": "missing"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "CURRENT_OPENING_MISSING_OR_AMBIGUOUS",
+        "CURRENT_OPENING_MISSING_OR_AMBIGUOUS"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "pending": "fresh",
+        "pendingCurrent": "stale-original"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "CURRENT_OPENING_MISSING_OR_AMBIGUOUS",
+        "CURRENT_OPENING_MISSING_OR_AMBIGUOUS"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "pending": "fresh",
+        "pendingCurrent": "onsite"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "CURRENT_PH_INELIGIBLE",
+        "CURRENT_PH_INELIGIBLE"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "pending": "fresh",
+        "pendingCurrent": "us"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "CURRENT_PH_INELIGIBLE",
+        "CURRENT_PH_INELIGIBLE"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "pending": "drain-fresh",
+        "pendingCurrent": "missing"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "CURRENT_OPENING_MISSING_OR_AMBIGUOUS",
+        "CURRENT_OPENING_MISSING_OR_AMBIGUOUS"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "pending": "drain-fresh",
+        "pendingCurrent": "stale-original"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "CURRENT_OPENING_MISSING_OR_AMBIGUOUS",
+        "CURRENT_OPENING_MISSING_OR_AMBIGUOUS"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "pending": "drain-fresh",
+        "pendingCurrent": "onsite"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "CURRENT_PH_INELIGIBLE",
+        "CURRENT_PH_INELIGIBLE"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "pending": "drain-fresh",
+        "pendingCurrent": "us"
+      },
+      "publicRows": 0,
+      "activeRows": 0,
+      "publicPostingDates": [],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [
+        "CURRENT_PH_INELIGIBLE",
+        "CURRENT_PH_INELIGIBLE"
+      ],
+      "ledger": []
+    },
+    {
+      "scenario": {
+        "reactivation": "fresh",
+        "currentPublishedOn": "2026-09-19",
+        "storedPostedAt": "2026-10-17T00:00:00.000Z"
+      },
+      "publicRows": 2,
+      "activeRows": 2,
+      "publicPostingDates": [
+        "2026-09-19T00:00:00.000Z"
+      ],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[1]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[2]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "reactivation": "fresh",
+        "currentPublishedOn": "2026-10-17",
+        "storedPostedAt": "2026-09-19T00:00:00.000Z"
+      },
+      "publicRows": 2,
+      "activeRows": 2,
+      "publicPostingDates": [
+        "2026-09-19T00:00:00.000Z"
+      ],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[1]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[2]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "pending": "fresh",
+        "currentPublishedOn": "2026-09-19",
+        "storedPostedAt": "2026-10-17T00:00:00.000Z"
+      },
+      "publicRows": 2,
+      "activeRows": 2,
+      "publicPostingDates": [
+        "2026-09-19T00:00:00.000Z"
+      ],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[1]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[2]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "pending": "fresh",
+        "currentPublishedOn": "2026-10-17",
+        "storedPostedAt": "2026-09-19T00:00:00.000Z"
+      },
+      "publicRows": 2,
+      "activeRows": 2,
+      "publicPostingDates": [
+        "2026-09-19T00:00:00.000Z"
+      ],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 0,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[1]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[2]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "pending": "drain-fresh",
+        "currentPublishedOn": "2026-09-19",
+        "storedPostedAt": "2026-10-17T00:00:00.000Z"
+      },
+      "publicRows": 2,
+      "activeRows": 2,
+      "publicPostingDates": [
+        "2026-09-19T00:00:00.000Z"
+      ],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 2,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[1]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[2]"
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "pending": "drain-fresh",
+        "currentPublishedOn": "2026-10-17",
+        "storedPostedAt": "2026-09-19T00:00:00.000Z"
+      },
+      "publicRows": 2,
+      "activeRows": 2,
+      "publicPostingDates": [
+        "2026-09-19T00:00:00.000Z"
+      ],
+      "firstStorageTimes": [
+        "2026-10-18T08:00:00.000Z"
+      ],
+      "aiCalls": 2,
+      "raceInjected": false,
+      "maxBoundParameters": 95,
+      "registryUnchanged": true,
+      "holdReasons": [],
+      "ledger": [
+        {
+          "source_id": "workable:coconutva",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[1]"
+        },
+        {
+          "source_id": "workable:crewbloom",
+          "tick_key": "scrape:2026-10-18T08:00:00.000Z",
+          "mode": "capped",
+          "published_count": 1,
+          "published_ids_json": "[2]"
+        }
+      ]
+    }
+  ],
+  "independentReviewFiles": [
+    {
+      "path": "independent-live-review.md",
+      "sha256": "b62acf00dc2270b34119d42d15a03c3e0cd06cf4f678f611cae2bcaec68fc3e9"
+    },
+    {
+      "path": "independent-live-review-receipt.json",
+      "sha256": "01e130b199364d74530e47b32401ac7368aace7323e4a88fcc6dea468e6f2984"
+    }
+  ],
+  "limitations": [
+    "No source/admission renewal or production deployment",
+    "Synthetic network/AI/initial authority/packets; actual unchanged0054 SQL, route and function body",
+    "Existing insert published_ids_json remains empty",
+    "No global cross-writer or concurrency cap closure",
+    "Separate durable Workable writer explicitly deferred until accepted",
+    "Live flags and GCP publisher containment remain separately unproven",
+    "No100-150/day throughput acceptance"
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "observedStart": "2026-10-20T10:20:34.423Z",
+  "scope": "MAIN_CHECKPOINT_AND_ONE_DIAGNOSTIC_REF_ONLY",
+  "repositories": {
+    "ssm": {
+      "observedAt": "2026-10-20T10:20:40.027Z",
+      "exitCode": 0,
+      "refs": {
+        "refs/heads/codex/verified-flow-directory-checkpoint": "8078a260aab0650e815e780209f4598b94af9e29",
+        "refs/heads/main": "5c46edf47ca7aada79d3b931284ffd7aa4773a66"
+      },
+      "diagnosticRefAbsent": true
+    },
+    "github": {
+      "observedAt": "2026-10-20T10:20:42.031Z",
+      "exitCode": 0,
+      "refs": {
+        "refs/heads/codex/verified-flow-directory-checkpoint": "8078a260aab0650e815e780209f4598b94af9e29",
+        "refs/heads/main": "5c46edf47ca7aada79d3b931284ffd7aa4773a66"
+      }
+    },
+    "gitlab": {
+      "observedAt": "2026-10-20T10:20:51.166Z",
+      "exitCode": 0,
+      "refs": {
+        "refs/heads/codex/verified-flow-directory-checkpoint": "8078a260aab0650e815e780209f4598b94af9e29",
+        "refs/heads/main": "5c46edf47ca7aada79d3b931284ffd7aa4773a66"
+      }
+    }
+  },
+  "capabilityRun": {
+    "conclusion": "success",
+    "headSha": "8078a260aab0650e815e780209f4598b94af9e29",
+    "jobs": [
+      {
+        "completedAt": "2026-10-18T15:55:29Z",
+        "conclusion": "success",
+        "databaseId": 117719949569,
+        "name": "Verify SSM capability without writing refs",
+        "startedAt": "2026-10-18T15:54:55Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-10-18T15:54:57Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-18T15:54:56Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-18T15:55:00Z",
+            "conclusion": "success",
+            "name": "Checkout diagnostic source",
+            "number": 2,
+            "startedAt": "2026-10-18T15:54:57Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-18T15:55:00Z",
+            "conclusion": "success",
+            "name": "Authenticate existing GCP identity",
+            "number": 3,
+            "startedAt": "2026-10-18T15:55:00Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-18T15:55:20Z",
+            "conclusion": "success",
+            "name": "Set up Cloud SDK",
+            "number": 4,
+            "startedAt": "2026-10-18T15:55:00Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-18T15:55:25Z",
+            "conclusion": "success",
+            "name": "Probe canonical SSM read and dry-run push",
+            "number": 5,
+            "startedAt": "2026-10-18T15:55:20Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-18T15:55:25Z",
+            "conclusion": "success",
+            "name": "Remove ephemeral auth file",
+            "number": 6,
+            "startedAt": "2026-10-18T15:55:25Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-18T15:55:25Z",
+            "conclusion": "success",
+            "name": "Post Authenticate existing GCP identity",
+            "number": 11,
+            "startedAt": "2026-10-18T15:55:25Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-18T15:55:26Z",
+            "conclusion": "success",
+            "name": "Post Checkout diagnostic source",
+            "number": 12,
+            "startedAt": "2026-10-18T15:55:25Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-18T15:55:26Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 13,
+            "startedAt": "2026-10-18T15:55:26Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/39142613038/job/117719949569"
+      },
+      {
+        "completedAt": "2026-10-18T15:54:52Z",
+        "conclusion": "skipped",
+        "databaseId": 117719950280,
+        "name": "Sync Secrets to GCP Secret Manager",
+        "startedAt": "2026-10-18T15:54:53Z",
+        "status": "completed",
+        "steps": [],
+        "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/39142613038/job/117719950280"
+      }
+    ],
+    "status": "completed",
+    "updatedAt": "2026-10-18T15:55:29Z",
+    "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/39142613038"
+  },
+  "observedEnd": "2026-10-20T10:20:54.381Z",
+  "limitations": [
+    "Sequential ref reads are not atomic.",
+    "Only named refs were inspected; no all-ref or unattended parity claim.",
+    "Capability probe performed read/dry-run negotiation only; persisted write/main protection remains unproven in that runner identity.",
+    "Secret synchronization was skipped. No credential values or auth command output retained."
+  ]
+}

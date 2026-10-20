@@ -1,5 +1,32 @@
 # AI Recovery Trail
 
+## 2026-10-20 — Canonical persistence, grouped evidence and live compatible source
+
+Preserved bot descendants; SSM-first report runner wrote `d88365ed` before
+GitHub, and quarantine-fix main `23b9202a` passed full CI with deploy skipped.
+Corrected 295 widget location rows to 204 unique URLs, with 93 plausible PH
+openings and 17 misses. Compatible source `f34965b0` deployed at 11:28:54Z as
+`347d95ae`; artifact revalidation, preflight 8/8 and post-control 5/5 pass, with
+schema 0054/config preserved. Ordinary collection/recovery remains to observe.
+Keep rollback `8c649da0` and unrelated root features separate.
+[Evidence](operations/CONTINUATION_EVIDENCE_2026-10-20.md).
+First bounded post-release reads observed real attempts and an exact duplicate
+location false negative (Crew 5902EBE6B1 -> inactive id 9686/Pakistan, PH variant
+retained). Five SELECTs wrote zero; public/header-meta checks pass. NEXT is its
+isolated correction and 17-miss trace; no caller attribution or recovery claim.
+
+## 2026-10-18 — Runtime and claimed coverage reconciled
+
+Recovered all of Astra and current source governance before changes. Verified
+old Pages deployment/schema, Workable selection starvation, low storage proxies,
+and deficient publication receipts. Preserved 27 GitHub-only bot descendants
+in canonical SSM/GitLab by fast-forward. Corrected unsupported employer-catalog
+PH inference, test-only tracker fabricated success and source-economics false
+zero reporting. Targeted tests and independent reviews pass; final combined
+regression4499/0/331630, typecheck/build/four audits pass. [Current savepoint](SYSTEM_SAVEPOINT.md) owns NEXT;
+[compact Astra](../astra777.txt) replaces the conflicting long memory while its
+previous bytes are archived. MATH0/13, certified flow and employer recall UNKNOWN.
+
 ## 2026-10-12 Manila — Owner incident resumed and measured
 
 Owner edited the goal after the prior stop, prioritizing one October 12 posting

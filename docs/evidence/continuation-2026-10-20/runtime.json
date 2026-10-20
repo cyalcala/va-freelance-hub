@@ -1,0 +1,581 @@
+{
+  "observedAt": "2026-10-20T10:08:14.213Z",
+  "scope": "BOUNDED_READ_ONLY_EXTERNAL_REFRESH",
+  "public": {
+    "status": 200,
+    "headers": {
+      "cache-control": "no-store",
+      "date": "Tue, 20 Oct 2026 10:08:09 GMT",
+      "x-public-snapshot": "stale",
+      "x-public-snapshot-age-seconds": "1450",
+      "x-public-snapshot-companies": "763",
+      "x-public-snapshot-generated-at": "2026-10-20T09:43:58.768Z",
+      "x-public-snapshot-jobs": "1788",
+      "x-public-snapshot-source": "edge"
+    },
+    "headSnapshotMetadata": [
+      "<meta name=\"va-hub:snapshot-status\" content=\"stale\">",
+      "<meta name=\"va-hub:snapshot-generated-at\" content=\"2026-10-20T09:43:58.768Z\">",
+      "<meta name=\"va-hub:snapshot-source\" content=\"edge\">",
+      "<meta name=\"va-hub:snapshot-age-seconds\" content=\"1450\">",
+      "<meta name=\"va-hub:snapshot-jobs\" content=\"1788\">",
+      "<meta name=\"va-hub:snapshot-companies\" content=\"763\">"
+    ],
+    "countText": [
+      "1,788 opportunities"
+    ],
+    "bytes": 44237,
+    "workScheduleFilterPresent": false
+  },
+  "d1Migration": {
+    "results": [
+      {
+        "name": "0054_public_serving_snapshot.sql"
+      }
+    ],
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.382
+      },
+      "duration": 0.382,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 92123136,
+      "rows_read": 1,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  "workableRegistryAnd24h": {
+    "results": [
+      {
+        "observed_at": "2026-10-20T10:09:09.960Z",
+        "source_id": "workable:coconutva",
+        "provider_id": "workable",
+        "endpoint_url": "https://apply.workable.com/api/v1/widget/accounts/coconutva",
+        "company_token": "coconutva",
+        "compliance_state": "conditional",
+        "operational_state": "canary",
+        "opt_out": 0,
+        "policy_expiry": "2027-03-10T21:31:09.551Z",
+        "review_deadline": "2026-09-25T21:31:09.551Z",
+        "canary_max_new_items_per_tick": 2,
+        "governance_revision": 1,
+        "last_decision": "sp23:requested_shadow_entry",
+        "last_decision_at": "2026-09-11T21:31:09.551Z",
+        "risk_tier": "tier_a",
+        "auth_class": "none",
+        "visibility_filter": "published",
+        "content_scope": "minimal",
+        "cadence_min_minutes": 60,
+        "cadence_max_minutes": 1440,
+        "evidence_captured_at": "2026-09-11T21:31:09.551Z",
+        "evidence_lease_days": 180,
+        "provider_lease_expires_at": "2027-03-10 21:31:09",
+        "provider_governance_revision": 2,
+        "durable_opt_out_count": 0,
+        "latest_admission_id": 17,
+        "latest_admission_captured_at": "2026-09-11T21:31:09.551Z",
+        "latest_admission_expires_at": "2027-03-10T21:31:09.551Z",
+        "latest_admission_source_revision": 1,
+        "latest_admission_provider_revision": 2,
+        "current_admission_evidence_rows": 1,
+        "events24h": 144,
+        "attempts24h": 0,
+        "successes24h": 0,
+        "failures24h": 0,
+        "rotation_skips24h": 144,
+        "parsed24h": 0,
+        "latest_event": "2026-10-20T10:01:01.426Z",
+        "latest_attempt": null,
+        "skip_reasons": "Skipped Workable rotation slice to prevent rate limiting (scheduled for later runs)."
+      },
+      {
+        "observed_at": "2026-10-20T10:09:09.960Z",
+        "source_id": "workable:crewbloom",
+        "provider_id": "workable",
+        "endpoint_url": "https://apply.workable.com/api/v1/widget/accounts/crewbloom",
+        "company_token": "crewbloom",
+        "compliance_state": "conditional",
+        "operational_state": "canary",
+        "opt_out": 0,
+        "policy_expiry": "2027-03-10T21:31:09.551Z",
+        "review_deadline": "2026-09-25T21:31:51.692Z",
+        "canary_max_new_items_per_tick": 2,
+        "governance_revision": 1,
+        "last_decision": "sp23:requested_shadow_entry",
+        "last_decision_at": "2026-09-11T21:31:51.692Z",
+        "risk_tier": "tier_a",
+        "auth_class": "none",
+        "visibility_filter": "published",
+        "content_scope": "minimal",
+        "cadence_min_minutes": 60,
+        "cadence_max_minutes": 1440,
+        "evidence_captured_at": "2026-09-11T21:31:09.551Z",
+        "evidence_lease_days": 180,
+        "provider_lease_expires_at": "2027-03-10 21:31:09",
+        "provider_governance_revision": 2,
+        "durable_opt_out_count": 0,
+        "latest_admission_id": 18,
+        "latest_admission_captured_at": "2026-09-11T21:31:51.692Z",
+        "latest_admission_expires_at": "2027-03-10T21:31:09.551Z",
+        "latest_admission_source_revision": 1,
+        "latest_admission_provider_revision": 2,
+        "current_admission_evidence_rows": 1,
+        "events24h": 144,
+        "attempts24h": 0,
+        "successes24h": 0,
+        "failures24h": 0,
+        "rotation_skips24h": 144,
+        "parsed24h": 0,
+        "latest_event": "2026-10-20T10:01:01.426Z",
+        "latest_attempt": null,
+        "skip_reasons": "Skipped Workable rotation slice to prevent rate limiting (scheduled for later runs)."
+      },
+      {
+        "observed_at": "2026-10-20T10:09:09.960Z",
+        "source_id": "workable:hello-rache",
+        "provider_id": "workable",
+        "endpoint_url": "https://apply.workable.com/api/v1/widget/accounts/hello-rache",
+        "company_token": "hello-rache",
+        "compliance_state": "conditional",
+        "operational_state": "canary",
+        "opt_out": 0,
+        "policy_expiry": "2027-03-10T21:31:09.551Z",
+        "review_deadline": "2026-09-25T23:41:55.923Z",
+        "canary_max_new_items_per_tick": 2,
+        "governance_revision": 1,
+        "last_decision": "sp23:requested_shadow_entry",
+        "last_decision_at": "2026-09-11T23:41:55.923Z",
+        "risk_tier": "tier_a",
+        "auth_class": "none",
+        "visibility_filter": "published",
+        "content_scope": "minimal",
+        "cadence_min_minutes": 60,
+        "cadence_max_minutes": 1440,
+        "evidence_captured_at": "2026-09-11T21:31:09.551Z",
+        "evidence_lease_days": 180,
+        "provider_lease_expires_at": "2027-03-10 21:31:09",
+        "provider_governance_revision": 2,
+        "durable_opt_out_count": 0,
+        "latest_admission_id": 22,
+        "latest_admission_captured_at": "2026-09-11T23:41:55.923Z",
+        "latest_admission_expires_at": "2027-03-10T21:31:09.551Z",
+        "latest_admission_source_revision": 1,
+        "latest_admission_provider_revision": 2,
+        "current_admission_evidence_rows": 1,
+        "events24h": 144,
+        "attempts24h": 0,
+        "successes24h": 0,
+        "failures24h": 0,
+        "rotation_skips24h": 144,
+        "parsed24h": 0,
+        "latest_event": "2026-10-20T10:01:01.426Z",
+        "latest_attempt": null,
+        "skip_reasons": "Skipped Workable rotation slice to prevent rate limiting (scheduled for later runs)."
+      },
+      {
+        "observed_at": "2026-10-20T10:09:09.960Z",
+        "source_id": "workable:hunt-st",
+        "provider_id": "workable",
+        "endpoint_url": "https://apply.workable.com/api/v1/widget/accounts/hunt-st",
+        "company_token": "hunt-st",
+        "compliance_state": "conditional",
+        "operational_state": "canary",
+        "opt_out": 0,
+        "policy_expiry": "2027-03-10T21:31:09.551Z",
+        "review_deadline": "2026-09-25T23:34:34.199Z",
+        "canary_max_new_items_per_tick": 2,
+        "governance_revision": 4,
+        "last_decision": "sp23:requested_shadow_entry",
+        "last_decision_at": "2026-09-11T23:34:34.199Z",
+        "risk_tier": "tier_a",
+        "auth_class": "none",
+        "visibility_filter": "published",
+        "content_scope": "minimal",
+        "cadence_min_minutes": 60,
+        "cadence_max_minutes": 1440,
+        "evidence_captured_at": "2026-09-11T21:31:09.551Z",
+        "evidence_lease_days": 180,
+        "provider_lease_expires_at": "2027-03-10 21:31:09",
+        "provider_governance_revision": 2,
+        "durable_opt_out_count": 0,
+        "latest_admission_id": 20,
+        "latest_admission_captured_at": "2026-09-11T23:34:34.199Z",
+        "latest_admission_expires_at": "2027-03-10T21:31:09.551Z",
+        "latest_admission_source_revision": 4,
+        "latest_admission_provider_revision": 2,
+        "current_admission_evidence_rows": 1,
+        "events24h": 144,
+        "attempts24h": 0,
+        "successes24h": 0,
+        "failures24h": 0,
+        "rotation_skips24h": 144,
+        "parsed24h": 0,
+        "latest_event": "2026-10-20T10:01:01.426Z",
+        "latest_attempt": null,
+        "skip_reasons": "Skipped Workable rotation slice to prevent rate limiting (scheduled for later runs)."
+      },
+      {
+        "observed_at": "2026-10-20T10:09:09.960Z",
+        "source_id": "workable:pearltalent",
+        "provider_id": "workable",
+        "endpoint_url": "https://apply.workable.com/api/v1/widget/accounts/pearltalent",
+        "company_token": "pearltalent",
+        "compliance_state": "conditional",
+        "operational_state": "canary",
+        "opt_out": 0,
+        "policy_expiry": "2027-03-10T21:31:09.551Z",
+        "review_deadline": "2026-09-25T23:24:27.778Z",
+        "canary_max_new_items_per_tick": 2,
+        "governance_revision": 1,
+        "last_decision": "sp23:requested_shadow_entry",
+        "last_decision_at": "2026-09-11T23:24:27.778Z",
+        "risk_tier": "tier_a",
+        "auth_class": "none",
+        "visibility_filter": "published",
+        "content_scope": "minimal",
+        "cadence_min_minutes": 60,
+        "cadence_max_minutes": 1440,
+        "evidence_captured_at": "2026-09-11T21:31:09.551Z",
+        "evidence_lease_days": 180,
+        "provider_lease_expires_at": "2027-03-10 21:31:09",
+        "provider_governance_revision": 2,
+        "durable_opt_out_count": 0,
+        "latest_admission_id": 19,
+        "latest_admission_captured_at": "2026-09-11T23:24:27.778Z",
+        "latest_admission_expires_at": "2027-03-10T21:31:09.551Z",
+        "latest_admission_source_revision": 1,
+        "latest_admission_provider_revision": 2,
+        "current_admission_evidence_rows": 1,
+        "events24h": 144,
+        "attempts24h": 0,
+        "successes24h": 0,
+        "failures24h": 0,
+        "rotation_skips24h": 144,
+        "parsed24h": 0,
+        "latest_event": "2026-10-20T10:01:01.426Z",
+        "latest_attempt": null,
+        "skip_reasons": "Skipped Workable rotation slice to prevent rate limiting (scheduled for later runs)."
+      },
+      {
+        "observed_at": "2026-10-20T10:09:09.960Z",
+        "source_id": "workable:pineapple-staffing",
+        "provider_id": "workable",
+        "endpoint_url": "https://apply.workable.com/api/v1/widget/accounts/pineapple-staffing",
+        "company_token": "pineapple-staffing",
+        "compliance_state": "conditional",
+        "operational_state": "canary",
+        "opt_out": 0,
+        "policy_expiry": "2027-03-10T21:31:09.551Z",
+        "review_deadline": "2026-09-26T23:19:49.946Z",
+        "canary_max_new_items_per_tick": 2,
+        "governance_revision": 2,
+        "last_decision": "sp23:requested_shadow_entry",
+        "last_decision_at": "2026-09-12T23:19:49.946Z",
+        "risk_tier": "tier_a",
+        "auth_class": "none",
+        "visibility_filter": "published",
+        "content_scope": "minimal",
+        "cadence_min_minutes": 60,
+        "cadence_max_minutes": 1440,
+        "evidence_captured_at": "2026-09-11T21:31:09.551Z",
+        "evidence_lease_days": 180,
+        "provider_lease_expires_at": "2027-03-10 21:31:09",
+        "provider_governance_revision": 2,
+        "durable_opt_out_count": 0,
+        "latest_admission_id": 23,
+        "latest_admission_captured_at": "2026-09-12T23:19:49.946Z",
+        "latest_admission_expires_at": "2027-03-10T21:31:09.551Z",
+        "latest_admission_source_revision": 1,
+        "latest_admission_provider_revision": 2,
+        "current_admission_evidence_rows": 0,
+        "events24h": 144,
+        "attempts24h": 0,
+        "successes24h": 0,
+        "failures24h": 0,
+        "rotation_skips24h": 144,
+        "parsed24h": 0,
+        "latest_event": "2026-10-20T10:01:01.426Z",
+        "latest_attempt": null,
+        "skip_reasons": "Skipped Workable rotation slice to prevent rate limiting (scheduled for later runs)."
+      },
+      {
+        "observed_at": "2026-10-20T10:09:09.960Z",
+        "source_id": "workable:rocketams",
+        "provider_id": "workable",
+        "endpoint_url": "https://apply.workable.com/api/v1/widget/accounts/rocketams",
+        "company_token": "rocketams",
+        "compliance_state": "conditional",
+        "operational_state": "canary",
+        "opt_out": 0,
+        "policy_expiry": "2027-03-10T21:31:09.551Z",
+        "review_deadline": "2026-09-25T23:41:11.026Z",
+        "canary_max_new_items_per_tick": 2,
+        "governance_revision": 4,
+        "last_decision": "sp23:requested_shadow_entry",
+        "last_decision_at": "2026-09-11T23:41:11.026Z",
+        "risk_tier": "tier_a",
+        "auth_class": "none",
+        "visibility_filter": "published",
+        "content_scope": "minimal",
+        "cadence_min_minutes": 60,
+        "cadence_max_minutes": 1440,
+        "evidence_captured_at": "2026-09-11T21:31:09.551Z",
+        "evidence_lease_days": 180,
+        "provider_lease_expires_at": "2027-03-10 21:31:09",
+        "provider_governance_revision": 2,
+        "durable_opt_out_count": 0,
+        "latest_admission_id": 21,
+        "latest_admission_captured_at": "2026-09-11T23:41:11.026Z",
+        "latest_admission_expires_at": "2027-03-10T21:31:09.551Z",
+        "latest_admission_source_revision": 4,
+        "latest_admission_provider_revision": 2,
+        "current_admission_evidence_rows": 1,
+        "events24h": 144,
+        "attempts24h": 0,
+        "successes24h": 0,
+        "failures24h": 0,
+        "rotation_skips24h": 144,
+        "parsed24h": 0,
+        "latest_event": "2026-10-20T10:01:01.426Z",
+        "latest_attempt": null,
+        "skip_reasons": "Skipped Workable rotation slice to prevent rate limiting (scheduled for later runs)."
+      }
+    ],
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 578.6074
+      },
+      "duration": 578.6074,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 92123136,
+      "rows_read": 97448,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  "pages": {
+    "status": "CAPABILITY_NOT_AVAILABLE_IN_EXISTING_ENV"
+  },
+  "gcp": {
+    "http": {
+      "job": 200,
+      "executions": 200,
+      "logs": 200
+    },
+    "job": {
+      "updatedAt": "2026-10-04T09:13:09.798366Z",
+      "labels": {
+        "git-sha": "3a0ba3bc7c0c75c5cd32ae71f924375e2be023f2"
+      },
+      "image": "asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/lake-publish@sha256:97db3a248ac23bd5cab40a44d60c233fb98881d531fbc18f179e1bac8fd3b97a"
+    },
+    "executions": [
+      {
+        "name": "lake-publish-job-6wznc",
+        "createTime": "2026-10-20T09:47:05.719824Z",
+        "completionTime": "2026-10-20T09:47:39.034856Z",
+        "completedCondition": "CONDITION_SUCCEEDED"
+      },
+      {
+        "name": "lake-publish-job-2d4vm",
+        "createTime": "2026-10-20T08:47:05.676158Z",
+        "completionTime": "2026-10-20T08:47:40.952Z",
+        "completedCondition": "CONDITION_SUCCEEDED"
+      },
+      {
+        "name": "lake-publish-job-bbcr4",
+        "createTime": "2026-10-20T07:47:05.756106Z",
+        "completionTime": "2026-10-20T07:47:34.786705Z",
+        "completedCondition": "CONDITION_SUCCEEDED"
+      },
+      {
+        "name": "lake-publish-job-hmhqs",
+        "createTime": "2026-10-20T06:47:05.882520Z",
+        "completionTime": "2026-10-20T06:47:40.666575Z",
+        "completedCondition": "CONDITION_SUCCEEDED"
+      },
+      {
+        "name": "lake-publish-job-rmbkq",
+        "createTime": "2026-10-20T05:47:05.837639Z",
+        "completionTime": "2026-10-20T05:47:38.583852Z",
+        "completedCondition": "CONDITION_SUCCEEDED"
+      }
+    ],
+    "publisherReceipts": [
+      {
+        "timestamp": "2026-10-20T09:47:37.251512Z",
+        "event": "lake_publish_completed",
+        "syncedCount": 1,
+        "enrolledSources": 12,
+        "durationMs": 23953
+      },
+      {
+        "timestamp": "2026-10-20T08:47:37.314636Z",
+        "event": "lake_publish_completed",
+        "syncedCount": 7,
+        "enrolledSources": 12,
+        "durationMs": 24045
+      },
+      {
+        "timestamp": "2026-10-20T07:47:32.840744Z",
+        "event": "lake_publish_completed",
+        "syncedCount": 0,
+        "enrolledSources": 12,
+        "durationMs": 19714
+      },
+      {
+        "timestamp": "2026-10-20T06:47:36.910564Z",
+        "event": "lake_publish_completed",
+        "syncedCount": 0,
+        "enrolledSources": 12,
+        "durationMs": 23396
+      },
+      {
+        "timestamp": "2026-10-20T05:47:35.381381Z",
+        "event": "lake_publish_completed",
+        "syncedCount": 0,
+        "enrolledSources": 12,
+        "durationMs": 21707
+      }
+    ]
+  },
+  "currentAdmissionPacketVerification": {
+    "observedAt": "2026-10-20T10:10:31.355Z",
+    "scope": "one exact existing LOAD_CURRENT_SQL SELECT changed only source_id binding from equalityto boundedIN; existing loader validateseachcapturedrecordinmemory; no newevidence/sourcefetch/renewal",
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 2.1592
+      },
+      "duration": 2.1592,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 92123136,
+      "rows_read": 35,
+      "rows_written": 0,
+      "total_attempts": 1
+    },
+    "checks": [
+      {
+        "sourceId": "workable:coconutva",
+        "ok": true,
+        "evidenceId": 17,
+        "evidenceSha256": "63982de44dca2df557858a00b52a9c189237c879a273d1f0992b459cb71d8c09",
+        "authorityActions": [
+          "recurrent_private_shadow",
+          "public_minimal_metadata_canary"
+        ],
+        "adjudicationRef": "ex-ph-agency-workable-coconutva-tier-a-fast-track",
+        "sourceRevision": 1,
+        "providerRevision": 2,
+        "expiresAt": "2027-03-10T21:31:09.551Z"
+      },
+      {
+        "sourceId": "workable:crewbloom",
+        "ok": true,
+        "evidenceId": 18,
+        "evidenceSha256": "2a9388de27003eac1f2922120e73f8cadac10489c82c1e70e033dc61ed54aad0",
+        "authorityActions": [
+          "recurrent_private_shadow",
+          "public_minimal_metadata_canary"
+        ],
+        "adjudicationRef": "ex-ph-agency-workable-crewbloom-tier-a-fast-track",
+        "sourceRevision": 1,
+        "providerRevision": 2,
+        "expiresAt": "2027-03-10T21:31:09.551Z"
+      },
+      {
+        "sourceId": "workable:hello-rache",
+        "ok": true,
+        "evidenceId": 22,
+        "evidenceSha256": "3c797c4ecead6cd5c419ea02eaa9c8191deabd4cdba40dae7bcfd697422bfe51",
+        "authorityActions": [
+          "recurrent_private_shadow",
+          "public_minimal_metadata_canary"
+        ],
+        "adjudicationRef": "ex-ph-agency-workable-hello-rache-tier-a-fast-track",
+        "sourceRevision": 1,
+        "providerRevision": 2,
+        "expiresAt": "2027-03-10T21:31:09.551Z"
+      },
+      {
+        "sourceId": "workable:hunt-st",
+        "ok": true,
+        "evidenceId": 20,
+        "evidenceSha256": "0ef332b5695d59f2199b48f1c626aba271eb2f1e5bdb7e7a66d8ca16e05c1871",
+        "authorityActions": [
+          "recurrent_private_shadow",
+          "public_minimal_metadata_canary"
+        ],
+        "adjudicationRef": "ex-ph-agency-workable-hunt-st-tier-a-fast-track",
+        "sourceRevision": 4,
+        "providerRevision": 2,
+        "expiresAt": "2027-03-10T21:31:09.551Z"
+      },
+      {
+        "sourceId": "workable:pearltalent",
+        "ok": true,
+        "evidenceId": 19,
+        "evidenceSha256": "e065f35b8367b65e9915ee8738ae973701ca1cbddd5ac018535bdf9fcd803d17",
+        "authorityActions": [
+          "recurrent_private_shadow",
+          "public_minimal_metadata_canary"
+        ],
+        "adjudicationRef": "ex-ph-agency-workable-pearltalent-tier-a-fast-track",
+        "sourceRevision": 1,
+        "providerRevision": 2,
+        "expiresAt": "2027-03-10T21:31:09.551Z"
+      },
+      {
+        "sourceId": "workable:pineapple-staffing",
+        "ok": false,
+        "reason": "immutable evidence metadata does not match the packet and current identity"
+      },
+      {
+        "sourceId": "workable:rocketams",
+        "ok": true,
+        "evidenceId": 21,
+        "evidenceSha256": "57beefbbb23f365162e6b3cb92d4460b986dfc2e2193ff42c53873700f1cbea1",
+        "authorityActions": [
+          "recurrent_private_shadow",
+          "public_minimal_metadata_canary"
+        ],
+        "adjudicationRef": "ex-ph-agency-workable-rocketams-tier-a-fast-track",
+        "sourceRevision": 4,
+        "providerRevision": 2,
+        "expiresAt": "2027-03-10T21:31:09.551Z"
+      }
+    ]
+  },
+  "publicAfterD1Refresh": {
+    "observedAt": "2026-10-20T10:10:43.539Z",
+    "status": 200,
+    "headers": {
+      "cache-control": "public, max-age=60, s-maxage=60",
+      "date": "Tue, 20 Oct 2026 10:10:38 GMT",
+      "x-public-snapshot": "fresh",
+      "x-public-snapshot-age-seconds": "148",
+      "x-public-snapshot-companies": "763",
+      "x-public-snapshot-generated-at": "2026-10-20T10:08:09.388Z",
+      "x-public-snapshot-jobs": "1788",
+      "x-public-snapshot-source": "d1"
+    }
+  }
+}

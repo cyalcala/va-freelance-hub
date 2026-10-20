@@ -1,0 +1,68 @@
+{
+  "scope": "EXACT_ECONOMICS_QUERIES_READ_ONLY_AGGREGATES",
+  "asOf": "2026-10-18T08:15:21.418Z",
+  "sourceSha": "be7c493a935cbf023c33db5c3c0398399a4d69c1",
+  "observedEnd": "2026-10-18T08:15:24.738Z",
+  "captures": [
+    {
+      "name": "qualified_supply",
+      "sql": "SELECT\n  COUNT(*) AS qualified_active,\n  SUM(CASE WHEN unixepoch(scraped_at) >= 1791706521 THEN 1 ELSE 0 END) AS qualified_new_7d,\n  SUM(CASE WHEN unixepoch(scraped_at) >= 1789719321 THEN 1 ELSE 0 END) AS qualified_new_30d\nFROM opportunities\nWHERE is_active = 1 AND ph_eligibility IN ('eligible_verified', 'eligible_likely')\n  AND unixepoch(scraped_at) <= 1792311321;",
+      "querySha256": "67d49ac657fcb7889cb3c004ae8a58a6318171283c02d6813f602d5f1573135a",
+      "observedAt": "2026-10-18T08:15:22.612Z",
+      "httpStatus": 200,
+      "rowsRead": 1719,
+      "rowsWritten": 0,
+      "resultRows": 1
+    },
+    {
+      "name": "identity_coverage",
+      "sql": "SELECT\n  COUNT(*) AS total,\n  SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) AS active,\n  SUM(CASE WHEN is_active = 0 THEN 1 ELSE 0 END) AS inactive,\n  SUM(CASE WHEN source_id IS NOT NULL THEN 1 ELSE 0 END) AS with_source_id,\n  SUM(CASE WHEN source_id IS NULL THEN 1 ELSE 0 END) AS null_source_id,\n  SUM(CASE WHEN is_active = 1 AND source_id IS NOT NULL THEN 1 ELSE 0 END) AS active_with_source_id,\n  SUM(CASE WHEN is_active = 1 AND source_id IS NULL THEN 1 ELSE 0 END) AS active_null_source_id\nFROM opportunities;",
+      "querySha256": "926cb4a040bce049b8024ff644352de7a0fcc37d7e3a85c0cbf4c3a527e2ef47",
+      "observedAt": "2026-10-18T08:15:22.865Z",
+      "httpStatus": 200,
+      "rowsRead": 7518,
+      "rowsWritten": 0,
+      "resultRows": 1
+    },
+    {
+      "name": "supply_totals",
+      "sql": "SELECT\n  COUNT(*) AS active,\n  SUM(CASE WHEN unixepoch(scraped_at) >= 1791706521 THEN 1 ELSE 0 END) AS net_new_7d,\n  SUM(CASE WHEN unixepoch(scraped_at) >= 1791101721 THEN 1 ELSE 0 END) AS net_new_14d,\n  SUM(CASE WHEN unixepoch(scraped_at) >= 1789719321 THEN 1 ELSE 0 END) AS net_new_30d\nFROM opportunities\nWHERE is_active = 1;",
+      "querySha256": "999cfe65970e16a08ed73feac1ff2cc1411bfab488e681b11e944f6488ab14be",
+      "observedAt": "2026-10-18T08:15:23.346Z",
+      "httpStatus": 200,
+      "rowsRead": 1716,
+      "rowsWritten": 0,
+      "resultRows": 1
+    },
+    {
+      "name": "source_supply",
+      "sql": "SELECT\n  coalesce(source_id, '(unknown)') AS source_id,\n  MIN(source_platform) AS source_platform,\n  SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) AS active,\n  SUM(CASE WHEN is_active = 1 AND unixepoch(scraped_at) >= 1791706521 THEN 1 ELSE 0 END) AS net_new_7d,\n  SUM(CASE WHEN is_active = 1 AND unixepoch(scraped_at) >= 1791101721 THEN 1 ELSE 0 END) AS net_new_14d,\n  SUM(CASE WHEN is_active = 1 AND unixepoch(scraped_at) >= 1789719321 THEN 1 ELSE 0 END) AS net_new_30d,\n  SUM(CASE WHEN is_active = 0 THEN 1 ELSE 0 END) AS inactive\nFROM opportunities\nGROUP BY coalesce(source_id, '(unknown)')\nORDER BY active DESC, source_id ASC;",
+      "querySha256": "258650195fbad485946de50bfc4e95c4e57d036e6b8408b9b9a949c613a25685",
+      "observedAt": "2026-10-18T08:15:23.636Z",
+      "httpStatus": 200,
+      "rowsRead": 15095,
+      "rowsWritten": 0,
+      "resultRows": 59
+    },
+    {
+      "name": "fetch_outcomes_7d",
+      "sql": "SELECT\n  source_id,\n  SUM(CASE WHEN ok = 1 AND skipped = 0 AND coalesce(not_modified, 0) = 0 THEN 1 ELSE 0 END) AS real_fetches,\n  SUM(CASE WHEN ok = 1 AND skipped = 0 AND coalesce(not_modified, 0) = 1 THEN 1 ELSE 0 END) AS unchanged,\n  SUM(CASE WHEN skipped = 1 THEN 1 ELSE 0 END) AS skips,\n  SUM(CASE WHEN ok = 0 AND skipped = 0 THEN 1 ELSE 0 END) AS failures,\n  SUM(CASE WHEN ok = 1 AND skipped = 0 AND coalesce(not_modified, 0) = 0 AND count = 0 THEN 1 ELSE 0 END) AS zero_yield,\n  SUM(CASE WHEN ok = 1 AND skipped = 0 AND coalesce(not_modified, 0) = 0 THEN count ELSE 0 END) AS items\nFROM source_fetch_events\nWHERE unixepoch(timestamp) >= 1791706521\n  AND substr(source_id, 1, 2) <> '__'\nGROUP BY source_id\nORDER BY real_fetches DESC, source_id ASC;",
+      "querySha256": "309b3231e5bd002c9719e6c3b1bcf691358a89d9a2140f3491735f5c82146c80",
+      "observedAt": "2026-10-18T08:15:24.245Z",
+      "httpStatus": 200,
+      "rowsRead": 82495,
+      "rowsWritten": 0,
+      "resultRows": 64
+    },
+    {
+      "name": "triage_outcomes_7d",
+      "sql": "SELECT\n  coalesce(source_id, '(unknown)') AS source_id,\n  SUM(CASE WHEN ph_eligibility IN ('eligible_verified', 'eligible_likely') THEN 1 ELSE 0 END) AS eligible,\n  SUM(CASE WHEN ph_eligibility = 'unclear' THEN 1 ELSE 0 END) AS unclear,\n  SUM(CASE WHEN ph_eligibility = 'ineligible' THEN 1 ELSE 0 END) AS ineligible,\n  SUM(CASE WHEN inactive_reason = 'policy-rejected' THEN 1 ELSE 0 END) AS policy_rejected,\n  COUNT(*) AS total_stored\nFROM opportunities\nWHERE unixepoch(scraped_at) >= 1791706521\nGROUP BY coalesce(source_id, '(unknown)')\nORDER BY total_stored DESC, source_id ASC;",
+      "querySha256": "3a986234d8b8176d3a5e6d4fe822f1f376184a6b59216b47b6eeeb7c24c20cd0",
+      "observedAt": "2026-10-18T08:15:24.647Z",
+      "httpStatus": 200,
+      "rowsRead": 7876,
+      "rowsWritten": 0,
+      "resultRows": 17
+    }
+  ]
+}

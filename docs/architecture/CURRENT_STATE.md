@@ -1,11 +1,47 @@
 # VA Freelance Hub — current architectural ownership and evidence
 
-**Version:** 1.3 · 2026-10-10. **Purpose:** canonical ownership, current evidence
+**Version:** 1.5 · 2026-10-20. **Purpose:** canonical ownership, current evidence
 pointers and unresolved migration facts. This map does not dispatch runtime work.
 The [October 4 owner resource](../directives/2026-10-04-PH-VA-FRESHNESS-GCP-CANONICAL-UPGRADE.md)
 clarifies source control versus execution. The [October 1 topology snapshot](CURRENT_STATE_2026-10-01_SNAPSHOT.md)
 is preserved verbatim as historical evidence; it is not today's runtime inventory.
 Read the newest savepoint and verify deployed versions before acting.
+
+## October 20 current deployed subset
+
+Pages production/main now uses compatible source `f34965b0`, deployment
+`347d95ae` since 11:28:54Z, with schema 0054 unchanged. All 81 dist files and
+19 source hashes were checked before upload. Refreshed preflight 8/8 and
+post-control 5/5 pass, including unchanged configuration/five secret_text
+names/types and five public routes returning 200. This is artifact/control-plane
+evidence; remote function bytes and secret values are not attested. Keep
+rollback `8c649da0`. Other combined-root code is not deployed. Observe ordinary
+clocks and the 17 unique misses before claiming flow/recall. Shared reports have
+one actual SSM-first/GitHub runner receipt; GitLab runtime and recurrent
+continuity remain unproven. See the [current evidence](../operations/CONTINUATION_EVIDENCE_2026-10-20.md)
+and [release receipt](../operations/WORKABLE_ROTATION_RELEASE_2026-10-20.md).
+Post-release attempts are observed at 11:32 and 11:36 with robots enforced; caller
+identity is not established. Crew 5902EBE6B1 is stored inactive as id 9686/Pakistan
+despite a retained PH variant. The isolated location-variant correction and exact 17-miss
+trace now precede any recovery/recall acceptance.
+
+## October 18 historical verified subset
+
+SSM remains canonical; GitHub and GitLab are mirrors/continuity. Branch equality
+does not prove whole-repository or unattended mirroring parity. The
+[remote audit](../operations/REPOSITORY_PARITY_2026-10-18.md) found 27 GitHub-only
+report descendants, subsequently preserved in SSM and GitLab by fast-forward.
+Eight residual workflow report writers still target GitHub's runtime `origin`.
+
+Actual Pages is deployment `8c649da0`/source`34e3bd1e`, schema0054. GCP in the
+inspected region still has two hourly jobs; publisher labels October4 source
+`3a0ba3bc`, and five sampled receipts synced zero. The retained ten-minute
+Cloudflare caller remains a real collection dependency. Seven admitted Workable
+sources have zero attempts and133rotation skips each in24h. New intake/tracker/
+dayshift source code is not deployed architecture. PipelineLossTracker has no
+production consumer. Read the compact [Astra model](../../astra777.txt) and
+current [savepoint](../SYSTEM_SAVEPOINT.md) for source/runtime distinctions and
+the bounded0054-compatible release NEXT. No migration or new clock is claimed.
 
 ## Canonical operating model
 
@@ -46,7 +82,7 @@ It covers one project/region and sampled workflows, not the entire fleet.
 | GitHub project validation | CI-ONLY as runtime role | Tests/build/type checks validate inspected source; not GCP health or production publication |
 | Secure Source Manager repository | CURRENT canonical Git remote | Instance `va-freelance-hub` in `asia-northeast1`; receipt `../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md` |
 | GitLab mirror | SECONDARY fallback | Not the canonical repository. Older GitLab readbacks remain dated evidence |
-| GitHub docs/ADRs/prompts/history | RETAINED remote `github` / not canonical Git | Residual Actions clocks stay classified below. Do not push canonical history there |
+| GitHub docs/ADRs/prompts/history | MIRROR remote `github` / not canonical Git | Preserve canonical history as a mirror; residual Actions clocks stay separately classified |
 | GCP miner / other migrated controllers | UNKNOWN outside inspected scope | No miner job/scheduler in inspected region; don't infer none elsewhere |
 | Exact Git SHA -> running image/config | UNKNOWN | Artifact images/tags exist; immutable source-to-execution mapping not recovered |
 | Historical Trigger/Vercel/Next application paths | LEGACY unless new evidence | Preserve artifacts; don't revive old clocks merely for familiarity |

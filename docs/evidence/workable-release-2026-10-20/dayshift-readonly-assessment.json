@@ -1,0 +1,126 @@
+{
+  "scope": "READ_ONLY_DAYSIFT_SLICE_ASSESSMENT_NO_SOURCE_EDIT_BUILD_TEST_SUITE_OR_NETWORK",
+  "recordedAt": "2026-10-20T10:53:54.923Z",
+  "rootHead": "51159e23f15852fea4b2cabcd35b45dec07a35cb",
+  "frozenCommit": "f34965b0c7bbfb76395259ccce0b60ad4533eee0",
+  "captureSha256": "c2897964d774765ef4988c528a36167e9bd288724f1865cd573c9dd880a8363c",
+  "contradiction": {
+    "scope": "PURE_FUNCTION_COUNTEREXAMPLE_NOT_A_STORED_OR_PUBLISHED_JOB",
+    "sourceCategory": "night_shift",
+    "suppliedCategory": "night_shift",
+    "suppliedDayshiftFlag": true,
+    "dayFilterMatches": 1,
+    "nightFilterMatches": 1
+  },
+  "actualControls": [
+    {
+      "sourceId": "workable:hunt-st",
+      "shortcode": "AB25BEC702",
+      "title": "AU Accountant/Bookkeeper - Day Shift (026-983)",
+      "country": "Philippines",
+      "telecommuting": true,
+      "publishedOn": "2026-09-07",
+      "postingFreshness": "STALE",
+      "frozenCategory": "day_shift",
+      "currentCategory": "day_shift",
+      "scope": "ACTUAL_RETAINED_TITLE_ONLY_NO_DESCRIPTION_OR_HOURS_EVIDENCE"
+    },
+    {
+      "sourceId": "workable:hunt-st",
+      "shortcode": "B4800F6960",
+      "title": "Australian Mortgage Loan Processor and Broker Support (018-695)",
+      "country": "Philippines",
+      "telecommuting": true,
+      "publishedOn": "2026-10-07",
+      "postingFreshness": "WITHIN_WINDOW",
+      "frozenCategory": "unknown",
+      "currentCategory": "unknown",
+      "scope": "ACTUAL_RETAINED_TITLE_ONLY_NO_DESCRIPTION_OR_HOURS_EVIDENCE"
+    },
+    {
+      "sourceId": "workable:hunt-st",
+      "shortcode": "8720630E86",
+      "title": "Senior Accountant (Australian Tax) - CG (026-1243)",
+      "country": "Philippines",
+      "telecommuting": true,
+      "publishedOn": "2026-10-19",
+      "postingFreshness": "WITHIN_WINDOW",
+      "frozenCategory": "unknown",
+      "currentCategory": "unknown",
+      "scope": "ACTUAL_RETAINED_TITLE_ONLY_NO_DESCRIPTION_OR_HOURS_EVIDENCE"
+    },
+    {
+      "sourceId": "workable:hunt-st",
+      "shortcode": "08876D5E9B",
+      "title": "Senior Accountant - Australian Accounting (008-01389)",
+      "country": "Philippines",
+      "telecommuting": true,
+      "publishedOn": "2026-10-08",
+      "postingFreshness": "WITHIN_WINDOW",
+      "frozenCategory": "unknown",
+      "currentCategory": "unknown",
+      "scope": "ACTUAL_RETAINED_TITLE_ONLY_NO_DESCRIPTION_OR_HOURS_EVIDENCE"
+    }
+  ],
+  "possibleParserCounterexamples": [
+    {
+      "text": "Must work US morning shift",
+      "frozen": {
+        "category": "unknown",
+        "clientTimezone": null,
+        "phWorkingHours": null,
+        "isAsyncOrFlexible": false,
+        "evidence": "Working schedule is unstated, negated, or conflicting"
+      },
+      "current": {
+        "category": "day_shift",
+        "clientTimezone": null,
+        "phWorkingHours": null,
+        "isAsyncOrFlexible": false,
+        "isDayshift": true,
+        "evidence": "Source states day shift; exact Philippine hours are not established"
+      }
+    },
+    {
+      "text": "9 - 4 PHT",
+      "frozen": {
+        "category": "unknown",
+        "clientTimezone": null,
+        "phWorkingHours": null,
+        "isAsyncOrFlexible": false,
+        "evidence": "Working schedule is unstated, negated, or conflicting"
+      },
+      "current": {
+        "category": "day_shift",
+        "clientTimezone": null,
+        "phWorkingHours": "9 - 4 PHT",
+        "isAsyncOrFlexible": false,
+        "isDayshift": true,
+        "evidence": "Source states day shift (9 - 4 PHT)"
+      }
+    },
+    {
+      "text": "9am ooo 5pm PHT",
+      "frozen": {
+        "category": "unknown",
+        "clientTimezone": null,
+        "phWorkingHours": null,
+        "isAsyncOrFlexible": false,
+        "evidence": "Working schedule is unstated, negated, or conflicting"
+      },
+      "current": {
+        "category": "day_shift",
+        "clientTimezone": null,
+        "phWorkingHours": "9am ooo 5pm PHT",
+        "isAsyncOrFlexible": false,
+        "isDayshift": true,
+        "evidence": "Source states day shift (9am ooo 5pm PHT)"
+      }
+    }
+  ],
+  "limitations": [
+    "Pure function diagnostics, not executed test-suite acceptance",
+    "No real schedule claim beyond retained actual title metadata",
+    "No D1 or provider reads/writes; no source, config, build or ref changes"
+  ]
+}

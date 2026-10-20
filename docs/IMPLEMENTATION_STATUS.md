@@ -1,5 +1,31 @@
 # Implementation Status
 
+## 2026-10-20 — Bounded compatible deployment, pending outcome observation
+
+Source `f34965b0` is live as production `347d95ae` since 11:28:54Z, with schema
+0054 unchanged and preflight 8/8/post-control 5/5 passing. Rollback `8c649da0`
+remains. This deploys only the reviewed compatible correction. Next is ordinary
+clock recovery of the 17 unique employer misses and actual D1/public visibility.
+Certified daily throughput/recall and MATH 0/13 remain unaccepted.
+[Current evidence](operations/CONTINUATION_EVIDENCE_2026-10-20.md).
+Actual post-release attempts are observed; Crew 5902EBE6B1 is inactive id 9686 with a
+Pakistan lock despite its PH variant. The next isolated correction addresses
+that exact variant loss; 17-miss/publication acceptance remains pending.
+
+## 2026-10-18 — Actual runtime and proof gaps reconciled
+
+The current [savepoint](SYSTEM_SAVEPOINT.md) and [Astra contract](../astra777.txt)
+supersede older completion/incident NEXT lines. Production Pages remains October
+13 source `34e3bd1e`/schema0054. Later local employer/tracker/day-shift changes are
+not deployment evidence. Seven admitted Workable tenants have 0 fetches/133
+rotation skips each in 24h; complete-day eligible-storage proxy is 35.4/day,
+not certification. Unsupported catalog PH verification and inferred tracker
+publication/health/recall are removed locally with targeted adversarial tests;
+combined regression passes4499/0/331630 with typecheck/build/four audits. Economics unknown-as-zero measurement is
+[corrected and captured](operations/SOURCE_ECONOMICS_MEASUREMENT_REPAIR_2026-10-18.md).
+MATH accepted remains 0/13, trusted-employer recall and certified daily flow UNKNOWN.
+NEXT is the bounded verified checkpoint and isolated0054 Workable release.
+
 ## 2026-10-12 Manila — Local binding repair; live flow incident open
 
 Scrape and direct ingestion now bound physical statements to three rows for one

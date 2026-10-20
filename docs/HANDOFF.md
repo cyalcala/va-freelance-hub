@@ -1,5 +1,34 @@
 # Handoff
 
+## 2026-10-20 — Compatible release live; ordinary flow remains unverified
+
+Production now uses compatible source `f34965b0`, deployment `347d95ae` at
+11:28:54Z, with schema 0054 unchanged. Preflight 8/8 and post-control 5/5 pass,
+including config preservation and five public routes returning 200. Rollback
+`8c649da0` remains. Observe ordinary clocks and trace the 17 retained unique
+misses; deployment is not publication or recall acceptance. Other root changes
+were not deployed. Shared SSM-first reports have one actual runner write;
+GitLab runtime/recurrence remain unproven. Continue from [Astra](../astra777.txt)
+and the [current evidence](operations/CONTINUATION_EVIDENCE_2026-10-20.md).
+Real post-release attempts now occur. The exact Crew 5902EBE6B1/PH-variant miss is
+stored inactive as id 9686/Pakistan: prioritize the isolated location-variant repair
+and subsequent ordinary-flow trace; do not claim 17-miss recovery.
+
+## 2026-10-18 — Reconciled source, runtime and coverage boundary
+
+Continue the mission from the current [savepoint](SYSTEM_SAVEPOINT.md) and compact
+[Astra contract](../astra777.txt). SSM is canonical; GitHub/GitLab are mirrors.
+The 27 GitHub-only report descendants are preserved in SSM/GitLab at `be7c493a`.
+Do not infer whole-ref or unattended parity from two matching branches.
+Production is still October13 Pages `8c649da0`/source`34e3bd1e`/schema0054.
+The October16 employer inference and M3 production-monitoring claims below
+were not supported: the catalog was unscoped, and the tracker has no production
+consumer and inferred successful publications. Local corrections and independent
+reviews pass; combined regression4499/0/331630, typecheck/build/four audits pass. Next release must isolate
+Workable rotation/fair intake plus necessary original-date protection, with
+real-shaped native positive/negative inputs before deployment. Do not deploy
+the combined checkout or reuse the dirty historical release candidate blindly.
+
 ## 2026-10-16 Manila — Generation 13 M2 Handoff & Triple-Remote Mirror Synchronization
 
 Current branch: `codex/verified-flow-directory-checkpoint`.

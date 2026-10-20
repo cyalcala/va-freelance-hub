@@ -285,3 +285,39 @@ test("qualified supply excludes unclear, inactive, and future first-stored rows"
   expect(sqlite.query(query.sql(WINDOWS)).get()).toEqual({ qualified_active: 2, qualified_new_7d: 1, qualified_new_30d: 2 });
   sqlite.close();
 });
+
+describe("yield measurement gaps", () => {
+  function report(fetchRows: Record<string, unknown>[], triageRows: Record<string, unknown>[]) {
+    return renderReport({ fetch_outcomes_7d: fetchRows, triage_outcomes_7d: triageRows }, emitMeta(WINDOWS));
+  }
+
+  test("zero changed fetches do not claim zero yield for stored jobs from another path", () => {
+    const md = report([{ source_id: "cross-path", real_fetches: 0, items: 0 }], [{ source_id: "cross-path", eligible: 27 }]);
+    expect(md).toContain("| cross-path | 0 | 0 | 27 | UNKNOWN | UNKNOWN |");
+  });
+
+  test("a missing triage source is unknown rather than zero accepted jobs", () => {
+    const md = report([{ source_id: "missing", real_fetches: 2, items: 20 }], []);
+    expect(md).toContain("| missing | 2 | 20 | UNKNOWN | UNKNOWN | UNKNOWN |");
+  });
+
+  test("stored-only sources remain visible without fetch attribution", () => {
+    const md = report([], [{ source_id: "stored-only", eligible: 7 }]);
+    expect(md).toContain("| stored-only | UNKNOWN | UNKNOWN | 7 | UNKNOWN | UNKNOWN |");
+  });
+
+  test("known zero with positive denominators and measured positive yield remain numeric", () => {
+    const md = report([
+      { source_id: "zero", real_fetches: 2, items: 20 },
+      { source_id: "positive", real_fetches: 2, items: 20 },
+    ], [{ source_id: "zero", eligible: 0 }, { source_id: "positive", eligible: 3 }]);
+    expect(md).toContain("| zero | 2 | 20 | 0 | 0.00 | 0.00 |");
+    expect(md).toContain("| positive | 2 | 20 | 3 | 1.50 | 15.00 |");
+    expect(md).toContain("not marginal verified first-publication yield");
+  });
+
+  test.each([null, undefined, "", " ", false, -1, Infinity, NaN, "broken", 0.5])("invalid counts stay unknown: %p", (bad) => {
+    const md = report([{ source_id: "bad", real_fetches: bad, items: 20 }], [{ source_id: "bad", eligible: bad }]);
+    expect(md).toContain("| bad | UNKNOWN | 20 | UNKNOWN | UNKNOWN | UNKNOWN |");
+  });
+});

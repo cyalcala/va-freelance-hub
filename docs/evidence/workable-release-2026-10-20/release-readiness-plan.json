@@ -1,0 +1,300 @@
+{
+  "scope": "LOCAL_RELEASE_READINESS_NOT_DEPLOYMENT_AUTHORIZATION_OR_RUNTIME_ACCEPTANCE",
+  "recordedAt": "2026-10-20T10:44:28.984Z",
+  "verdict": "READY_ARTIFACTS_AND_CONTROL_PLANE_PREFLIGHT_COLLECTION_CADENCE_CONDITION_REMAINS",
+  "sourceCommit": "f34965b0c7bbfb76395259ccce0b60ad4533eee0",
+  "executable": "C:/Program Files/nodejs/node.exe",
+  "nodeVersion": "v22.13.1",
+  "wranglerVersion": "4.143.0",
+  "wranglerCliSha256": "177b7c7e9d8fa42023d84f5eed2ba90e73bf523fca7c60ed90533f9494fe050c",
+  "preparedDeploy": {
+    "executed": false,
+    "accountEnvironment": {
+      "CLOUDFLARE_ACCOUNT_ID": "76cf15ef361089aa0411e75ff77d343a"
+    },
+    "args": [
+      "C:\\Users\\admin\\Desktop\\va-freelance-hub\\tmp\\workable-rotation-release-proof\\source\\node_modules\\wrangler\\bin\\wrangler.js",
+      "pages",
+      "deploy",
+      "dist",
+      "--cwd",
+      "C:\\Users\\admin\\Desktop\\va-freelance-hub\\tmp\\workable-rotation-release-proof\\source\\apps\\web",
+      "--project-name",
+      "remotejobs-ph",
+      "--branch",
+      "main",
+      "--commit-hash",
+      "f34965b0c7bbfb76395259ccce0b60ad4533eee0",
+      "--commit-dirty=false"
+    ],
+    "commandFile": "C:\\Users\\admin\\Desktop\\va-freelance-hub\\tmp\\workable-rotation-release-proof\\deploy-command.review.txt",
+    "avoid": [
+      "Do not use the package deploy script: it rebuilds and passes rejected --config",
+      "No Pages --config or --env flags",
+      "No Workers --keep-vars/keep-secrets flags"
+    ]
+  },
+  "configuration": {
+    "path": "apps/web/wrangler.jsonc",
+    "sha256": "940d11b7fb85776d9efa902d5272c46193bf6144f0d83357a8d2fe8afda5bf46",
+    "discoveryCwd": "C:\\Users\\admin\\Desktop\\va-freelance-hub\\tmp\\workable-rotation-release-proof\\source\\apps\\web",
+    "productionBranch": "main",
+    "selection": "Installed4.143 GETproject -> project.production_branch===branch -> env.production -> normalizeenv -> upload effectivebindings/compatibility",
+    "effective": {
+      "compatibilityDate": "2024-11-01",
+      "compatibilityFlags": [
+        "nodejs_compat"
+      ],
+      "d1Bindings": [
+        {
+          "binding": "DB",
+          "id": "08072f16-d3d1-436a-9104-b057a162db7c"
+        }
+      ],
+      "aiBindings": [
+        "AI"
+      ],
+      "secretNamesAndTypes": [
+        {
+          "name": "GEMINI_API_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "GROQ_API_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "INNGEST_SIGNING_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "OPENROUTER_API_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "PROXY_SECRET",
+          "type": "secret_text"
+        }
+      ]
+    },
+    "installedEvidence": [
+      "cli.js:298992-299017 productionbranch selection/readPagesConfig",
+      "cli.js:20416-20427 env selection and19983-19991 inheritable override",
+      "cli.js:297135-297152 effectivecompatibility andgetBindings upload",
+      "cli.js:300230-300239 Pagesconfig/envflagrejection"
+    ],
+    "schema": "0054_public_serving_snapshot.sql; Pages deploy does not apply migrations"
+  },
+  "empiricalSecretPreservation": {
+    "namesAndTypesMatch": true,
+    "before": {
+      "path": "C:\\Users\\admin\\Desktop\\va-freelance-hub\\docs\\evidence\\pages-snapshot-release-2026-10-13\\preflight.json",
+      "sha256": "7c4e7c4c4f736cd1c79ea2afcdf6ae149c41a568315709362e1444a822de16d2",
+      "deployment": "e1b0ff66-8a93-41b0-b9c7-6de8346c81c7"
+    },
+    "after": {
+      "path": "C:\\Users\\admin\\Desktop\\va-freelance-hub\\docs\\evidence\\pages-snapshot-release-2026-10-13\\post-release-first.json",
+      "sha256": "27013cd72ec95c8c05ef7389d810824573e0aeca77a2d0906c11e3a5320e0400",
+      "deployment": "8c649da0-93ef-4458-89ad-715f1367a2ca"
+    },
+    "interpretation": "SameWrangler/config Pages path retainedfive secret_text names/types; Pages CreateDeployment request has no top-levelenv_vars field. No genericWorkerskeepSecrets guarantee is inferred. Fresh before/after required; no secretvalue/functionality attestation."
+  },
+  "archives": {
+    "scope": "LOCAL_IMMUTABLE_SOURCE_AND_REPRODUCIBLE_DIST_ARCHIVES_NOT_DEPLOYMENT",
+    "sourceCommit": "f34965b0c7bbfb76395259ccce0b60ad4533eee0",
+    "sourceClean": true,
+    "verifiedSourceFiles": [
+      {
+        "path": "apps/web/src/lib/conditional-state.ts",
+        "gitBlob": "d5d884da4206efa9dd8be7130aed7af744097e4a",
+        "sha256": "cb1ee37a9b41e4fc36352fca52be565995fdcbc2a00b0e87e43a22670bb94a3d"
+      },
+      {
+        "path": "apps/web/src/lib/workable-admission.ts",
+        "gitBlob": "30079aec3868077ac8b8c05e6a0ef1c2dee96740",
+        "sha256": "0ce547b75f01074f6bf744af6a4750493c7d25593c7841f7c318a5c72f17ca54"
+      },
+      {
+        "path": "apps/web/src/lib/workable-rotation.ts",
+        "gitBlob": "36ed62429e58163b87ddef38bdab78450cf0527e",
+        "sha256": "4d406b7ad621d783a24236ef0444b63ee957166c2c0d136040807b57fd859a7a"
+      },
+      {
+        "path": "apps/web/src/lib/inngest/functions/triage-drain.ts",
+        "gitBlob": "507a7b8cfb6a3049587371012e8ce37dc716bbf6",
+        "sha256": "362c847427f0826eb66e2401d12b54d84f290a16a433df3e0743ae0c190687ee"
+      },
+      {
+        "path": "apps/web/src/pages/api/cron/scrape.ts",
+        "gitBlob": "f75ceae14d9663020aeff2bfd7860242d8bba48b",
+        "sha256": "4b402f3732086e99b31ba9b747b85a3d4e9a0e12de48326e44062fd03a8efdda"
+      },
+      {
+        "path": "packages/scraper/ats.ts",
+        "gitBlob": "3185b688ece6f2a5435b7db0d534a200543520b7",
+        "sha256": "ad237079d005738ae784da50ec1e224ff41fcfb4ae2f21c0fe884a0857a2de5c"
+      },
+      {
+        "path": "packages/scraper/source-posting-date.ts",
+        "gitBlob": "0b49a89804516dc2ddba932acdf19c9afb342930",
+        "sha256": "0b4791a79c57d47fcff02dadcf3523768f5fb852b0d6a083ccf9d1ee243741d0"
+      },
+      {
+        "path": "packages/scraper/publication-freshness.ts",
+        "gitBlob": "17e0a822641986e83024776841533ac4fe30a1a6",
+        "sha256": "8e57d6dadf7b787ad23337650af4d9e133d4cfeae071d983e6caa00067289d77"
+      },
+      {
+        "path": "scripts/ci/check-production-guardrails.ts",
+        "gitBlob": "10aeb18d2aadcf54b96aa266714a9a87cac00283",
+        "sha256": "4f10758da886ece1becee5da6c9a3f67f2e637940839391718b2069d6d19b0d8"
+      },
+      {
+        "path": "scripts/ci/check-production-guardrails.test.ts",
+        "gitBlob": "623f5740b5a444951b5d5bf59013ddbb42753efb",
+        "sha256": "e08be0c9cc352c7f12c797329b8680bce7d04221bf5f36ee3d828541eee66327"
+      },
+      {
+        "path": "apps/web/tests/workable-rotation.test.ts",
+        "gitBlob": "9a16bbee97a2155150130e7baeeab3cfea7eb0ee",
+        "sha256": "90e8aa32429a9cc845e0643ac90ec5cb98a48a058d8ded379e15c462cdd92c5a"
+      },
+      {
+        "path": "apps/web/tests/native-workable-rotation.test.ts",
+        "gitBlob": "77e8f7dde574687f24bbd0dc1cde6a06bae02385",
+        "sha256": "93fc13ac7dff74d21a6022c001b330f52b266771b6833762564993a2f1264c89"
+      },
+      {
+        "path": "apps/web/tests/native-workable-publication.test.ts",
+        "gitBlob": "1a56e22eb9db26690026043960ced4b9bbffe46e",
+        "sha256": "4eb2ea408ea14ee1fafd9940f45b9a72d2fea1fe8ddd4ba879a35cf214178fcf"
+      },
+      {
+        "path": "apps/web/tests/workable-release-boundaries.test.ts",
+        "gitBlob": "6f58a3447062149addef1dcba9df443e365f481c",
+        "sha256": "cccdfe4c912f34ba6502451a0886965bd4b59d4fd5347acbf1f2361f7ba0386d"
+      },
+      {
+        "path": "apps/web/tests/fixtures/native-workable-rotation.ts",
+        "gitBlob": "e52f701660ca4d111c510f3f8cd44c6d6b6a78a6",
+        "sha256": "a39fecb5ee2ce6106356e57672649972ba1c86849e74f812f84851d720f3e663"
+      },
+      {
+        "path": "apps/web/tests/fixtures/native-workable-publication.ts",
+        "gitBlob": "e524b33922b35374e183ca7885aae3518a4b37b0",
+        "sha256": "c2d031b6308f6a7300ed12c400208da56ae22fd5abee1628f15d340dc27d1721"
+      },
+      {
+        "path": "apps/web/tests/fixtures/native-workable-admission.ts",
+        "gitBlob": "a449cffa66a2266f90fdb21014f7af405c19c810",
+        "sha256": "bc6843cdfa5c01549eb8d1aaa6507f992ec74274d73db93b335d8446e56a9e6e"
+      },
+      {
+        "path": "apps/web/tests/fixtures/workable-authority-identities-2026-10-13.json",
+        "gitBlob": "d6c96789a617c749349852533a24e53ba7f4719d",
+        "sha256": "04a8217ba19b18e102b9b25e7cc1a16e7613ecf9f4d7c4a2965b1aecc8829eeb"
+      },
+      {
+        "path": "docs/exceptions/EX-0054-WORKABLE-ROTATION-2026-10-18.md",
+        "gitBlob": "ce1c4f76e7a2a44f3a44aba20e0f37be44198351",
+        "sha256": "48ff3667d3a4103cf8e88450e1959a4f7fc6ed161e8fa8a73b957b792717290a"
+      }
+    ],
+    "sourceArchive": {
+      "path": "C:\\Users\\admin\\Desktop\\va-freelance-hub\\tmp\\workable-rotation-release-proof\\source-f34965b0-31bbdfeb708d7cd1.tar",
+      "sha256": "31bbdfeb708d7cd112b3b9d6d9c5328e35672c40058c6c1cd05731153e4e1d7d",
+      "bytes": 20008960,
+      "gitCommitAttestation": "f34965b0c7bbfb76395259ccce0b60ad4533eee0",
+      "trackedFiles": 1195,
+      "reproducedTwice": true
+    },
+    "distArchive": {
+      "path": "C:\\Users\\admin\\Desktop\\va-freelance-hub\\tmp\\workable-rotation-release-proof\\dist-f34965b0-a5004a6484299e8d.zip",
+      "sha256": "a5004a6484299e8d9ee2025734f02224bc85f3879ae798092a2b1e8b0a476165",
+      "bytes": 4583047,
+      "fileCount": 81,
+      "totalFileBytes": 4569677,
+      "reproducedTwice": true,
+      "extractionHashesMatch": true,
+      "format": "ZIP_STORED; sorted POSIX file names; fixed1980timestamp;0644regularfiles;noextras"
+    },
+    "distManifest": {
+      "path": "C:\\Users\\admin\\Desktop\\va-freelance-hub\\tmp\\workable-rotation-release-proof\\dist-tree-b2768ac40a51ccbd.json",
+      "sha256": "92ac761e6a72181b151569806d6d1d5298b58f04dc1aee5af4c71059b33d0e82",
+      "treeSha256": "b2768ac40a51ccbd7c7cf1d5af563c2cf949d3762ffa2b1ae287999560ad097b"
+    },
+    "config": {
+      "path": "apps/web/wrangler.jsonc",
+      "sha256": "940d11b7fb85776d9efa902d5272c46193bf6144f0d83357a8d2fe8afda5bf46",
+      "gitBlob": "2fa56e5a64dd83615098233999c82dcf2e13e1c6"
+    },
+    "python": "3.13.1",
+    "git": "git version 2.47.1.windows.2",
+    "limitations": [
+      "Local content-addressed read-only files are not WORM storage",
+      "Archive reproducibility is proven for retained dist bytes; no deterministic-rebuild claim",
+      "No deployment, rollback, migration, configuration change, production write or ref push"
+    ]
+  },
+  "preflight": {
+    "path": "C:\\Users\\admin\\Desktop\\va-freelance-hub\\tmp\\workable-rotation-release-proof\\preflight-release-f34965b0.json",
+    "sha256": "cda71884d605f5376f90a62d4b56a61b672180c0fb670f8aad471a3f475492f1",
+    "observedEnd": "2026-10-20T10:38:43.873Z",
+    "checks": {
+      "project": true,
+      "liveCompatibility": true,
+      "expectedD1": true,
+      "aiBinding": true,
+      "secretProjection": true,
+      "rollback": true,
+      "canonicalBaseline": true,
+      "schema0054": true
+    },
+    "rowsWritten": 0
+  },
+  "cadence": {
+    "privateObservations": [
+      {
+        "sourceId": "workable:hunt-st",
+        "capturedAt": "2026-10-20T10:14:42.007Z",
+        "nextCollectionNotBefore": "2026-10-20T11:14:42.007Z"
+      },
+      {
+        "sourceId": "workable:crewbloom",
+        "capturedAt": "2026-10-20T10:14:42.417Z",
+        "nextCollectionNotBefore": "2026-10-20T11:14:42.417Z"
+      }
+    ],
+    "allObservedSourcesNotBefore": "2026-10-20T11:14:42.417Z",
+    "clockConditionSatisfied": false,
+    "operatorCondition": "No firstcollectionbefore actualcapture+60min unless existingdurableattemptmechanism truthfully recordsmanualobservation; no fakeattempt/configchange."
+  },
+  "rollback": {
+    "executed": false,
+    "deploymentId": "8c649da0-93ef-4458-89ad-715f1367a2ca",
+    "sourceCommit": "34e3bd1efa34dc3a2c31f2cc3e5b6c5b04790e83",
+    "validatedBy": "C:\\Users\\admin\\Desktop\\va-freelance-hub\\tmp\\workable-rotation-release-proof\\preflight-release-f34965b0.json",
+    "method": "POST",
+    "url": "https://api.cloudflare.com/client/v4/accounts/76cf15ef361089aa0411e75ff77d343a/pages/projects/remotejobs-ph/deployments/8c649da0-93ef-4458-89ad-715f1367a2ca/rollback",
+    "body": null,
+    "permission": "Pages Write",
+    "operation": "Root uses documented Pages API or dashboard Rollback to this deployment; installedCLI has no Pages rollback command.",
+    "limitations": [
+      "Code rollback does not restore D1 data or source admissions",
+      "Historicalsecretvalues/bindingrestoration is not certified; reverify currentnames/types/config afterrollback"
+    ]
+  },
+  "postDeploymentRequired": [
+    "Capture new deploymentID,main/sourcef349/success andcanonicalpromotion",
+    "Compare2024-11-01/nodejs_compat/DB/AI/exactfivesecretname-typepairs vsfreshpreflight, no values",
+    "Recheckschema0054 andpublicsnapshotheaders/headmetadata",
+    "ObserveactualscheduledWorkablecadence,currentadmission/sourceholds/caps/originaldates; Pineapplecurrentauthorityremainsheld",
+    "No globalwriter/GCPcontainment or100-150/day acceptance inferred"
+  ],
+  "documentation": [
+    "https://developers.cloudflare.com/pages/functions/wrangler-configuration/",
+    "https://developers.cloudflare.com/api/resources/pages/subresources/projects/subresources/deployments/methods/create/",
+    "https://developers.cloudflare.com/api/resources/pages/subresources/projects/subresources/deployments/methods/rollback/",
+    "https://developers.cloudflare.com/pages/configuration/rollbacks/"
+  ]
+}
