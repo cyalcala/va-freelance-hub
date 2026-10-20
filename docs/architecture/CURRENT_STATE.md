@@ -1,13 +1,27 @@
 # VA Freelance Hub — current architectural ownership and evidence
 
-**Version:** 1.4 · 2026-10-18. **Purpose:** canonical ownership, current evidence
+**Version:** 1.5 · 2026-10-20. **Purpose:** canonical ownership, current evidence
 pointers and unresolved migration facts. This map does not dispatch runtime work.
 The [October 4 owner resource](../directives/2026-10-04-PH-VA-FRESHNESS-GCP-CANONICAL-UPGRADE.md)
 clarifies source control versus execution. The [October 1 topology snapshot](CURRENT_STATE_2026-10-01_SNAPSHOT.md)
 is preserved verbatim as historical evidence; it is not today's runtime inventory.
 Read the newest savepoint and verify deployed versions before acting.
 
-## October 18 verified subset
+## October 20 current deployed subset
+
+Pages production/main now uses compatible source `f34965b0`, deployment
+`347d95ae` since 11:28:54Z, with schema 0054 unchanged. All 81 dist files and
+19 source hashes were checked before upload. Refreshed preflight 8/8 and
+post-control 5/5 pass, including unchanged configuration/five secret_text
+names/types and five public routes returning 200. This is artifact/control-plane
+evidence; remote function bytes and secret values are not attested. Keep
+rollback `8c649da0`. Other combined-root code is not deployed. Observe ordinary
+clocks and the 17 unique misses before claiming flow/recall. Shared reports have
+one actual SSM-first/GitHub runner receipt; GitLab runtime and recurrent
+continuity remain unproven. See the [current evidence](../operations/CONTINUATION_EVIDENCE_2026-10-20.md)
+and [release receipt](../operations/WORKABLE_ROTATION_RELEASE_2026-10-20.md).
+
+## October 18 historical verified subset
 
 SSM remains canonical; GitHub and GitLab are mirrors/continuity. Branch equality
 does not prove whole-repository or unattended mirroring parity. The

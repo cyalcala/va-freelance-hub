@@ -1,0 +1,148 @@
+{
+  "scope": "RETAINED_RELEASE_PROOFS_AND_CONTROL_PLANE_OBSERVATIONS_NOT_DAILY_THROUGHPUT_ACCEPTANCE",
+  "recordedAt": "2026-10-20T11:30:43.407478+00:00",
+  "productionSourceSha": "f34965b0c7bbfb76395259ccce0b60ad4533eee0",
+  "productionDeploymentId": "347d95ae-c9f2-45d5-9cc9-73fb42eafdd2",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 44,
+      "sha256": "2866afaee942701ffe24bedaca3e4f62f2a16c4300d6cec717b36624fbce978a"
+    },
+    {
+      "path": "actual-minimal-native-receipt.json",
+      "bytes": 4484,
+      "sha256": "59d3140ead6df15ce9b7382109cf8dc087e390fefb7e3f230182db704a20c1f9"
+    },
+    {
+      "path": "artifact-readiness-receipt.json",
+      "bytes": 6116,
+      "sha256": "db99da46cbdb70aa5900e46ce44d89f826f25a5c660e5e60ae3dce84cfe29afd"
+    },
+    {
+      "path": "dayshift-readonly-assessment.json",
+      "bytes": 4327,
+      "sha256": "02617ac42f00adf6ac1c7db25aeef15e6f97c4d0bd1cf3461cdf2c65814a0a58"
+    },
+    {
+      "path": "DAYSHIFT_SLICE_ASSESSMENT.md",
+      "bytes": 8541,
+      "sha256": "4619f2502066765e3a38f3c499ff31a56bcc301daf6c4092248c2da4543e06ef"
+    },
+    {
+      "path": "dist-tree-b2768ac40a51ccbd.json",
+      "bytes": 14390,
+      "sha256": "92ac761e6a72181b151569806d6d1d5298b58f04dc1aee5af4c71059b33d0e82"
+    },
+    {
+      "path": "independent-live-review-receipt.json",
+      "bytes": 11014,
+      "sha256": "01e130b199364d74530e47b32401ac7368aace7323e4a88fcc6dea468e6f2984"
+    },
+    {
+      "path": "independent-live-review.md",
+      "bytes": 3571,
+      "sha256": "b62acf00dc2270b34119d42d15a03c3e0cd06cf4f678f611cae2bcaec68fc3e9"
+    },
+    {
+      "path": "offline-widget/actual-full-widget-native-insert-audit-receipt.json",
+      "bytes": 57082,
+      "sha256": "1a6264a4e46ed51f07b2b608b5ac044e58747559ce6114ce6b11108a69ba6905"
+    },
+    {
+      "path": "offline-widget/actual-full-widget-native-nonph-first-receipt.json",
+      "bytes": 52171,
+      "sha256": "bf8eef93369d73983310c71d6dded21bedde6a517c2e44953118ebb80e12d065"
+    },
+    {
+      "path": "offline-widget/actual-full-widget-native-receipt.json",
+      "bytes": 50130,
+      "sha256": "e06a08594832b917ec010058df64f7560458d4e2b56fe047e93d18f131cd4c78"
+    },
+    {
+      "path": "offline-widget/actual-full-widget-native-reverse-receipt.json",
+      "bytes": 50367,
+      "sha256": "f74046a63a3662a89a2d4ac29f89e5301597afed862d794054f5c7b8c0f7d954"
+    },
+    {
+      "path": "offline-widget/actual-full-widget-replay-summary.json",
+      "bytes": 15991,
+      "sha256": "0d9c684e3bb74e5d746e7ffeeab1fbabf03be5d1184cda707a2e45066ad6a95f"
+    },
+    {
+      "path": "offline-widget/manifest.json",
+      "bytes": 2122,
+      "sha256": "35b40c9ad131002ddfccffb640987e853ece2c14dad8dd92c107224332d66ff9"
+    },
+    {
+      "path": "offline-widget/native-change-metadata-probe.json",
+      "bytes": 840,
+      "sha256": "fcab46567e10f7e4acad5cd8a85ce894073eadbaff746856f4011f69823ed761"
+    },
+    {
+      "path": "offline-widget/probe-native-change-metadata.ts",
+      "bytes": 1746,
+      "sha256": "f4e72f24ce4a9dde1211c18cea7a5955671ca3fd03c54e7291758bacc3aa6d95"
+    },
+    {
+      "path": "offline-widget/README.md",
+      "bytes": 5428,
+      "sha256": "451c62bb6cdde566df7aadc2fd953ed1659f61655afed3b1c59e759fe6873ab1"
+    },
+    {
+      "path": "offline-widget/replay-actual-workable-full-widget.ts",
+      "bytes": 11738,
+      "sha256": "90a0959c83fbbdf79fd62c1f9fb4c016ba99059a686dc11f1b9988073aaa40a5"
+    },
+    {
+      "path": "offline-widget/summarize-full-widget-replays.ts",
+      "bytes": 6085,
+      "sha256": "337dfc2a4714efc5807e2ed7ff300bd249daf40cb7f33c2704d80d63d2592e6f"
+    },
+    {
+      "path": "offline-widget/workable-authoritative-observation-2026-10-20.json",
+      "bytes": 251815,
+      "sha256": "c2897964d774765ef4988c528a36167e9bd288724f1865cd573c9dd880a8363c"
+    },
+    {
+      "path": "postdeploy-control-f34965b0-2026-10-20.json",
+      "bytes": 5536,
+      "sha256": "bff96dbb491f7498679f99d9075ebde93f1f1f60b2a85b8a20231f10d8f22d1d"
+    },
+    {
+      "path": "predeploy-artifact-revalidation-2026-10-20.json",
+      "bytes": 263,
+      "sha256": "6a7235a63b99cf8911c69c08012f439c65d277ce30e0212c38902f86ca3ed4db"
+    },
+    {
+      "path": "preflight-release-f34965b0-final-2026-10-20.json",
+      "bytes": 2255,
+      "sha256": "503e4e435ca4f3848f7f130d38df04f0c8a2ee591e6427e3df329c5698881909"
+    },
+    {
+      "path": "preflight-release-f34965b0-refreshed-2026-10-20.json",
+      "bytes": 3915,
+      "sha256": "0e7e9e81f4bb2c1cf07b38549e40adf4f4842f924fda7c22861f216a209499ec"
+    },
+    {
+      "path": "release-readiness-plan.json",
+      "bytes": 13546,
+      "sha256": "002335381624973780e09fd903741896d9ebadbf55e900e438ec01ea17121969"
+    },
+    {
+      "path": "release-summary.json",
+      "bytes": 60470,
+      "sha256": "0625795ce602676e540491ea9bed873198022499f1634458556df977369fe052"
+    },
+    {
+      "path": "RELEASE_PROOF.md",
+      "bytes": 12987,
+      "sha256": "c7659e335e6937d254cff718332e5f51c62e5f51fb0c444c666472993af3fd94"
+    }
+  ],
+  "limitations": [
+    "Source and dist archives retained separately; hashes and source Git branch are provenance, not D1/Turso backups",
+    "Offline synthetic AI red case remains preserved",
+    "No certified recall, global cap closure or new-publication count inferred"
+  ]
+}

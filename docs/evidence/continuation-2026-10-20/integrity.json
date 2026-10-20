@@ -30,6 +30,21 @@
       "path": "reconcile-projected-widgets.ts",
       "bytes": 3739,
       "sha256": "2829aa6ee2c93f8b5e11dd5e2faa3c4fd162929de2f668f7e2b9a474c2202559"
+    },
+    {
+      "path": "workable-grouped-cohort.json",
+      "bytes": 80343,
+      "sha256": "38d5352d2d991eb307b84f89724bab937c265be53d81bd445f70511e4b996c33"
+    },
+    {
+      "path": "group-widget-openings.ts",
+      "bytes": 2265,
+      "sha256": "4af67dc059f4eb9420cc79391f0fc03620ddb08e2c70400bc9e72ec274b4b92e"
+    },
+    {
+      "path": ".gitattributes",
+      "bytes": 43,
+      "sha256": "8ee58d82049f85b248fb5fd417bcee18576c7dbda387f46e5540b62759176dde"
     }
   ]
 }

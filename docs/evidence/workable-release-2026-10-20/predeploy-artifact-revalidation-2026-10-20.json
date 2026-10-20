@@ -1,0 +1,9 @@
+{
+  "observedAt": "2026-10-20T11:27:25.332989+00:00",
+  "sourceSha": "f34965b0c7bbfb76395259ccce0b60ad4533eee0",
+  "sourceClean": true,
+  "reviewedSourceFiles": 19,
+  "distFiles": 81,
+  "archivesAndDistManifestMatch": true,
+  "allDistBytesMatch": true
+}

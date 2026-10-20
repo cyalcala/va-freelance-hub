@@ -1,0 +1,203 @@
+{
+  "recordedAt": "2026-10-20T10:15:16.196996+00:00",
+  "verdict": "APPROVE_BOUNDED_SOURCE_CORRECTIONS_ONLY",
+  "scope": "Independent read-only review of the frozen 0054-compatible Pages Workable candidate. This is source-correction approval, not deployment authorization, production acceptance, or mission completion.",
+  "runtimeSources": [
+    {
+      "path": "apps/web/src/pages/api/cron/scrape.ts",
+      "sha256": "4b402f3732086e99b31ba9b747b85a3d4e9a0e12de48326e44062fd03a8efdda"
+    },
+    {
+      "path": "apps/web/src/lib/workable-admission.ts",
+      "sha256": "0ce547b75f01074f6bf744af6a4750493c7d25593c7841f7c318a5c72f17ca54"
+    },
+    {
+      "path": "apps/web/src/lib/inngest/functions/triage-drain.ts",
+      "sha256": "362c847427f0826eb66e2401d12b54d84f290a16a433df3e0743ae0c190687ee"
+    }
+  ],
+  "supersedes": {
+    "receipt": "independent-live-review-superseded-6108471a.json",
+    "verdict": "SUPERSEDED_PENDING_CURRENT_WIDGET_FRESHNESS_REVIEW",
+    "note": "All earlier source approvals were superseded until the legacy current-widget/date correction was reviewed. This receipt applies only to its exact runtime hashes."
+  },
+  "findings": [
+    {
+      "id": "R1",
+      "severity": "P1",
+      "problem": "Workable admission callback was shared unconditionally by other ATS providers.",
+      "status": "CORRECTED",
+      "evidence": "Only Workable invokes its loader; permitted native Lever transport passes."
+    },
+    {
+      "id": "R2",
+      "severity": "P1",
+      "problem": "Separate activation and insertion tick namespaces exposed three jobs per source under a cap of two.",
+      "status": "CORRECTED",
+      "evidence": "All Workable activation paths and new inserts share the scrape tick; native combined cap and later retry controls pass."
+    },
+    {
+      "id": "R3",
+      "severity": "P1",
+      "problem": "Pending recovery could publish Workable rows despite invalid current admission.",
+      "status": "CORRECTED",
+      "evidence": "Full immutable packet validation plus stored facts and current admission predicates at mutation; native revoked-admission controls pass for zero-AI and inline AI."
+    },
+    {
+      "id": "R4",
+      "severity": "BOUNDED_CORRECTNESS",
+      "problem": "Guarded raw inserts changed explicit SQL NULL semantics.",
+      "status": "CORRECTED",
+      "evidence": "NULL passes through; earlier native Drizzle codec parity control passed."
+    },
+    {
+      "id": "R5",
+      "severity": "BOUNDED_CORRECTNESS",
+      "problem": "The stored AI/publication snapshot CAS omitted company and application URL.",
+      "status": "CORRECTED",
+      "evidence": "Common projection and nullable predicates include both; all four pending stored-facts race controls pass on final hashes."
+    },
+    {
+      "id": "R6",
+      "severity": "P1",
+      "problem": "Legacy created-at storage could pass freshness before any matching current original widget observation.",
+      "status": "CORRECTED",
+      "evidence": "Early fallback excludes Workable. Postfetch recovery and every inline drain receive current observations; exact one URL plus matching source, current original date, remote and hard veto checks run before AI and again before mutation. All eight missing/stale-original/onsite/US controls and independent wrong-source controls pass."
+    },
+    {
+      "id": "R7",
+      "severity": "P2",
+      "problem": "Requiring a second positive PH inference from unclear stored text blocked a current explicitly PH-eligible opening.",
+      "status": "CORRECTED",
+      "evidence": "Stored hard negatives remain vetoes; current positive PH supplies zero-AI authority. Current unclear stays held without AI, while both-unclear inline AI still uses classifier and skeptic: two recovered rows, four AI calls."
+    },
+    {
+      "id": "R8",
+      "severity": "P2",
+      "problem": "Activation retained a later legacy created date when the current original publication date was earlier.",
+      "status": "CORRECTED",
+      "evidence": "Both dates independently pass freshness, then all three activation paths persist the earlier valid date under the old stored-facts CAS. Six two-direction native controls pass; scrapedAt stays unchanged. Stored stale originals remain held."
+    }
+  ],
+  "independentVerification": [
+    {
+      "log": "independent-current-widget-final.log",
+      "pass": 26,
+      "fail": 0,
+      "assertions": 252,
+      "seconds": 155.92,
+      "scope": "Final frozen native tests: current PH recall and unclear AI path, all eight current-opening negatives, six earlier-date controls, other ATS transport, shared caps, revoked admission and four stored-facts CAS races."
+    },
+    {
+      "artifact": "independent-current-widget-final.json",
+      "pass": 6,
+      "fail": 0,
+      "scope": "Separate native counterexamples: current PH over unclear stored text, current unclear zero-AI hold, both-unclear AI recovery, earlier current original date, wrong source zero-AI and inline-AI holds."
+    }
+  ],
+  "priorVerification": [
+    {
+      "log": "independent-live-review-focused.log",
+      "pass": 12,
+      "fail": 1,
+      "assertions": 145,
+      "seconds": 67.76,
+      "interpretation": "Earlier run reproducednewcodecfixturecollision;notacceptedgreen. Workerfixeduniquecontenthashes."
+    },
+    {
+      "log": "independent-live-review-pending-final.log",
+      "pass": 15,
+      "fail": 0,
+      "assertions": 154,
+      "seconds": 44.21,
+      "scope": "pendingpositive/revoked/stale/onsite/factsrace,durablehold,codec,nonWorkabletransport,combinedcap;beforelastcompany/applicationCASaddition"
+    },
+    {
+      "log": "independent-live-review-final-cas.log",
+      "pass": 8,
+      "fail": 0,
+      "assertions": 84,
+      "seconds": 60.93,
+      "scope": "Finalfrozen6108471Ascrape: freshreactivation,permittednonWorkabletransport,combinedcapandlaterretry,freshzeroAI+AIpending,company/applicationraces,durablehold"
+    }
+  ],
+  "boundaryProof": {
+    "artifact": "independent-live-review-boundaries.json",
+    "sharedFilesByteIdentical": 11,
+    "migrationsByteIdentical": 54,
+    "note": "Shared gateway, immutable admission validator, policy/lifecycle/transition rules, schema, public predicate, direct ingest, geo and triage code are unchanged from live base archive. Separate Inngest consumer explicitly holds Workable before AI or mutation."
+  },
+  "workerOwnedFinalChecks": {
+    "exitReceiptsRead": {
+      "typecheck": 0,
+      "build": 0,
+      "guardrails": 0,
+      "parameters": 0,
+      "constitution": 0
+    },
+    "fullSuite": "RUNNING at review receipt: worker handle 60435; no final full-suite exit receipt yet. Earlier 3138-pass/2-timeout/1-late-child-error run was non-green and cannot be substituted."
+  },
+  "productionEvidence": {
+    "capture": "tmp/live-recheck-2026-10-18.json",
+    "validCurrentWorkablePackets": 6,
+    "pineapple": "HOLD: registryrevision2 versuslatestadmission23 sourcerevision1; existingloaderrejectsmetadata/currentidentitybinding. No renewal or admissionwrite performed.",
+    "reviewDeadline": "Past reviewdeadlinealone doesnotrevokecurrentcanary; policy/provider/admissionleases remainfuture through2027-03-10. Existinglifecycle/transitionhelpers byteidenticaltolivearchive andallowcap2 forvalidcurrentpolicy.",
+    "bun": "Observedhost1.3.14,matchingpackageManagerandCIpin",
+    "pages": "Liveexternalrefresh remainsdeployment8c649da0/source34e3bd1/schema0054;newsourcecorrectionsarenotdeployedacceptance",
+    "serving": "OrdinaryGET progressedfrom1702/757stale07:56edgeto1723jobs/758companiesgenerated15:39:29Z;D1rowandlaterpublicheadersmatch. No forcedcachepurge.",
+    "gcp": "OldOctober4publisherstilldirectlyexecutesremoteD1SQLthroughWrangleroutsidePagesfences; newWorkablecollectordoesnotfeedTurso/GCPpath. Containmentremainsunproven.",
+    "captureFreshness": "External observations were captured October 18 and are dated evidence, not a current October 20 recheck. No network or live database calls during this final re-review.",
+    "realWidgetReplay": "No retained actual Workable widget response with minimal record payload was found in the bounded artifact search. Native responses are synthetic, not live employer evidence."
+  },
+  "remainingAcceptance": [
+    "Finalfrozenfullsuite/type/build/governancegatesownedbyworker/root; donotuseearlierfullresultsasfinal.",
+    "CanonicalSSMsource/artifactpreservationandmirrorreadbacks.",
+    "Isolatedreleaseartifact/deploymentreceiptwithoutpendingmigrationsorcombinedcheckout.",
+    "Actualpermittedordinarysourcefetch -> freshPHjobs -> actualD1IDs -> publicvisibilityandrollbackreceipt.",
+    "No certifieddaily100-150volume, trustedemployerrecall or MATH01-13acceptance followsfromthisreview."
+  ],
+  "reviewerActions": "No candidate edits, deployments, clock executions, explicit live database writes, ref mutations, grants or credential changes. Only local ignored review artifacts and native in-memory tests.",
+  "reviewerProcesses": "All reviewer handles are terminal: focused 60501 exit 0; independent custom 94204 exit 0; boundary 0. Worker full suite is separate.",
+  "artifacts": [
+    {
+      "path": "tmp/workable-rotation-release-proof/independent-live-review-superseded-6108471a.json",
+      "sha256": "56bdf95c93425a8af644ca4524f594def1acc039d8a3837bc3cd7210cb360a8f",
+      "bytes": 8220
+    },
+    {
+      "path": "tmp/workable-rotation-release-proof/independent-live-review-superseded-6108471a.md",
+      "sha256": "2b137cede9e9eb5ec4bf66637c1a323ad6ecabda4d86364ca65c648d7bddef5b",
+      "bytes": 3880
+    },
+    {
+      "path": "tmp/workable-rotation-release-proof/independent-live-review-boundaries.json",
+      "sha256": "44cea1833c6c6147b0f89fe74d479f4931b248e29dfe99d3914132b770f93a11",
+      "bytes": 7003
+    },
+    {
+      "path": "tmp/workable-rotation-release-proof/independent-current-widget-final.log",
+      "sha256": "9d53104e85e09896b6cac8a23695e60ccc0152ca5470fd28d672313e4e477dab",
+      "bytes": 958780
+    },
+    {
+      "path": "tmp/workable-rotation-release-proof/independent-current-widget-final.json",
+      "sha256": "163e0518d22b522f0fe399314fecae444faf13bccfe2ec002475b8aa96dcbc3e",
+      "bytes": 6504
+    },
+    {
+      "path": "tmp/workable-rotation-release-proof/independent-current-widget-custom.log",
+      "sha256": "cb44034e1d936712b2d583bc38f5dac37110a77066ebc46e6821960f529d2792",
+      "bytes": 13468
+    },
+    {
+      "path": "tmp/workable-rotation-release-proof/independent-pending-current-ph.json",
+      "sha256": "a220330e32f37bb41ecaa94b4d3d425b8f7d1f20ab5cc79000d51b6d7a616542",
+      "bytes": 1438
+    },
+    {
+      "path": "tmp/workable-rotation-release-proof/independent-pending-original-date-projection.json",
+      "sha256": "8022e8e426e881529d29ba8ffd0444a1cc8b3d75c158340441144b9c9fe1f5af",
+      "bytes": 865
+    }
+  ]
+}

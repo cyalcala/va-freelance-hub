@@ -4,20 +4,26 @@
 
 Read the current [continuation evidence](operations/CONTINUATION_EVIDENCE_2026-10-20.md)
 and [Astra](../astra777.txt). The latest complete-day eligible-storage proxy is
-41.29/day; certified new verified publications remain UNKNOWN. All seven Workable
-tenants still show zero attempts/144 rotation skips over 24 hours. Six current
+41.29/day; certified new verified publications remain UNKNOWN. The pre-release baseline shows all seven Workable
+tenants at zero attempts/144 rotation skips over 24 hours. Six current
 admission packets validate; Pineapple's revision binding fails. Two permitted
-widgets expose 295 openings; candidate metadata checks identify 95 plausible
-fresh PH openings, 78 exact active eligible matches and 17 retained misses.
+widgets expose 295 location records / 204 unique URLs; grouped candidate metadata
+checks identify 93 plausible fresh PH openings, 76 exact active eligible matches
+and 17 retained misses. Do not count location variants as distinct jobs.
 
 Isolated compatible source `f34965b0...` passed 3,156 tests/zero failures,
 typecheck/build/governance and independent review, including the later pending,
 original-date and PH precedence corrections. It is backed up on its dedicated
-SSM release branch. Actual deployment and ordinary-clock outcome acceptance are
-separate next steps. Do not deploy the combined root checkout or migrations.
-The reviewed shared SSM-first report persistence slice is separately prepared
-for main activation; its runner write acceptance and GitLab runtime mirroring
-remain unproven. The goal remains active.
+SSM release branch. Compatible production deployment succeeded at11:28:54.036Z:
+`347d95ae-c9f2-45d5-9cc9-73fb42eafdd2`, sourcef349, schema0054 unchanged.
+Pre-upload81dist/19source hashes matched; refreshed preflight8/8 and post-control5/5
+passed, with five public routes200 and unchanged config/five secret names/types.
+Rollback8c649da0 remains available. Ordinary-clock recovery of the17 unique misses
+and certified publication flow remain unverified. Do not deploy root/migrations.
+The shared SSM-first report persistence is active: runner 39409286844 wrote
+`d88365ed...` to SSM then GitHub. The follow-up quarantine fix `23b9202a...`
+passed full CI 39410570310 with deployment skipped. GitLab is manually current;
+unattended GitLab and recurring continuity remain unproven. The goal remains active.
 
 ## 2026-10-18 — Runtime reconciled; unsupported completion claims corrected
 

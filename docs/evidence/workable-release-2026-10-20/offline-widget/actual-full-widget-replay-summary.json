@@ -1,0 +1,477 @@
+{
+  "scope": "SUPPLEMENTAL_OFFLINE_ACTUAL_MINIMAL_WIDGET_SHAPE_PROOF_WITH_EXPLICIT_FAILED_ADVERSARIAL_MODEL_CONTROL",
+  "recordedAt": "2026-10-20T11:17:23.600Z",
+  "sourceCommit": "f34965b0c7bbfb76395259ccce0b60ad4533eee0",
+  "trackedSourceClean": true,
+  "retainedDistInventory": {
+    "fileCount": 81,
+    "treeSha256": "b2768ac40a51ccbd7c7cf1d5af563c2cf949d3762ffa2b1ae287999560ad097b",
+    "allRecordedFilesByteIdentical": true
+  },
+  "inputSha256": "c2897964d774765ef4988c528a36167e9bd288724f1865cd573c9dd880a8363c",
+  "runtime": "Bun 1.3.14",
+  "results": [
+    {
+      "artifact": "actual-full-widget-native-receipt.json",
+      "sha256": "e06a08594832b917ec010058df64f7560458d4e2b56fe047e93d18f131cd4c78",
+      "exit": 0,
+      "permutation": "original",
+      "safetyChecksPassed": true,
+      "failedChecks": [],
+      "totalStored": 24,
+      "totalPublic": 3,
+      "syntheticAiCalls": 15,
+      "responseSummary": {
+        "processed": 50,
+        "acceptedForInsert": 14,
+        "actualChanges": 4,
+        "geoGateRejected": 22,
+        "triageBudgetDeferred": 14,
+        "pendingPersisted": 56,
+        "rejectedPersisted": 51
+      },
+      "sources": [
+        {
+          "sourceId": "workable:hunt-st",
+          "rawLocationRecords": 143,
+          "uniqueUrls": 140,
+          "stored": 14,
+          "storedReasonCounts": {
+            "active": 2,
+            "policy-rejected": 1,
+            "pending-triage": 11
+          },
+          "public": [
+            {
+              "id": 3,
+              "url": "https://apply.workable.com/j/64BA8C27E3",
+              "postedAt": "2026-10-12T00:00:00.000Z",
+              "storedLocation": "Philippines",
+              "phEligibility": "eligible_verified",
+              "capturedCountries": [
+                "Philippines"
+              ]
+            },
+            {
+              "id": 4,
+              "url": "https://apply.workable.com/j/7C685D947F",
+              "postedAt": "2026-10-20T00:00:00.000Z",
+              "storedLocation": "Philippines",
+              "phEligibility": "eligible_verified",
+              "capturedCountries": [
+                "Philippines"
+              ]
+            }
+          ],
+          "ledgerPublished": 2,
+          "postingHolds": {
+            "POSTING_DATE_STALE": 54
+          }
+        },
+        {
+          "sourceId": "workable:crewbloom",
+          "rawLocationRecords": 152,
+          "uniqueUrls": 64,
+          "stored": 10,
+          "storedReasonCounts": {
+            "active": 1,
+            "policy-rejected": 8,
+            "pending-triage": 1
+          },
+          "public": [
+            {
+              "id": 1,
+              "url": "https://apply.workable.com/j/1D97875E3C",
+              "postedAt": "2026-10-02T00:00:00.000Z",
+              "storedLocation": "Philippines",
+              "phEligibility": "eligible_verified",
+              "capturedCountries": [
+                "Philippines",
+                "Taiwan",
+                "Singapore",
+                "Macao"
+              ]
+            }
+          ],
+          "ledgerPublished": 2,
+          "postingHolds": {
+            "POSTING_DATE_STALE": 86
+          }
+        }
+      ]
+    },
+    {
+      "artifact": "actual-full-widget-native-insert-audit-receipt.json",
+      "sha256": "1a6264a4e46ed51f07b2b608b5ac044e58747559ce6114ce6b11108a69ba6905",
+      "exit": 0,
+      "permutation": "original",
+      "safetyChecksPassed": true,
+      "failedChecks": [],
+      "totalStored": 24,
+      "totalPublic": 3,
+      "syntheticAiCalls": 15,
+      "responseSummary": {
+        "processed": 50,
+        "acceptedForInsert": 14,
+        "actualChanges": 4,
+        "geoGateRejected": 22,
+        "triageBudgetDeferred": 14,
+        "pendingPersisted": 56,
+        "rejectedPersisted": 51
+      },
+      "sources": [
+        {
+          "sourceId": "workable:hunt-st",
+          "rawLocationRecords": 143,
+          "uniqueUrls": 140,
+          "stored": 14,
+          "storedReasonCounts": {
+            "active": 2,
+            "policy-rejected": 1,
+            "pending-triage": 11
+          },
+          "public": [
+            {
+              "id": 3,
+              "url": "https://apply.workable.com/j/64BA8C27E3",
+              "postedAt": "2026-10-12T00:00:00.000Z",
+              "storedLocation": "Philippines",
+              "phEligibility": "eligible_verified",
+              "capturedCountries": [
+                "Philippines"
+              ]
+            },
+            {
+              "id": 4,
+              "url": "https://apply.workable.com/j/7C685D947F",
+              "postedAt": "2026-10-20T00:00:00.000Z",
+              "storedLocation": "Philippines",
+              "phEligibility": "eligible_verified",
+              "capturedCountries": [
+                "Philippines"
+              ]
+            }
+          ],
+          "ledgerPublished": 2,
+          "postingHolds": {
+            "POSTING_DATE_STALE": 54
+          }
+        },
+        {
+          "sourceId": "workable:crewbloom",
+          "rawLocationRecords": 152,
+          "uniqueUrls": 64,
+          "stored": 10,
+          "storedReasonCounts": {
+            "active": 1,
+            "policy-rejected": 8,
+            "pending-triage": 1
+          },
+          "public": [
+            {
+              "id": 1,
+              "url": "https://apply.workable.com/j/1D97875E3C",
+              "postedAt": "2026-10-02T00:00:00.000Z",
+              "storedLocation": "Philippines",
+              "phEligibility": "eligible_verified",
+              "capturedCountries": [
+                "Philippines",
+                "Taiwan",
+                "Singapore",
+                "Macao"
+              ]
+            }
+          ],
+          "ledgerPublished": 2,
+          "postingHolds": {
+            "POSTING_DATE_STALE": 86
+          }
+        }
+      ],
+      "firstPublicInsertAudit": [
+        {
+          "rawChanges": 7,
+          "physicalInserted": 1,
+          "newRows": [
+            {
+              "id": 1,
+              "source_id": "workable:crewbloom",
+              "source_url": "https://apply.workable.com/j/1D97875E3C",
+              "location_raw": "Philippines",
+              "is_active": 1
+            }
+          ]
+        },
+        {
+          "rawChanges": 0,
+          "physicalInserted": 0,
+          "newRows": []
+        },
+        {
+          "rawChanges": 7,
+          "physicalInserted": 1,
+          "newRows": [
+            {
+              "id": 3,
+              "source_id": "workable:hunt-st",
+              "source_url": "https://apply.workable.com/j/64BA8C27E3",
+              "location_raw": "Philippines",
+              "is_active": 1
+            }
+          ]
+        },
+        {
+          "rawChanges": 7,
+          "physicalInserted": 1,
+          "newRows": [
+            {
+              "id": 4,
+              "source_id": "workable:hunt-st",
+              "source_url": "https://apply.workable.com/j/7C685D947F",
+              "location_raw": "Philippines",
+              "is_active": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "artifact": "actual-full-widget-native-reverse-receipt.json",
+      "sha256": "f74046a63a3662a89a2d4ac29f89e5301597afed862d794054f5c7b8c0f7d954",
+      "exit": 0,
+      "permutation": "reverse",
+      "safetyChecksPassed": true,
+      "failedChecks": [],
+      "totalStored": 24,
+      "totalPublic": 4,
+      "syntheticAiCalls": 15,
+      "responseSummary": {
+        "processed": 50,
+        "acceptedForInsert": 14,
+        "actualChanges": 4,
+        "geoGateRejected": 18,
+        "triageBudgetDeferred": 18,
+        "pendingPersisted": 69,
+        "rejectedPersisted": 31
+      },
+      "sources": [
+        {
+          "sourceId": "workable:hunt-st",
+          "rawLocationRecords": 143,
+          "uniqueUrls": 140,
+          "stored": 17,
+          "storedReasonCounts": {
+            "active": 2,
+            "pending-triage": 15
+          },
+          "public": [
+            {
+              "id": 1,
+              "url": "https://apply.workable.com/j/92AB64592C",
+              "postedAt": "2026-10-07T00:00:00.000Z",
+              "storedLocation": "Philippines",
+              "phEligibility": "eligible_verified",
+              "capturedCountries": [
+                "Philippines"
+              ]
+            },
+            {
+              "id": 2,
+              "url": "https://apply.workable.com/j/8576FD508D",
+              "postedAt": "2026-10-15T00:00:00.000Z",
+              "storedLocation": "Metro Manila, Philippines",
+              "phEligibility": "eligible_verified",
+              "capturedCountries": [
+                "Philippines"
+              ]
+            }
+          ],
+          "ledgerPublished": 2,
+          "postingHolds": {
+            "POSTING_DATE_STALE": 54
+          }
+        },
+        {
+          "sourceId": "workable:crewbloom",
+          "rawLocationRecords": 152,
+          "uniqueUrls": 64,
+          "stored": 7,
+          "storedReasonCounts": {
+            "active": 2,
+            "policy-rejected": 5
+          },
+          "public": [
+            {
+              "id": 3,
+              "url": "https://apply.workable.com/j/002CF5A2A4",
+              "postedAt": "2026-09-28T00:00:00.000Z",
+              "storedLocation": "Philippines",
+              "phEligibility": "eligible_verified",
+              "capturedCountries": [
+                "Philippines",
+                "India",
+                "Pakistan",
+                "South Africa",
+                "Colombia",
+                "Mexico"
+              ]
+            },
+            {
+              "id": 4,
+              "url": "https://apply.workable.com/j/872ED1CD4D",
+              "postedAt": "2026-09-29T00:00:00.000Z",
+              "storedLocation": "Philippines",
+              "phEligibility": "eligible_verified",
+              "capturedCountries": [
+                "Philippines"
+              ]
+            }
+          ],
+          "ledgerPublished": 2,
+          "postingHolds": {
+            "POSTING_DATE_STALE": 86
+          }
+        }
+      ]
+    },
+    {
+      "artifact": "actual-full-widget-native-nonph-first-receipt.json",
+      "sha256": "bf8eef93369d73983310c71d6dded21bedde6a517c2e44953118ebb80e12d065",
+      "exit": 1,
+      "permutation": "nonph-first",
+      "safetyChecksPassed": false,
+      "failedChecks": [
+        "allPublicHaveExplicitCapturedPhRemote"
+      ],
+      "totalStored": 23,
+      "totalPublic": 4,
+      "syntheticAiCalls": 15,
+      "responseSummary": {
+        "processed": 50,
+        "acceptedForInsert": 13,
+        "actualChanges": 4,
+        "geoGateRejected": 25,
+        "triageBudgetDeferred": 11,
+        "pendingPersisted": 49,
+        "rejectedPersisted": 48
+      },
+      "sources": [
+        {
+          "sourceId": "workable:hunt-st",
+          "rawLocationRecords": 143,
+          "uniqueUrls": 140,
+          "stored": 14,
+          "storedReasonCounts": {
+            "active": 2,
+            "policy-rejected": 1,
+            "pending-triage": 11
+          },
+          "public": [
+            {
+              "id": 3,
+              "url": "https://apply.workable.com/j/64BA8C27E3",
+              "postedAt": "2026-10-12T00:00:00.000Z",
+              "storedLocation": "Philippines",
+              "phEligibility": "eligible_verified",
+              "capturedCountries": [
+                "Philippines"
+              ]
+            },
+            {
+              "id": 4,
+              "url": "https://apply.workable.com/j/7C685D947F",
+              "postedAt": "2026-10-20T00:00:00.000Z",
+              "storedLocation": "Philippines",
+              "phEligibility": "eligible_verified",
+              "capturedCountries": [
+                "Philippines"
+              ]
+            }
+          ],
+          "ledgerPublished": 2,
+          "postingHolds": {
+            "POSTING_DATE_STALE": 54
+          }
+        },
+        {
+          "sourceId": "workable:crewbloom",
+          "rawLocationRecords": 152,
+          "uniqueUrls": 64,
+          "stored": 9,
+          "storedReasonCounts": {
+            "active": 2,
+            "policy-rejected": 7
+          },
+          "public": [
+            {
+              "id": 1,
+              "url": "https://apply.workable.com/j/1D97875E3C",
+              "postedAt": "2026-10-02T00:00:00.000Z",
+              "storedLocation": "Macao",
+              "phEligibility": "eligible_likely",
+              "capturedCountries": [
+                "Philippines",
+                "Taiwan",
+                "Singapore",
+                "Macao"
+              ]
+            },
+            {
+              "id": 2,
+              "url": "https://apply.workable.com/j/FA5B16F03E",
+              "postedAt": "2026-10-13T00:00:00.000Z",
+              "storedLocation": "Honduras",
+              "phEligibility": "eligible_likely",
+              "capturedCountries": [
+                "Mexico",
+                "United States",
+                "Costa Rica",
+                "Honduras"
+              ]
+            }
+          ],
+          "ledgerPublished": 2,
+          "postingHolds": {
+            "POSTING_DATE_STALE": 86
+          }
+        }
+      ]
+    }
+  ],
+  "setupFailure": {
+    "artifact": "actual-full-widget-native-setup-first.log",
+    "exit": 1,
+    "cause": "Windows command-line size limit before native route execution; full arrays subsequently read from retained input file"
+  },
+  "nativeChangeMetadata": {
+    "artifact": "native-change-metadata-probe.json",
+    "fixtureMaps": "Bun Statement.run().changes directly to synthetic D1 meta.changes",
+    "pinnedImplementation": "sqlite3_total_changes(after) minus before, including trigger effects",
+    "directProbe": {
+      "bunChanges": 2,
+      "sqlChanges": 1,
+      "physicalItemInserts": 1,
+      "triggerAuditInserts": 1
+    },
+    "officialSources": [
+      "https://github.com/oven-sh/bun/blob/bun-v1.3.14/src/jsc/bindings/sqlite/JSSQLStatement.cpp#L2223",
+      "https://www.sqlite.org/c3ref/total_changes.html",
+      "https://developers.cloudflare.com/d1/worker-api/return-object/#d1result"
+    ],
+    "productionD1TriggerAccounting": "UNVERIFIED; official D1 documentation does not specify FTS trigger inclusion"
+  },
+  "interpretation": [
+    "Original and reversed full minimal arrays pass all16 explicit safety checks with3 and4 public unique openings respectively; exact IDs/dates/countries are retained",
+    "Original Crew first insert changes7 creates1 physical row; second duplicate insert changes0 creates0; legacy ledger clamps raw7 to proposed2, so response4/ledger4 versus3 physical public rows is conservative native metadata amplification, not extra exposure",
+    "Non-PH-first permutation fails explicit captured-PH support: Crew FA5B16F03E (Honduras; captured alternatives Mexico/US/Costa Rica/Honduras) becomes eligible_likely under deliberately always-positive synthetic primary and skeptic",
+    "That red control demonstrates the existing uncertain-geo AI dependency; geoGate/triage/triage-decision/publication-gateway are unchanged34e to f349. It does not establish real AI adjudication, actual D1 publication, or a newly introduced deterministic gate bypass",
+    "Input order changes which unique openings receive capped publication; canonical variant consolidation and physical-ID receipts are separate bounded follow-ups, not implemented here",
+    "These start with an empty synthetic SQLite opportunity table, distinct from the actual259-existing production baseline; they do not prove production recall or multi-location inactive recovery"
+  ],
+  "preservedLimits": [
+    "No provider request, realAI call, production write, source/config/build/ref modification or deployment",
+    "Synthetic current authority packets and AI replies; actual inputs are minimal projected fields, not complete rawHTTP responses",
+    "No overall all-green claim: permutation red and initial setup failure are preserved",
+    "No global serving lifetime-age filter or employer schedule priors added"
+  ]
+}

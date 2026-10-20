@@ -12,15 +12,19 @@ MATH-01–13 completion is certified.
 - GitHub-only bot reports repeatedly advanced beyond SSM. The initial 27 and
   later 20 descendants were preserved. October 20 10:20Z main readback matched
   `5c46edf4` on all three hosts. This is named-ref equality, not all-ref or
-  unattended parity. Shared SSM-first report persistence is now reviewed;
-  activation/runtime acceptance is tracked in its October 20 receipt.
+  unattended parity. Shared SSM-first report persistence is active on main:
+  runner39409286844 wrote d88365ed to SSM then GitHub. Main23b9202a passed
+  full CI39410570310 with production deployment skipped. GitLab was mirrored
+  manually; unattended GitLab and recurring continuity remain unproven.
 - Branch: `codex/verified-flow-directory-checkpoint`. Preserve unrelated dirty
   `.agents/teamwork/orchestrator_13/progress.md`. Fetch/restate HEAD per slice.
-- Actual Pages production at 2026-10-20 10:12Z: deployment
-  `8c649da0-93ef-4458-89ad-715f1367a2ca`, source
-  `34e3bd1efa34dc3a2c31f2cc3e5b6c5b04790e83`, schema **0054**.
-  Later local intake, date, gateway, dayshift and tracker work is not deployed.
-  Never deploy the combined checkout or unapplied migrations as a shortcut.
+- Actual Pages production since 2026-10-20 11:28:54.036Z: deployment
+  `347d95ae-c9f2-45d5-9cc9-73fb42eafdd2`, compatible source
+  `f34965b0c7bbfb76395259ccce0b60ad4533eee0`, schema **0054** unchanged.
+  Post-control5/5 verifies source/stage/config/schema and five public routes200;
+  config retains the five secret_text names/types, not secret-value attestation.
+  Other combined-root gateway, dayshift and tracker work is not deployed.
+  Rollback remains `8c649da0`; never deploy the combined checkout/migrations.
 - Retained Cloudflare freshness Worker has the ten-minute scrape clock.
   GCP asia-southeast1 contains hourly lake-publish (:47) and shadow-dispatch
   (:53), enabled; five recent executions each succeeded. No miner was found
@@ -45,8 +49,9 @@ Rejections are inactive; AI/budget failures can enter hidden pending triage.
 Inline/Inngest drains and unclear sweep are additional exposure paths.
 Public readers require active/public-PH rows and then serve the snapshot.
 
-Current SOURCE CODE additionally contains original-date guards and a fair
-round-robin intake selector. Those are not properties of the old live release.
+The live compatible f349 release contains Workable current-admission/original-date
+guards and the fair round-robin intake selector. Other checkpoint changes are
+not implied by this deployment.
 The conceptual 13 stages do not form one actual production engine: policy and
 role checks occur at different points, including parser-level exclusions.
 The lake discovery/replay path is separate; QUALIFIED_READY is not publication
@@ -63,10 +68,11 @@ permission. Trace each real caller before attributing a result to this model.
 - Seven Workable identities each had **0 attempts /144 rotation skips** in24h.
   Six full current admission packets validate. Pineapple's revision binding
   fails. Overdue review dates alone do not revoke the six valid leases.
-- Three permitted manual requests (robots +two widgets) observed Hunt143 and
-  CrewBloom152 openings. Actual minimal metadata replay yields95 plausible
-  fresh PH openings:78 same-source exact-URL active eligible rows,17 misses
-  (Hunt16,Crew1). This is not an independently adjudicated recall denominator.
+- Three permitted manual requests (robots +two widgets) observed 295 location
+  rows, representing Hunt140/Crew64 unique opening URLs. Grouped actual minimal
+  metadata yields93 plausible fresh PH opening URLs:76 same-source exact-URL
+  active eligible matches,17 misses (Hunt16,Crew1). Raw location rows must not
+  inflate job counts. This is not an independently adjudicated recall denominator.
   Trace retained exact misses under ordinary acquisition after deployment.
 - Existing insert receipts retain empty ID arrays; do not sum their counts
   into certified new publications. Global writer/cap closure remains unproven.
@@ -75,6 +81,10 @@ permission. Trace each real caller before attributing a result to this model.
   docs/operations/CONTINUATION_EVIDENCE_2026-10-20.md.
 
 ## PROVEN LOCALLY / CORRECTED CLAIMS
+
+These local correction commits are retained on the canonical checkpoint branch.
+Main, the compatible release branch and the deployed artifact have separate
+source SHAs; a local proof does not assert that every branch contains that code.
 
 - Full pre-edit baseline:4469/0/331551assertions/268files. Final combined
   correction state:4499/0/331630assertions/269files,415.62s. Typecheck exit0,
@@ -101,6 +111,10 @@ permission. Trace each real caller before attributing a result to this model.
   59af2077(report),69202e3f(employer inference),c2012698(tracker truth).
 - Dayshift enhancements exist locally; they are not deployed acceptance.
   Employer typicalWorkingHours never proves a specific opening's schedule.
+  Read-only counterexamples found contradictory optional day/night flags and
+  the new parser inferring PH hours from ambiguous/malformed or US-morning text.
+  Reuse the compatible classifier for the first UI slice; do not transplant
+  those flags/parser changes or introduce a new serving-age filter.
 
 ## PRESERVE
 
@@ -114,20 +128,18 @@ Do not relax the complete Autonomy Cutover Predicate or source-specific scope.
 
 ## ACTIVE / NEXT
 
-Highest-value next action: finish a bounded **0054-compatible Workable rotation,
-fair intake and necessary original-date safety release**, then verify ordinary
-fetches -> real permitted fresh PH jobs -> actual D1 IDs -> public visibility.
+Highest-value next action: observe ordinary clocks after the live f349 release,
+then trace the17 retained unique misses through permitted fetch -> real fresh PH
+job -> actual D1 IDs -> public visibility. Deployment alone is not flow acceptance.
 Retain canonical identities, two slots/60min, robots enforcement,
 US/onsite/stale/future/invalid-date controls, current admissions, caps and rollback.
 
-Actual live source archive has1182 byte-verified files, SHA256
+The retained pre-release source archive has1182 byte-verified files, SHA256
 11f1403cf75b9efa8cd5b2644f2bb40861daf2996fec5091b0c65ffb22347968.
 A separate ignored proof extraction is `tmp/workable-rotation-release-proof/source`.
 Existing dirty publication-lock-recovery worktree is NOT an immutable accepted
 release. Its date edit incorrectly rejects real Workable date-only published_on
 values; do not deploy blindly. Also do not substitute created_at for published_on.
-The proof uses an isolated temporary Git repository based on live source; no
-managed worktree is attached to this chat.
 
 Compatible source commit `f34965b0c7bbfb76395259ccce0b60ad4533eee0` has passed
 3156/0/320090assertions/226files, typecheck/build/three audits and independent
@@ -139,12 +151,17 @@ never advances a retained posting date. Missing/ambiguous current openings hold.
 The separate Inngest Workable path explicitly defers pending concurrency proof.
 Two actual minimal-field positives also pass native SQLite/public/FTS replay;
 authority, AI and transport remain synthetic. Source is backed up on a dedicated
-SSM release branch. Exact artifact deployment and real ordinary-clock/public
-acceptance remain pending; do not deploy the combined root checkout.
+SSM release branch. Exact compatible artifact deployment succeeded11:28:54Z after
+81dist/19source hashes were rechecked; refreshed preflight8/8 and post-control5/5
+pass. Real ordinary-clock/public acceptance remains pending; keep root scope separate.
+The manual Hunt/Crew observations count toward the existing hourly cadence:
+first recurrent collection must be after 2026-10-20T11:14:42.417Z (use11:14:43Z).
+No collector attempt was fabricated to advance its clock. Artifact readiness and
+the supported 8c649da0 rollback are retained in the isolated proof directory.
 
 Parallel next work: preserve/report canonical/mirror refs per bounded checkpoint;
-repair recurring GitHub-only report writes using existing authorized credentials
-only; collect authoritative employer cohorts with exact missing-opening reasons;
+observe recurrent SSM-first reports and the pending GitLab credential boundary;
+collect authoritative employer cohorts with exact missing-opening reasons;
 bind any future employer hiring evidence to current source/role scope; continue
 canonical MATH/SSAE proof cards without claiming implementation is acceptance.
 

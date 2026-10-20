@@ -1,0 +1,139 @@
+{
+  "scope": "ACTUAL_CAPTURED_MINIMAL_FIELDS_OFFLINE_REAL_PARSER_ROUTE_SQLITE_PUBLIC_PREDICATE_FTS_SYNTHETIC_AUTHORITY_AI_TRANSPORT",
+  "recordedAt": "2026-10-20T10:23:59.188Z",
+  "clock": "2026-10-20T10:14:54.274Z",
+  "bun": "1.3.14",
+  "input": "C:\\Users\\admin\\Desktop\\va-freelance-hub\\tmp\\workable-authoritative-observation-2026-10-20.json",
+  "inputSha256": "c2897964d774765ef4988c528a36167e9bd288724f1865cd573c9dd880a8363c",
+  "fixtureSha256": "c2d031b6308f6a7300ed12c400208da56ae22fd5abee1628f15d340dc27d1721",
+  "transformedFixtureSha256": "dc1fe60099eebded37d592cb4fd88b6c5a99d89eec9ae6c53621a0f84b292b35",
+  "capturedSources": [
+    {
+      "sourceId": "workable:hunt-st",
+      "capturedAt": "2026-10-20T10:14:42.007Z",
+      "responseSha256": "414d09b9b6d5373e8fdd03d24905458c38549a55f2850ba0237625d21c304566"
+    },
+    {
+      "sourceId": "workable:crewbloom",
+      "capturedAt": "2026-10-20T10:14:42.417Z",
+      "responseSha256": "0bed0b075b184a4a90b370e9bb395ed6e01b2f6b332ea167e2eeb54b254393c2"
+    }
+  ],
+  "controls": [
+    {
+      "sourceId": "workable:hunt-st",
+      "kind": "actual-missing-positive",
+      "opening": {
+        "title": "Admin & Client Support Coordinator (0010-1433)",
+        "shortcode": "7C685D947F",
+        "url": "https://apply.workable.com/j/7C685D947F",
+        "city": "",
+        "state": "",
+        "country": "Philippines",
+        "telecommuting": true,
+        "published_on": "2026-10-20",
+        "created_at": "2026-10-20"
+      }
+    },
+    {
+      "sourceId": "workable:crewbloom",
+      "kind": "actual-missing-positive",
+      "opening": {
+        "title": "Sales Development Representative",
+        "shortcode": "5902EBE6B1",
+        "url": "https://apply.workable.com/j/5902EBE6B1",
+        "city": "",
+        "state": "",
+        "country": "Philippines",
+        "telecommuting": true,
+        "published_on": "2026-10-08",
+        "created_at": "2026-10-08"
+      }
+    },
+    {
+      "sourceId": "workable:hunt-st",
+      "kind": "actual-stale-negative",
+      "opening": {
+        "title": "Accountant With Bookkeeping Experience - (017-975)",
+        "shortcode": "72F025DC44",
+        "url": "https://apply.workable.com/j/72F025DC44",
+        "city": "",
+        "state": "",
+        "country": "Philippines",
+        "telecommuting": true,
+        "published_on": "2026-06-15",
+        "created_at": "2026-06-15"
+      }
+    },
+    {
+      "sourceId": "workable:crewbloom",
+      "kind": "actual-current-onsite-negative",
+      "opening": {
+        "title": "Administrative Specialist",
+        "shortcode": "944599468C",
+        "url": "https://apply.workable.com/j/944599468C",
+        "city": "Meridian",
+        "state": "Idaho",
+        "country": "United States",
+        "telecommuting": false,
+        "published_on": "2026-09-29",
+        "created_at": "2026-09-29"
+      }
+    }
+  ],
+  "checks": {
+    "repliesOk": true,
+    "exactlyActualPositives": true,
+    "originalDates": true,
+    "negativeControlsHidden": true,
+    "nativeFts": true,
+    "capRetained": true,
+    "authorityUnchanged": true,
+    "onlySyntheticTransports": true,
+    "correctTwoTenants": true,
+    "bindingBudget": true,
+    "schema0054": true
+  },
+  "passed": true,
+  "publicRows": [
+    {
+      "id": 1,
+      "title": "Sales Development Representative",
+      "sourceId": "workable:crewbloom",
+      "sourceUrl": "https://apply.workable.com/j/5902EBE6B1",
+      "postedAt": "2026-10-08T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "title": "Admin & Client Support Coordinator (0010-1433)",
+      "sourceId": "workable:hunt-st",
+      "sourceUrl": "https://apply.workable.com/j/7C685D947F",
+      "postedAt": "2026-10-20T00:00:00.000Z"
+    }
+  ],
+  "ledger": [
+    {
+      "source_id": "workable:crewbloom",
+      "tick_key": "scrape:2026-10-20T10:14:54.274Z",
+      "mode": "capped",
+      "published_count": 1,
+      "published_ids_json": "[]"
+    },
+    {
+      "source_id": "workable:hunt-st",
+      "tick_key": "scrape:2026-10-20T10:14:54.274Z",
+      "mode": "capped",
+      "published_count": 1,
+      "published_ids_json": "[]"
+    }
+  ],
+  "aiCalls": 2,
+  "ftsCount": 3,
+  "maxBoundParameters": 95,
+  "limitations": [
+    "Projected minimal actual fields, not a retained raw HTTP response",
+    "No new provider requests or production writes",
+    "Initial authority/packets and AI replies remain synthetic",
+    "No adjudication, deployed coverage, cross-writer cap or insert-ID receipt closure"
+  ]
+}

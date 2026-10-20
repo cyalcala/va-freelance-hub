@@ -1,5 +1,16 @@
 # AI Recovery Trail
 
+## 2026-10-20 — Canonical persistence, grouped evidence and live compatible source
+
+Preserved bot descendants; SSM-first report runner wrote `d88365ed` before
+GitHub, and quarantine-fix main `23b9202a` passed full CI with deploy skipped.
+Corrected 295 widget location rows to 204 unique URLs, with 93 plausible PH
+openings and 17 misses. Compatible source `f34965b0` deployed at 11:28:54Z as
+`347d95ae`; artifact revalidation, preflight 8/8 and post-control 5/5 pass, with
+schema 0054/config preserved. Ordinary collection/recovery remains to observe.
+Keep rollback `8c649da0` and unrelated root features separate.
+[Evidence](operations/CONTINUATION_EVIDENCE_2026-10-20.md).
+
 ## 2026-10-18 — Runtime and claimed coverage reconciled
 
 Recovered all of Astra and current source governance before changes. Verified

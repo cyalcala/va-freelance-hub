@@ -1,5 +1,14 @@
 # Implementation Status
 
+## 2026-10-20 — Bounded compatible deployment, pending outcome observation
+
+Source `f34965b0` is live as production `347d95ae` since 11:28:54Z, with schema
+0054 unchanged and preflight 8/8/post-control 5/5 passing. Rollback `8c649da0`
+remains. This deploys only the reviewed compatible correction. Next is ordinary
+clock recovery of the 17 unique employer misses and actual D1/public visibility.
+Certified daily throughput/recall and MATH 0/13 remain unaccepted.
+[Current evidence](operations/CONTINUATION_EVIDENCE_2026-10-20.md).
+
 ## 2026-10-18 — Actual runtime and proof gaps reconciled
 
 The current [savepoint](SYSTEM_SAVEPOINT.md) and [Astra contract](../astra777.txt)

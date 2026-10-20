@@ -7,7 +7,27 @@ produced counterexamples, passing checks and an actual runner capability result.
 Overnight pauses invalidated some earlier timeout runs; their failed receipts
 remain separate from the final passing run.
 
-## Actual execution and supply
+## Current compatible deployment — 11:28 UTC
+
+Compatible source `f34965b0c7bbfb76395259ccce0b60ad4533eee0` was deployed to
+production/main at11:28:54.036Z as `347d95ae-c9f2-45d5-9cc9-73fb42eafdd2`.
+The exact81dist bytes,19reviewed source hashes and archive manifests were checked
+again before upload. An initial cached OAuth401 is retained in the isolated
+proof; the existing D1 CLI OAuth refresh was followed by a new8/8 preflight.
+Postdeployment5/5 checks verify canonical source/success stage, unchanged config
+including five secret_text names/types, schema0054 unchanged, and five public
+routesHTTP200. Secret values/functionality and remote function bytes are not
+attested. Rollback remains deployment8c649da0. No migration was run.
+
+Safe metadata receipts are retained in `docs/evidence/workable-release-2026-10-20/`
+and bound by its integrity manifest:
+`predeploy-artifact-revalidation-2026-10-20.json`,
+`preflight-release-f34965b0-refreshed-2026-10-20.json`, and
+`postdeploy-control-f34965b0-2026-10-20.json`. Scheduled collection and actual
+recovery of the17 unique misses remain separate observation work. Other combined
+root features were not deployed.
+
+## Pre-release actual execution and supply — 10:08–10:12 UTC
 
 At 10:08–10:12 UTC, Pages still reported production deployment
 `8c649da0-93ef-4458-89ad-715f1367a2ca`, source
@@ -49,10 +69,20 @@ All three responses were HTTP 200; robots allowed both paths with no crawl
 delay. Only minimal factual job metadata was retained. Full response bodies
 were hashed in memory and discarded. No AI or database write occurred.
 
-| Source | Official openings | Parsed actual metadata | Plausible fresh PH metadata | Same-source exact-URL active eligible rows | Exact misses |
+| Source | Widget location rows | Unique opening URLs | Plausible fresh PH opening URLs | Same-source exact-URL active eligible matches | Exact misses |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Hunt St | 143 | 143 | 87 | 71 | 16 |
-| CrewBloom | 152 | 152 | 8 | 7 | 1 |
+| Hunt St | 143 | 140 | 85 | 69 | 16 |
+| CrewBloom | 152 | 64 | 8 | 7 | 1 |
+
+The widgets repeat a job URL for its different locations. Thus 295 location
+rows represent **204 unique opening URLs**, and 95 positive location records
+represent **93 plausible unique openings**, with 76 current stored matches.
+The earlier raw replay's `authoritativeOpenings`/positive/match field names
+describe location-row counts; they must not be used as unique-job or recall
+counts. Its immutable input remains retained. The separately grouped cohort
+corrects the denominator without losing provenance. The 17 unique misses are
+unchanged. Other location variants of a PH opening are not themselves proof
+that publishing that opening is a geographic false positive.
 
 All 295 observed `telecommuting` fields were Boolean. Actual `published_on`
 values use the date-only format accepted by the corrected Workable parser.
@@ -120,10 +150,12 @@ The reproducer refuses to overwrite its existing output and substitutes the
 retained factual fields in memory. It makes no provider call. Its output's
 path and provenance timestamps may differ; compare the source-level counts
 and exact opening details against the retained reconciliation.
+Run `bun docs/evidence/continuation-2026-10-20/group-widget-openings.ts` for the
+separate exact-source/URL grouping and corrected unique-opening denominator.
 
-Next: back up and deploy only the accepted compatible artifact, trace the named
-misses under ordinary clocks, activate and observe canonical report persistence,
-then continue employer evidence, dayshift and mathematical proof work. A bounded
+Next: trace the named misses under ordinary clocks after the compatible release,
+observe recurrent canonical report persistence, then continue employer evidence,
+dayshift and mathematical proof work. A bounded
 source release or one recovered opening is not mission completion.
 
 ## Later activation checkpoint
@@ -144,7 +176,17 @@ package. Deployment was skipped. A dependency-free quarantine repair and its
 native counterexample are being prepared; this failure is not a passing full CI
 receipt or evidence against the independent compatible release suite.
 
-The existing read-only economics workflow was dispatched once on exact activation
-source for persisted-write acceptance: [run 39409286844](https://github.com/cyalcala/va-freelance-hub/actions/runs/39409286844).
-Its actual result remains pending here. Its generated report is still a storage
-measurement, irrespective of whether canonical persistence succeeds.
+The existing read-only economics workflow [run 39409286844](https://github.com/cyalcala/va-freelance-hub/actions/runs/39409286844)
+passed and persisted new report commit `d88365edfaa1a36de00f0865d71b50146b6fc605`
+to SSM before the GitHub mirror. Both refs subsequently read that SHA. This
+proves one actual runner main write and mirror update; recurrent continuity and
+GitLab runtime authentication remain unproven. Its report is a storage measurement.
+
+The dependency-free quarantine repair was activated as
+`23b9202a35aa43883dea4af8e21ad59577eb656d` with parent `d88365ed...`, preserving
+the generated report. All three main refs read back that SHA. Its full
+[CI run 39410570310](https://github.com/cyalcala/va-freelance-hub/actions/runs/39410570310)
+passed unit/Python tests, typecheck/build, secret scan, all audits, offline routes
+and Worker validation. Production migration/deployment was skipped. The 190-line
+quarantined prototype is now three lines with the same explicit error and exit;
+no dependency, active collector, schedule or timeout was added.

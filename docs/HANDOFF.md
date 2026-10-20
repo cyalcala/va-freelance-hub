@@ -1,5 +1,16 @@
 # Handoff
 
+## 2026-10-20 — Compatible release live; ordinary flow remains unverified
+
+Production now uses compatible source `f34965b0`, deployment `347d95ae` at
+11:28:54Z, with schema 0054 unchanged. Preflight 8/8 and post-control 5/5 pass,
+including config preservation and five public routes returning 200. Rollback
+`8c649da0` remains. Observe ordinary clocks and trace the 17 retained unique
+misses; deployment is not publication or recall acceptance. Other root changes
+were not deployed. Shared SSM-first reports have one actual runner write;
+GitLab runtime/recurrence remain unproven. Continue from [Astra](../astra777.txt)
+and the [current evidence](operations/CONTINUATION_EVIDENCE_2026-10-20.md).
+
 ## 2026-10-18 — Reconciled source, runtime and coverage boundary
 
 Continue the mission from the current [savepoint](SYSTEM_SAVEPOINT.md) and compact
