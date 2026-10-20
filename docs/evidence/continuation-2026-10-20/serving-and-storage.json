@@ -1,0 +1,197 @@
+{
+  "observedStart": "2026-10-20T10:11:26.242Z",
+  "scope": "BOUNDED_READ_ONLY",
+  "observations": [
+    {
+      "kind": "inventory",
+      "observedAt": "2026-10-20T10:11:26.242Z",
+      "query": "SELECT count(*) stored, sum(CASE WHEN is_active=1 AND ph_eligibility IN ('eligible_verified','eligible_likely') THEN 1 ELSE 0 END) active_eligible_label, sum(CASE WHEN is_active=1 AND ph_eligibility IN ('eligible_verified','eligible_likely') AND unixepoch(scraped_at)>=unixepoch('now','-7 days') AND unixepoch(scraped_at)<=unixepoch('now') THEN 1 ELSE 0 END) eligible_first_stored_rolling7d, sum(CASE WHEN is_active=1 AND ph_eligibility IN ('eligible_verified','eligible_likely') AND unixepoch(scraped_at)>=unixepoch('now','-30 days') AND unixepoch(scraped_at)<=unixepoch('now') THEN 1 ELSE 0 END) eligible_first_stored_rolling30d FROM opportunities",
+      "querySha256": "5a78de0b1d7266a5715feee5d4ebecfa1e67596b4c8c98ea35656af9aa88f138",
+      "results": [
+        {
+          "stored": 7664,
+          "active_eligible_label": 1788,
+          "eligible_first_stored_rolling7d": 300,
+          "eligible_first_stored_rolling30d": 1485
+        }
+      ],
+      "meta": {
+        "served_by": "v3-prod",
+        "served_by_region": "APAC",
+        "served_by_colo": "SIN",
+        "served_by_primary": true,
+        "timings": {
+          "sql_duration_ms": 11.1968
+        },
+        "duration": 11.1968,
+        "changes": 0,
+        "last_row_id": 0,
+        "changed_db": false,
+        "size_after": 92139520,
+        "rows_read": 7664,
+        "rows_written": 0,
+        "total_attempts": 1
+      }
+    },
+    {
+      "kind": "completedManilaDays",
+      "observedAt": "2026-10-20T10:11:36.370Z",
+      "query": "SELECT date(scraped_at,'+8 hours') manila_day, count(*) eligible_label_first_stored, sum(CASE WHEN ph_eligibility='eligible_verified' THEN 1 ELSE 0 END) verified_label_subset FROM opportunities WHERE is_active=1 AND ph_eligibility IN ('eligible_verified','eligible_likely') AND date(scraped_at,'+8 hours')>=date('now','+8 hours','-7 days') AND date(scraped_at,'+8 hours')<date('now','+8 hours') GROUP BY manila_day ORDER BY manila_day",
+      "querySha256": "46f7e72ccce0ba607e0cc992913e12128f37f39252896f5ea28bc4041c5d56c6",
+      "results": [
+        {
+          "manila_day": "2026-10-13",
+          "eligible_label_first_stored": 25,
+          "verified_label_subset": 2
+        },
+        {
+          "manila_day": "2026-10-14",
+          "eligible_label_first_stored": 36,
+          "verified_label_subset": 3
+        },
+        {
+          "manila_day": "2026-10-15",
+          "eligible_label_first_stored": 38,
+          "verified_label_subset": 3
+        },
+        {
+          "manila_day": "2026-10-16",
+          "eligible_label_first_stored": 74,
+          "verified_label_subset": 31
+        },
+        {
+          "manila_day": "2026-10-17",
+          "eligible_label_first_stored": 30,
+          "verified_label_subset": 2
+        },
+        {
+          "manila_day": "2026-10-18",
+          "eligible_label_first_stored": 27,
+          "verified_label_subset": 7
+        },
+        {
+          "manila_day": "2026-10-19",
+          "eligible_label_first_stored": 59,
+          "verified_label_subset": 14
+        }
+      ],
+      "meta": {
+        "served_by": "v3-prod",
+        "served_by_region": "APAC",
+        "served_by_colo": "SIN",
+        "served_by_primary": true,
+        "timings": {
+          "sql_duration_ms": 1.2269
+        },
+        "duration": 1.2269,
+        "changes": 0,
+        "last_row_id": 0,
+        "changed_db": false,
+        "size_after": 92139520,
+        "rows_read": 2080,
+        "rows_written": 0,
+        "total_attempts": 1
+      }
+    },
+    {
+      "kind": "snapshot",
+      "observedAt": "2026-10-20T10:11:47.670Z",
+      "query": "SELECT id,generated_at,refresh_started_at,length(payload) payload_chars FROM public_serving_snapshot WHERE id=1",
+      "querySha256": "818e0004ea910ee370ff64e865ef348192d2b5083e9cb4c0afa7cf2fcef6b741",
+      "results": [
+        {
+          "id": 1,
+          "generated_at": "2026-10-20T10:08:09.388Z",
+          "refresh_started_at": null,
+          "payload_chars": 713583
+        }
+      ],
+      "meta": {
+        "served_by": "v3-prod",
+        "served_by_region": "APAC",
+        "served_by_colo": "SIN",
+        "served_by_primary": true,
+        "timings": {
+          "sql_duration_ms": 2.1708
+        },
+        "duration": 2.1708,
+        "changes": 0,
+        "last_row_id": 0,
+        "changed_db": false,
+        "size_after": 92139520,
+        "rows_read": 1,
+        "rows_written": 0,
+        "total_attempts": 1
+      }
+    }
+  ],
+  "pages": {
+    "observedAt": "2026-10-20T10:12:02.139Z",
+    "status": 200,
+    "success": true,
+    "errorCodes": [],
+    "project": "remotejobs-ph",
+    "productionBranch": "main",
+    "canonical": {
+      "id": "8c649da0-93ef-4458-89ad-715f1367a2ca",
+      "environment": "production",
+      "createdOn": "2026-10-13T11:52:29.354194Z",
+      "sourceSha": "34e3bd1efa34dc3a2c31f2cc3e5b6c5b04790e83",
+      "branch": "main",
+      "stage": "success"
+    },
+    "latest": {
+      "id": "8c649da0-93ef-4458-89ad-715f1367a2ca",
+      "environment": "production",
+      "createdOn": "2026-10-13T11:52:29.354194Z",
+      "sourceSha": "34e3bd1efa34dc3a2c31f2cc3e5b6c5b04790e83",
+      "branch": "main",
+      "stage": "success"
+    },
+    "config": {
+      "compatibilityDate": "2024-11-01",
+      "compatibilityFlags": [
+        "nodejs_compat"
+      ],
+      "d1Bindings": [
+        {
+          "binding": "DB",
+          "id": "08072f16-d3d1-436a-9104-b057a162db7c"
+        }
+      ],
+      "aiBindings": [
+        "AI"
+      ],
+      "secretNamesAndTypes": [
+        {
+          "name": "GEMINI_API_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "GROQ_API_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "INNGEST_SIGNING_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "OPENROUTER_API_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "PROXY_SECRET",
+          "type": "secret_text"
+        }
+      ]
+    }
+  },
+  "observedEnd": "2026-10-20T10:12:02.141Z",
+  "limitations": [
+    "Sequential reads are not an atomic snapshot.",
+    "Storage counts use current eligible labels; neither labels nor first-storage timestamps certify new verified publications.",
+    "Missing calendar days are missing rows, not measured zeroes.",
+    "Deployment metadata is not a byte attestation of remote functions.",
+    "No source fetch, manual scrape, migration, configuration change or deployment was performed."
+  ]
+}

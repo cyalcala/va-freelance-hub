@@ -1,6 +1,6 @@
 ﻿# Astra777 — operational continuation contract
 
-Updated 2026-10-18, Singapore/Manila (+08:00). Mission remains active: move toward
+Updated 2026-10-20, Singapore/Manila (+08:00). Mission remains active: move toward
 100–150+ independently verified new PH-eligible remote publications/day while
 preserving quality and reducing unnecessary behavior. No daily throughput or
 MATH-01–13 completion is certified.
@@ -9,13 +9,14 @@ MATH-01–13 completion is certified.
 
 - Google Secure Source Manager (`origin`) is canonical Git. GitHub (`github`)
   and GitLab (`gitlab`) are mirrors/continuity. SSM default HEAD is `main`.
-- Initial checkout `c23a2db0b60b544d3305312b696784eed98a1089` was behind 27
-  GitHub bot-report commits. They were preserved by ordinary fast-forward to
-  `be7c493a935cbf023c33db5c3c0398399a4d69c1`, then pushed to SSM and GitLab
-  main/checkpoint. This does not establish all-ref or unattended parity.
+- GitHub-only bot reports repeatedly advanced beyond SSM. The initial 27 and
+  later 20 descendants were preserved. October 20 10:20Z main readback matched
+  `5c46edf4` on all three hosts. This is named-ref equality, not all-ref or
+  unattended parity. Shared SSM-first report persistence is now reviewed;
+  activation/runtime acceptance is tracked in its October 20 receipt.
 - Branch: `codex/verified-flow-directory-checkpoint`. Preserve unrelated dirty
   `.agents/teamwork/orchestrator_13/progress.md`. Fetch/restate HEAD per slice.
-- Actual Pages production at 2026-10-18 08:09Z: deployment
+- Actual Pages production at 2026-10-20 10:12Z: deployment
   `8c649da0-93ef-4458-89ad-715f1367a2ca`, source
   `34e3bd1efa34dc3a2c31f2cc3e5b6c5b04790e83`, schema **0054**.
   Later local intake, date, gateway, dayshift and tracker work is not deployed.
@@ -25,7 +26,8 @@ MATH-01–13 completion is certified.
   (:53), enabled; five recent executions each succeeded. No miner was found
   in that inspected region. Publisher still labels October 4 source
   `3a0ba3bc7c0c75c5cd32ae71f924375e2be023f2`, not this checkout.
-  Its five sampled receipts synced zero. GCP completion is not publication.
+  October 20's five sampled receipts synced 0,0,0,7,1 in time order.
+  GCP completion and sync counts are not publication certification.
 - Turso holds acquisition/provenance/candidates; D1 serves the public mart.
   Astro/Pages serves snapshots through memory, edge, D1 and bundled LKG.
   Current local lake sync rejects real raw publication with
@@ -50,24 +52,27 @@ role checks occur at different points, including parser-level exclusions.
 The lake discovery/replay path is separate; QUALIFIED_READY is not publication
 permission. Trace each real caller before attributing a result to this model.
 
-## OBSERVED: October 18 bounded production baseline
+## OBSERVED: October 20 bounded production baseline
 
-- Public /opportunities returned 200, 1702 cards/757 companies, snapshot
-  generated 07:56:02Z, stale at age 787 seconds and no-store. No schedule filter.
-  Counts from later D1 reads differ; these are separate instants/exposures.
-- At 08:10Z: 7514 stored, 1712 active eligible labels. Complete October 11–17
-  current-eligible first-storage counts: 17,28,25,36,38,74,30 (35.4/day).
-  Verified-label subset: 0,9,2,3,3,31,2 (7.1/day). Neither is certification.
-- Same-day ledger counts vs retained IDs disagree; October 16 had 18 deficient
-  receipts. Do not sum reported counts into certified first publications.
-- Seven admitted Workable sources each had **0 attempts / 133 rotation skips**
-  over the preceding 24h. Selection starvation is a demonstrated coverage gap.
-- Fresh six-query economics capture at 08:15:21Z: 7518 stored, 1716 active
-  eligible, 261 rolling-seven-day first-stored eligible (37.29/day), 1410 over
-  thirty days (47/day). All partition deltas zero, no writes. Sequential
-  queries are not an atomic snapshot or independent eligibility adjudication.
-- Trusted-employer recall, current authoritative opening cohort, PH false-negative
-  rate, complete publication latency and certified daily throughput remain UNKNOWN.
+- Public /opportunities returned 200, 1788 jobs/763 companies. A stale edge
+  generation09:43:58Z at age1450s refreshed in D1 to10:08:09Z. No schedule filter.
+- D1:7664 stored/1788 active eligible labels. Complete Manila October13–19
+  eligible first-storage counts:25,36,38,74,30,27,59 (41.29/day); verified-label
+  subset62/7=8.86/day. Rolling7d300/7=42.86/day;30d1485/30=49.5/day.
+  These current labels/storage clocks are not certified first publications.
+- Seven Workable identities each had **0 attempts /144 rotation skips** in24h.
+  Six full current admission packets validate. Pineapple's revision binding
+  fails. Overdue review dates alone do not revoke the six valid leases.
+- Three permitted manual requests (robots +two widgets) observed Hunt143 and
+  CrewBloom152 openings. Actual minimal metadata replay yields95 plausible
+  fresh PH openings:78 same-source exact-URL active eligible rows,17 misses
+  (Hunt16,Crew1). This is not an independently adjudicated recall denominator.
+  Trace retained exact misses under ordinary acquisition after deployment.
+- Existing insert receipts retain empty ID arrays; do not sum their counts
+  into certified new publications. Global writer/cap closure remains unproven.
+- Full trusted-employer recall, PH false-negative rate, complete publication
+  latency and certified daily throughput remain UNKNOWN. Inputs/query receipts:
+  docs/operations/CONTINUATION_EVIDENCE_2026-10-20.md.
 
 ## PROVEN LOCALLY / CORRECTED CLAIMS
 
@@ -112,8 +117,8 @@ Do not relax the complete Autonomy Cutover Predicate or source-specific scope.
 Highest-value next action: finish a bounded **0054-compatible Workable rotation,
 fair intake and necessary original-date safety release**, then verify ordinary
 fetches -> real permitted fresh PH jobs -> actual D1 IDs -> public visibility.
-Include canonical `workable:pineapple-staffing`, two slots/60min, robots enforcement,
-US/onsite/stale/future/invalid-date controls, caps, dedup and rollback.
+Retain canonical identities, two slots/60min, robots enforcement,
+US/onsite/stale/future/invalid-date controls, current admissions, caps and rollback.
 
 Actual live source archive has1182 byte-verified files, SHA256
 11f1403cf75b9efa8cd5b2644f2bb40861daf2996fec5091b0c65ffb22347968.
@@ -124,13 +129,18 @@ values; do not deploy blindly. Also do not substitute created_at for published_o
 The proof uses an isolated temporary Git repository based on live source; no
 managed worktree is attached to this chat.
 
-Release acceptance is still incomplete. The first 11 native tests did not
-cover existing-row reactivation: independent native probes revived a previously
-PH-verified row when its current widget posting was onsite, and revived a
-stored original date from 2020 when the incoming date was fresh. Repair current
-and stored Workable evidence checks at reactivation without rewriting original
-dates, and retain those counterexamples before deployment. The retained release
-full run is 3103 pass/1 snapshot-test timeout, not a clean acceptance receipt.
+Compatible source commit `f34965b0c7bbfb76395259ccce0b60ad4533eee0` has passed
+3156/0/320090assertions/226files, typecheck/build/three audits and independent
+review26/0/252 plus six controls. Earlier failed/interrupted proofs are retained.
+It repairs existing-row, pending/inline, date-provenance and split-channel-cap
+bypasses; reuses the existing packet validator; shares the three activation
+facts/CAS checks; lets current explicit PH outweigh unclear stored text; and
+never advances a retained posting date. Missing/ambiguous current openings hold.
+The separate Inngest Workable path explicitly defers pending concurrency proof.
+Two actual minimal-field positives also pass native SQLite/public/FTS replay;
+authority, AI and transport remain synthetic. Source is backed up on a dedicated
+SSM release branch. Exact artifact deployment and real ordinary-clock/public
+acceptance remain pending; do not deploy the combined root checkout.
 
 Parallel next work: preserve/report canonical/mirror refs per bounded checkpoint;
 repair recurring GitHub-only report writes using existing authorized credentials
@@ -143,6 +153,8 @@ canonical MATH/SSAE proof cards without claiming implementation is acceptance.
 Read AGENTS.md, current SYSTEM_SAVEPOINT, source constitution/masterplan and sole
 Source Perpetuity queue before admissions. Relevant current receipts:
 - docs/operations/REPOSITORY_PARITY_2026-10-18.md
+- docs/operations/CONTINUATION_EVIDENCE_2026-10-20.md
+- docs/operations/GENERATED_REPORT_CANONICAL_PERSISTENCE_2026-10-20.md
 - docs/operations/AUTONOMOUS_IMPROVEMENT_2026-10-18.md (combined proof/commits)
 - docs/operations/SOURCE_ECONOMICS_MEASUREMENT_REPAIR_2026-10-18.md
 - docs/evidence/AUTONOMOUS_IMPROVEMENT_2026-10-18/economics/

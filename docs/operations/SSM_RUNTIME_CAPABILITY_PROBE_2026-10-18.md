@@ -1,6 +1,6 @@
 # Existing GitHub identity: bounded SSM capability probe
 
-Status: prepared manual diagnostic; runtime result pending. This is a
+Status: the read/dry-run diagnostic passed. This is a
 prerequisite investigation for correcting GitHub-only report persistence,
 not an automated mirror or a production scheduler.
 
@@ -51,3 +51,18 @@ It does not prove persisted writes, protected-main access or unattended mirror
 continuity. A failure remains evidence; do not add grants or reinterpret the
 result as permission. GitLab runtime authentication is a separate unresolved
 boundary and is not supplied by this diagnostic.
+
+## Observed runtime result — October 20 readback
+
+[Run 39142613038](https://github.com/cyalcala/va-freelance-hub/actions/runs/39142613038)
+completed successfully on October 18 at 15:55:29 UTC, from exact source
+`8078a260aab0650e815e780209f4598b94af9e29`. The selected diagnostic job passed
+the canonical-ref read, dry-run push and both cleanup steps. The secret-sync
+job was **skipped**. A later explicit SSM read found no diagnostic ref at
+`refs/heads/codex/diagnostics/ssm-capability-39142613038-1`.
+
+This removes the unknown read/dry-run capability prerequisite. Actual persisted
+canonical writes, protected-main behavior and recurring mirror convergence still
+need their own runtime evidence. No IAM grant, secret update or production
+deployment followed from this diagnostic. Safe metadata is retained with the
+[October 20 continuation evidence](CONTINUATION_EVIDENCE_2026-10-20.md).

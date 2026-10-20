@@ -1,5 +1,24 @@
 # System Savepoint
 
+## 2026-10-20 — Actual employer cohort and reviewed compatible release
+
+Read the current [continuation evidence](operations/CONTINUATION_EVIDENCE_2026-10-20.md)
+and [Astra](../astra777.txt). The latest complete-day eligible-storage proxy is
+41.29/day; certified new verified publications remain UNKNOWN. All seven Workable
+tenants still show zero attempts/144 rotation skips over 24 hours. Six current
+admission packets validate; Pineapple's revision binding fails. Two permitted
+widgets expose 295 openings; candidate metadata checks identify 95 plausible
+fresh PH openings, 78 exact active eligible matches and 17 retained misses.
+
+Isolated compatible source `f34965b0...` passed 3,156 tests/zero failures,
+typecheck/build/governance and independent review, including the later pending,
+original-date and PH precedence corrections. It is backed up on its dedicated
+SSM release branch. Actual deployment and ordinary-clock outcome acceptance are
+separate next steps. Do not deploy the combined root checkout or migrations.
+The reviewed shared SSM-first report persistence slice is separately prepared
+for main activation; its runner write acceptance and GitLab runtime mirroring
+remain unproven. The goal remains active.
+
 ## 2026-10-18 — Runtime reconciled; unsupported completion claims corrected
 
 Mission remains active. Read the current compact [Astra continuation contract](../astra777.txt)
