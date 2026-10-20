@@ -110,15 +110,26 @@ export function inspectRobotsEnforcementPolicy(text: string): GuardrailResult {
 
   const declarations = [
     ...text.matchAll(/const\s+ROBOTS_ENFORCE_SOURCE_IDS\b[^;]*;/g),
-  ].map((match) => match[0].trim());
+  ].map((match) => match[0].replace(/\r\n/g, "\n").trim());
   const approvedInitializers = new Set([
     'const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set(["we-work-remotely", "remotive", "real-work-from-anywhere", "remote-ok", "jobicy-admin-support-apac", "jobicy-supporting-apac"]);',
     "const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set([]);",
+    // This exact source-scoped extension only enforces robots for the seven
+    // already-admitted Workable identities; it grants no collection admission.
+    [
+      'const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set([',
+      '  "we-work-remotely", "remotive", "real-work-from-anywhere", "remote-ok",',
+      '  "jobicy-admin-support-apac", "jobicy-supporting-apac",',
+      '  "workable:coconutva", "workable:crewbloom", "workable:hello-rache",',
+      '  "workable:hunt-st", "workable:pearltalent", "workable:pineapple-staffing", "workable:rocketams",',
+      ']);',
+    ].join("\n"),
+
   ]);
   if (declarations.length === 0) {
     errors.push(`${path}: source-scoped robots enforce set is required`);
   } else if (declarations.length !== 1 || !approvedInitializers.has(declarations[0])) {
-    errors.push(`${path}: robots enforce set must use the exact empty or reviewed six-source literal initializer`);
+    errors.push(`${path}: robots enforce set must use an exact reviewed initializer: empty rollback, six-source rollback, or six feeds plus seven admitted Workable sources`);
   }
 
   if (!text.includes("robotsModeForSourceId(source.id)")) {

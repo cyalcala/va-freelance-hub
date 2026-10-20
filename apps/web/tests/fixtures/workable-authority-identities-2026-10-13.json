@@ -1,0 +1,16 @@
+{
+  "scope": "DATED_READ_ONLY_IDENTITY_PROJECTION_NOT_CURRENT_PERMISSION_OR_NEW_ADMISSION",
+  "capturedAt": "2026-10-13T11:17:18.291Z",
+  "sourceArtifact": "docs/evidence/publication-flow-2026-10-13/authenticated-state.json",
+  "sourceArtifactSha256": "3f7521e70d178aa9b8dda3aba1f5a9b4a988d9e58a23228dee44a83c2c910620",
+  "querySha256": "db3290a45acd79d7bfc4d5d9e979f268309ccf4c5319edf6d457b35e9616007e",
+  "sourceIds": [
+    "workable:coconutva",
+    "workable:crewbloom",
+    "workable:hello-rache",
+    "workable:hunt-st",
+    "workable:pearltalent",
+    "workable:pineapple-staffing",
+    "workable:rocketams"
+  ]
+}

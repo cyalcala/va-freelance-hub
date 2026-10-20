@@ -7,10 +7,15 @@ import {
   attachSourceIdentity,
   buildSourceIdsByUrl,
   conditionalValidatorsForPersistence,
+  mergeSourceIdsByUrl,
+  selectIntakeBatch,
   sourceIdsForUrls,
 } from "@/lib/conditional-state";
 import { isFeedRecoverableInactiveReason, RECOVERABLE_INACTIVE_REASONS } from "@/lib/inactive-reason";
 import { runLockOutcome } from "@/lib/run-lock";
+import { selectWorkableRotation } from "@/lib/workable-rotation";
+import { loadWorkableAdmission, workableAdmissionWhere, insertAdmittedWorkableRow, workableOpeningColumns, workableOpeningHold, workableCurrentOpeningHold, workableActivationPostedAt, workableOpeningWhere } from "@/lib/workable-admission";
+import { assessPostingFreshness } from "../../../../../../packages/scraper/publication-freshness";
 import { d1Changes } from "@/lib/d1-result";
 import { publicationDbFromEnv, publishGroupedActivations, publishGroupedInserts } from "@/lib/publish-opportunities";
 import { publishPublicExposure, publicationTickKey } from "@va-hub/scraper";
@@ -51,7 +56,12 @@ type SourceType = "RSS" | "HTML" | "JSON" | "ATS";
  * enter the explicit canary set; every other and future ID defaults observe.
  * Removing the canary ID is the tested rollback.
  */
-const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set(["we-work-remotely", "remotive", "real-work-from-anywhere", "remote-ok", "jobicy-admin-support-apac", "jobicy-supporting-apac"]);
+const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set([
+  "we-work-remotely", "remotive", "real-work-from-anywhere", "remote-ok",
+  "jobicy-admin-support-apac", "jobicy-supporting-apac",
+  "workable:coconutva", "workable:crewbloom", "workable:hello-rache",
+  "workable:hunt-st", "workable:pearltalent", "workable:pineapple-staffing", "workable:rocketams",
+]);
 
 export function robotsModeForSourceId(
   sourceId: string,
@@ -71,6 +81,8 @@ interface SourceFetchResult {
   count: number;
   durationMs: number;
   items: NewOpportunity[];
+  /** Parsed Workable openings held before intake; raw parsed count remains unchanged. */
+  postingHolds?: Record<string, number>;
   skipped?: boolean;
   skipReason?: string;
   error?: string;
@@ -368,6 +380,7 @@ export async function drainPendingTriageInline(
   observedAt: string,
   limit: number = PENDING_DRAIN_PER_TICK,
   publicationDb?: ReturnType<typeof publicationDbFromEnv>,
+  currentItems: readonly NewOpportunity[] = [],
 ): Promise<PendingDrainStats> {
   const stats: PendingDrainStats = { claimed: 0, published: 0, rejected: 0, quarantined: 0, deferred: 0 };
   if (aiBudget.exhausted()) return stats;
@@ -385,6 +398,10 @@ export async function drainPendingTriageInline(
     sourceUrl: string;
     applicationUrl: string | null;
     sourceId: string | null;
+    postedAt: string | null;
+    locationType: "remote" | "hybrid" | "onsite" | null;
+    inactiveReason: string | null;
+    phEligibility: typeof opportunities.$inferSelect.phEligibility;
   }>;
   try {
     pending = await db
@@ -398,6 +415,10 @@ export async function drainPendingTriageInline(
         sourceUrl: opportunities.sourceUrl,
         applicationUrl: opportunities.applicationUrl,
         sourceId: opportunities.sourceId,
+        postedAt: opportunities.postedAt,
+        locationType: opportunities.locationType,
+        inactiveReason: opportunities.inactiveReason,
+        phEligibility: opportunities.phEligibility,
       })
       .from(opportunities)
       .where(and(eq(opportunities.isActive, false), eq(opportunities.inactiveReason, "pending-triage")))
@@ -411,6 +432,16 @@ export async function drainPendingTriageInline(
   for (const item of pending) {
     if (aiBudget.exhausted()) break;
     stats.claimed += 1;
+    if (item.sourceId?.startsWith("workable:")) {
+      const hold = workableOpeningHold(item, observedAt, false) ?? workableCurrentOpeningHold(item, currentItems, observedAt, false);
+      const admission = await loadWorkableAdmission(publicationDb, item.sourceId, observedAt);
+      if (hold || !admission.ok) {
+        console.log(JSON.stringify({ event: "WORKABLE_PENDING_HOLD", opportunityId: item.id, sourceId: item.sourceId,
+          reason: hold ?? (!admission.ok ? admission.reason : "unknown"), observedAt }));
+        stats.deferred += 1;
+        continue;
+      }
+    }
     const baseTags = item.tags ?? [];
     const gate = geoGate({
       title: item.title,
@@ -473,8 +504,15 @@ export async function drainPendingTriageInline(
       const mergedTags = Array.from(new Set([...baseTags, triage.category, ...(triage.tags || [])]))
         .filter(Boolean)
         .map((t) => (typeof t === "string" ? t.toLowerCase().trim() : t));
-      const publishRow = () => db.update(opportunities).set({
+      const publishRow = async () => {
+        const isWorkable = item.sourceId?.startsWith("workable:");
+        const admission = isWorkable ? await loadWorkableAdmission(publicationDb, item.sourceId!, new Date().toISOString()) : null;
+        const now = new Date().toISOString();
+        const hold = isWorkable ? workableOpeningHold(item, now, false) ?? workableCurrentOpeningHold(item, currentItems, now, false) : null;
+        if (hold || (admission && !admission.ok)) throw new Error(`WORKABLE_PENDING_HOLD: ${hold ?? (!admission?.ok ? admission?.reason : "unknown")}`);
+        return db.update(opportunities).set({
         isActive: true,
+        ...(isWorkable ? { postedAt: workableActivationPostedAt(item, currentItems) } : {}),
         inactiveReason: null,
         geoScope: gate.geoScope,
         phEligibility: gate.phEligibility === "unclear" ? "eligible_likely" : gate.phEligibility,
@@ -491,18 +529,25 @@ export async function drainPendingTriageInline(
         experienceLevel: triage.experienceLevel,
         type: triage.employmentType === "contract" ? "freelance" : (triage.employmentType || "freelance"),
         updatedAt: observedAt,
-      }).where(eq(opportunities.id, item.id));
+      }).where(admission?.ok ? and(workableOpeningWhere(item), workableAdmissionWhere(admission)) : eq(opportunities.id, item.id));
+      };
       if (publicationDb) {
         const sourceId = item.sourceId && /^[a-z0-9:._-]+$/.test(item.sourceId) ? item.sourceId : "unattributed";
         const published = await publishPublicExposure(publicationDb, {
           sourceId,
           now: observedAt,
-          tickKey: publicationTickKey("scrape-drain", observedAt),
+          tickKey: publicationTickKey(item.sourceId?.startsWith("workable:") ? "scrape" : "scrape-drain", observedAt),
           retryKey: `scrape-drain:${item.id}:${observedAt}`,
           proposedCount: 1,
           persist: async () => {
-            await publishRow();
-            return { publishedCount: 1, ids: [item.id] };
+            const changes = d1Changes(await publishRow());
+            if (!changes && item.sourceId?.startsWith("workable:")) {
+              const latest = await loadWorkableAdmission(publicationDb, item.sourceId, new Date().toISOString());
+              console.log(JSON.stringify({ event: "WORKABLE_PENDING_HOLD", opportunityId: item.id, sourceId: item.sourceId,
+                reason: latest.ok ? "STORED_FACTS_CHANGED" : `CURRENT_ADMISSION_INVALID: ${latest.reason}`, observedAt }));
+            }
+            return item.sourceId?.startsWith("workable:") ? { publishedCount: changes, ids: changes ? [item.id] : [] }
+              : { publishedCount: 1, ids: [item.id] };
           },
         });
         if (!published.ok || published.publishedCount === 0) {
@@ -537,9 +582,10 @@ async function maybeDrainPendingTriage(
   observedAt: string,
   enabled: boolean,
   where: string,
+  currentItems: readonly NewOpportunity[],
 ): Promise<PendingDrainStats> {
   if (!enabled) return EMPTY_PENDING_DRAIN;
-  const stats = await drainPendingTriageInline(db, aiEnv, aiBudget, observedAt, PENDING_DRAIN_PER_TICK, publicationDbFromEnv(aiEnv));
+  const stats = await drainPendingTriageInline(db, aiEnv, aiBudget, observedAt, PENDING_DRAIN_PER_TICK, publicationDbFromEnv(aiEnv), currentItems);
   if (stats.claimed > 0) {
     console.log(
       `[api/cron/scrape] Pending-triage drain (${where}): claimed ${stats.claimed}, published ${stats.published}, rejected ${stats.rejected}, quarantined ${stats.quarantined}, deferred ${stats.deferred}.`,
@@ -571,6 +617,7 @@ export async function recoverGateEligiblePending(
   db: AppDb,
   observedAt: string,
   publicationDb?: ReturnType<typeof publicationDbFromEnv> | null,
+  currentItems?: readonly NewOpportunity[],
 ): Promise<number> {
   const publishSet = {
     isActive: true,
@@ -582,21 +629,59 @@ export async function recoverGateEligiblePending(
   };
   try {
     if (!publicationDb) {
-      const res = await db.update(opportunities).set(publishSet).where(GATE_ELIGIBLE_PENDING());
+      if (currentItems !== undefined) return 0;
+      const res = await db.update(opportunities).set(publishSet).where(and(GATE_ELIGIBLE_PENDING(),
+        or(isNull(opportunities.sourceId), sql`${opportunities.sourceId} NOT LIKE 'workable:%'`)));
       return d1Changes(res);
     }
     const pending = await db
-      .select({ id: opportunities.id, sourceId: opportunities.sourceId })
+      .select(workableOpeningColumns)
       .from(opportunities)
-      .where(GATE_ELIGIBLE_PENDING());
+      .where(and(GATE_ELIGIBLE_PENDING(), currentItems === undefined
+        ? or(isNull(opportunities.sourceId), sql`${opportunities.sourceId} NOT LIKE 'workable:%'`)
+        : sql`${opportunities.sourceId} LIKE 'workable:%'`));
     if (pending.length === 0) return 0;
+    let published = 0;
+    const byId = new Map(pending.map(row => [row.id, row]));
+    const ready = pending.filter(row => {
+      if (!row.sourceId?.startsWith("workable:")) return true;
+      const hold = workableOpeningHold(row, observedAt, false) ?? workableCurrentOpeningHold(row, currentItems ?? [], observedAt);
+      if (hold) console.log(JSON.stringify({ event: "WORKABLE_PENDING_HOLD", opportunityId: row.id, sourceId: row.sourceId, reason: hold, observedAt }));
+      return hold === null;
+    });
+    for (const group of [ready.filter(row => !row.sourceId?.startsWith("workable:")), ready.filter(row => row.sourceId?.startsWith("workable:"))]) {
+    if (!group.length) continue;
     const result = await publishGroupedActivations(
       publicationDb,
-      pending,
+      group,
       observedAt,
-      "scrape-gate",
+      group[0]!.sourceId?.startsWith("workable:") ? "scrape" : "scrape-gate",
       async (ids) => {
         let publishedCount = 0;
+        const publishedIds: number[] = [];
+        if (group[0]!.sourceId?.startsWith("workable:")) {
+          for (const id of ids) {
+            const row = byId.get(id)!;
+            const now = new Date().toISOString();
+            const hold = workableOpeningHold(row, now, false) ?? workableCurrentOpeningHold(row, currentItems ?? [], now);
+            const admission = await loadWorkableAdmission(publicationDb, row.sourceId!, now);
+            if (hold || !admission.ok) {
+              console.log(JSON.stringify({ event: "WORKABLE_PENDING_HOLD", opportunityId: id, sourceId: row.sourceId,
+                reason: hold ?? (!admission.ok ? admission.reason : "unknown"), observedAt }));
+              continue;
+            }
+            const changes = d1Changes(await db.update(opportunities).set({ ...publishSet, postedAt: workableActivationPostedAt(row, currentItems ?? []) })
+              .where(and(GATE_ELIGIBLE_PENDING(), workableOpeningWhere(row), workableAdmissionWhere(admission))));
+            publishedCount += changes;
+            if (changes) publishedIds.push(id);
+            else {
+              const latest = await loadWorkableAdmission(publicationDb, row.sourceId!, new Date().toISOString());
+              console.log(JSON.stringify({ event: "WORKABLE_PENDING_HOLD", opportunityId: id, sourceId: row.sourceId,
+                reason: latest.ok ? "STORED_FACTS_CHANGED" : `CURRENT_ADMISSION_INVALID: ${latest.reason}`, observedAt }));
+            }
+          }
+          return { publishedCount, ids: publishedIds };
+        }
         for (const batch of chunkArray(ids, 50)) {
           const res = await db.update(opportunities).set(publishSet).where(inArray(opportunities.id, batch));
           publishedCount += d1Changes(res);
@@ -604,7 +689,10 @@ export async function recoverGateEligiblePending(
         return { publishedCount, ids };
       },
     );
-    return result.published;
+    published += result.published;
+    if (result.failed) break;
+    }
+    return published;
   } catch (err) {
     console.warn(`[api/cron/scrape] Gate-eligible pending recovery failed:`, errorMessage(err));
     return 0;
@@ -616,6 +704,7 @@ export async function reactivateFeedConfirmedJobs(
   urls: string[],
   observedAt: string,
   publicationDb?: ReturnType<typeof publicationDbFromEnv> | null,
+  currentItems: readonly NewOpportunity[] = [],
 ): Promise<number> {
   if (urls.length === 0) return 0;
   const BATCH_SIZE = 50;
@@ -632,39 +721,97 @@ export async function reactivateFeedConfirmedJobs(
     inArray(opportunities.inactiveReason, [...RECOVERABLE_INACTIVE_REASONS]),
     inArray(opportunities.phEligibility, ["eligible_verified", "eligible_likely"]),
   );
+  const currentByUrl = new Map<string, NewOpportunity[]>();
+  for (const item of currentItems) {
+    const list = currentByUrl.get(item.sourceUrl) ?? [];
+    list.push(item);
+    currentByUrl.set(item.sourceUrl, list);
+  }
+  const isWorkable = (sourceId: string | null | undefined) => sourceId?.startsWith("workable:") === true;
+  const recordHold = (row: { id: number; sourceId: string | null }, reason: string) => console.log(JSON.stringify({
+    event: "WORKABLE_REACTIVATION_HOLD", sourceId: row.sourceId, opportunityId: row.id, reason, observedAt,
+  }));
   try {
     if (!publicationDb) {
       let reactivated = 0;
       for (const batch of chunkArray(urls, BATCH_SIZE)) {
-        const res = await db.update(opportunities).set(publishSet).where(recoverableWhere(batch));
+        // Workable recovery needs current opening facts and the publication
+        // authority below. Preserve the legacy fallback for other providers.
+        const nonWorkableUrls = batch.filter(url => !currentByUrl.get(url)?.some(item => isWorkable(item.sourceId)));
+        if (!nonWorkableUrls.length) continue;
+        const res = await db.update(opportunities).set(publishSet).where(and(
+          recoverableWhere(nonWorkableUrls),
+          or(isNull(opportunities.sourceId), sql`${opportunities.sourceId} NOT LIKE 'workable:%'`),
+        ));
         reactivated += d1Changes(res);
       }
       return reactivated;
     }
-    const rows: Array<{ id: number; sourceId: string | null }> = [];
+    const rows: Array<Pick<typeof opportunities.$inferSelect,
+      "id" | "sourceId" | "sourceUrl" | "title" | "description" | "company" | "applicationUrl" | "tags" | "locationType" | "locationRaw" | "postedAt" | "inactiveReason" | "phEligibility">> = [];
     for (const batch of chunkArray(urls, BATCH_SIZE)) {
       const found = await db
-        .select({ id: opportunities.id, sourceId: opportunities.sourceId })
+        .select(workableOpeningColumns)
         .from(opportunities)
         .where(recoverableWhere(batch));
-      rows.push(...found);
+      rows.push(...found.filter(row => {
+        const current = currentByUrl.get(row.sourceUrl) ?? [];
+        if (!isWorkable(row.sourceId) && !current.some(item => isWorkable(item.sourceId))) return true;
+        const reason = !isWorkable(row.sourceId) ? "SOURCE_IDENTITY_MISMATCH"
+          : workableOpeningHold(row, observedAt, false) ?? workableCurrentOpeningHold(row, currentItems, observedAt);
+        if (reason) recordHold(row, reason);
+        return reason === null;
+      }));
     }
     if (rows.length === 0) return 0;
+    const byId = new Map(rows.map(row => [row.id, row]));
+    let published = 0;
+    for (const group of [rows.filter(row => !isWorkable(row.sourceId)), rows.filter(row => isWorkable(row.sourceId))]) {
+    if (!group.length) continue;
     const result = await publishGroupedActivations(
       publicationDb,
-      rows,
+      group,
       observedAt,
-      "scrape-reactivate",
+      isWorkable(group[0]!.sourceId) ? "scrape" : "scrape-reactivate",
       async (ids) => {
         let publishedCount = 0;
-        for (const batch of chunkArray(ids, BATCH_SIZE)) {
+        const publishedIds: number[] = [];
+        const legacyIds = ids.filter(id => !isWorkable(byId.get(id)?.sourceId));
+        for (const batch of chunkArray(legacyIds, BATCH_SIZE)) {
           const res = await db.update(opportunities).set(publishSet).where(inArray(opportunities.id, batch));
           publishedCount += d1Changes(res);
+          publishedIds.push(...batch);
         }
-        return { publishedCount, ids };
+        for (const id of ids.filter(id => isWorkable(byId.get(id)?.sourceId))) {
+          const row = byId.get(id)!;
+          const current = currentByUrl.get(row.sourceUrl)![0]!;
+          const now = new Date().toISOString();
+          const hold = workableOpeningHold(row, now, false) ?? workableOpeningHold(current, now, true);
+          if (hold) { recordHold(row, hold); continue; }
+          const admission = await loadWorkableAdmission(publicationDb, row.sourceId!, now);
+          if (!admission.ok) { recordHold(row, `CURRENT_ADMISSION_INVALID: ${admission.reason}`); continue; }
+          // A URL repeat cannot advance a retained posting date or revive
+          // facts/source identity changed after validation. One row stays well
+          // below D1's binding cap, including its exact nullable facts.
+          const res = await db.update(opportunities).set({ ...publishSet, postedAt: workableActivationPostedAt(row, currentItems) }).where(and(
+            recoverableWhere([row.sourceUrl]), workableOpeningWhere(row),
+            workableAdmissionWhere(admission),
+          ));
+          const changed = d1Changes(res);
+          publishedCount += changed;
+          if (changed) publishedIds.push(id);
+          else {
+            const latest = await loadWorkableAdmission(publicationDb, row.sourceId!, new Date().toISOString());
+            recordHold(row, latest.ok ? "STORED_FACTS_CHANGED" : `CURRENT_ADMISSION_INVALID: ${latest.reason}`);
+          }
+        }
+        return { publishedCount, ids: publishedIds };
       },
     );
-    return result.published;
+    published += result.published;
+    if (result.failed) break;
+    }
+    return published;
   } catch (err) {
     console.warn(`[api/cron/scrape] Feed-confirmed reactivation failed:`, errorMessage(err));
     return 0;
@@ -2124,15 +2271,26 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       a.companyName.localeCompare(b.companyName)
     );
 
-    // Staggered Workable Polling: Select only the 2 oldest/unscraped Workable agencies
-    const workableAgencies = sortedAtsAgencies.filter(a => a.atsPlatform === "workable");
-    workableAgencies.sort((a, b) => {
-      if (!a.verifiedAt && b.verifiedAt) return -1;
-      if (a.verifiedAt && !b.verifiedAt) return 1;
-      if (!a.verifiedAt && !b.verifiedAt) return 0;
-      return a.verifiedAt!.localeCompare(b.verifiedAt!);
+    // Current immutable admission is distinct from an enabled registry policy.
+    // Validate only the finite configured Workable cohort; no renewal or grant.
+    const workableAdmissions = new Map<string, Awaited<ReturnType<typeof loadWorkableAdmission>>>();
+    for (const agency of sortedAtsAgencies) {
+      if (agency.atsPlatform !== "workable" || !atsPlatformPolicy(agency, registryPolicies).enabled) continue;
+      const key = atsSourceKey(agency);
+      if (workableAdmissions.has(key)) continue;
+      const admission = await loadWorkableAdmission(publicationDb, key, observedAt);
+      workableAdmissions.set(key, admission);
+      if (!admission.ok) console.log(JSON.stringify({ event: "WORKABLE_ADMISSION_HOLD", sourceId: key, reason: admission.reason, observedAt }));
+    }
+    // Only permitted, currently admitted, due tenants consume the existing two slots.
+    const workableRotation = selectWorkableRotation({
+      agencies: sortedAtsAgencies,
+      sourceKey: atsSourceKey,
+      isPolicyEnabled: agency => atsPlatformPolicy(agency, registryPolicies).enabled && workableAdmissions.get(atsSourceKey(agency))?.ok === true,
+      states: sourceFetchStates,
+      statesAvailable: fetchStateLoad.available,
+      observedAt,
     });
-    const allowedWorkableTokens = new Set(workableAgencies.slice(0, 2).map(a => a.atsToken));
 
     const primaryAtsCompanies = new Map<string, string>();
     const uniqueAtsAgencies: AtsAgency[] = [];
@@ -2151,11 +2309,13 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       }
 
       // Skip Workable agencies not in the current active rotation slice
-      if (agency.atsPlatform === "workable" && !allowedWorkableTokens.has(agency.atsToken)) {
+      if (agency.atsPlatform === "workable" && !workableRotation.selectedSourceIds.has(atsSourceKey(agency))) {
         policySkippedAtsAgencies.push({
           agency,
           policy,
-          skipReason: "Skipped Workable rotation slice to prevent rate limiting (scheduled for later runs)."
+          skipReason: workableAdmissions.get(atsSourceKey(agency))?.ok === false
+            ? `Workable admission: ${(workableAdmissions.get(atsSourceKey(agency)) as { ok: false; reason: string }).reason}`
+            : `Workable rotation: ${workableRotation.diagnostics.find(item => item.agency === agency)?.reason ?? "ROTATION_DEFERRED"}.`
         });
         continue;
       }
@@ -2188,7 +2348,8 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
     for (const agency of uniqueAtsAgencies) {
       const key = atsSourceKey(agency);
       const prev = sourceFetchStates.get(key);
-      if (prev?.lastAttemptAt) {
+      // Workable already applies this clock before spending a rotation slot.
+      if (agency.atsPlatform !== "workable" && prev?.lastAttemptAt) {
         const elapsed = Date.parse(observedAt) - Date.parse(prev.lastAttemptAt);
         if (Number.isFinite(elapsed) && elapsed < ATS_MIN_INTERVAL_MS) {
           cadenceSkippedAts.push({
@@ -2210,8 +2371,8 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       const key = atsSourceKey(agency);
       const atsUrl = atsEndpointUrl(agency.atsPlatform as any, agency.atsToken as string);
 
-      // Check robots.txt for the ATS endpoint origin. No current ATS ID is in
-      // the reviewed enforcement set, so all remain observe by default.
+      // Check current robots before transport. The seven admitted Workable
+      // identities enforce unknown/disallowed; other retained modes stay unchanged.
       const robotsMode = robotsModeForSourceId(key);
       const robots = await checkRobots(atsUrl, {
         store: createRobotsStore(db),
@@ -2243,7 +2404,13 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
           "public_ats_json",
           policy.complianceStatus,
           policy.complianceNotes,
-          () => fetchATSFeed(agency.atsPlatform as any, agency.atsToken as string, agency.companyName),
+          async () => {
+            if (agency.atsPlatform === "workable") {
+              const admission = await loadWorkableAdmission(publicationDb, key, new Date().toISOString());
+              if (!admission.ok) throw new Error(`WORKABLE_ADMISSION_HOLD: ${admission.reason}`);
+            }
+            return fetchATSFeed(agency.atsPlatform as any, agency.atsToken as string, agency.companyName);
+          },
           key
         );
         // Attach robots provenance for successful fetches too.
@@ -2266,6 +2433,22 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
         }
       }
 
+      if (result.ok && !result.skipped && agency.atsPlatform === "workable") {
+        const postingHolds: Record<string, number> = {};
+        // Before feed revival, URL dedup or AI: new collection must not expose
+        // stale/future/missing/invalid original dates from unstarved tenants.
+        result.items = result.items.filter(item => {
+          const assessment = assessPostingFreshness(item.postedAt, observedAt);
+          if (assessment.state === "WITHIN_WINDOW") return true;
+          const reason = `POSTING_DATE_${assessment.state}`;
+          postingHolds[reason] = (postingHolds[reason] ?? 0) + 1;
+          return false;
+        });
+        result.postingHolds = postingHolds;
+        if (Object.keys(postingHolds).length) console.log(JSON.stringify({
+          event: "WORKABLE_POSTING_HOLD", sourceId: key, postingHolds, observedAt,
+        }));
+      }
       if (result.ok && agency.atsPlatform === "workable" && agency.id > 0) {
         try {
           await db.update(vaDirectory)
@@ -2308,6 +2491,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       atsResults.push(await fetchOneAts(agency));
       await sleep(1_000);
     }
+    mergeSourceIdsByUrl(sourceIdsByUrl, buildSourceIdsByUrl(atsResults));
     // SP-01: ATS results carry the exact `platform:token` identity (atsSourceKey),
     // so two tenants on one ATS stay distinct even though they share a platform label.
     const atsItems = attachSourceIdentity(atsResults);
@@ -2356,6 +2540,11 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       console.warn(`[api/cron/scrape] Repeated cross-company application host anomaly: ${anomalousApplicationHosts.join(", ")}`);
     }
 
+    // Workable legacy pending dates may have come from created_at. Confirm the
+    // current original widget opening before recovery; the early pass above
+    // preserves the other providers' existing behavior.
+    if (!triageViaInngest) await recoverGateEligiblePending(db, observedAt, publicationDb, allItems);
+
     if (allItems.length === 0) {
       const stateWrite = await recordConditionalSourceStates(new Set());
       // Nothing new to ingest — but backlog convergence is maintenance work that
@@ -2364,7 +2553,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       // below this return it never ran on those ticks. That, not the per-row
       // failure handling, was the dominant reason the unclear backlog sat flat.
       const idleSweep = await sweepUnclearBacklog(db, aiEnv, observedAt, SWEEP_BUDGET_IDLE_TICK);
-      await maybeDrainPendingTriage(db, aiEnv, aiBudget, observedAt, pendingDrainEnabled, "idle");
+      await maybeDrainPendingTriage(db, aiEnv, aiBudget, observedAt, pendingDrainEnabled, "idle", allItems);
       const outcome = buildNoJobsScrapedOutcome({
         fetchEventFailedBatches: fetchEventLog.failedBatches,
         failedSourceCount: failedSources.length,
@@ -2449,6 +2638,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
         Array.from(recoverableInactiveUrls),
         observedAt,
         publicationDb,
+        allItems,
       );
       console.log(`[api/cron/scrape] Reactivated ${reactivated} feed-confirmed jobs previously archived by the system.`);
     }
@@ -2463,7 +2653,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       // items (so allItems > 0), but after URL dedup none of them are new. The
       // backlog sweep is maintenance and must not be gated on fresh ingest.
       const dedupSweep = await sweepUnclearBacklog(db, aiEnv, observedAt, SWEEP_BUDGET_IDLE_TICK);
-      const dedupDrain = await maybeDrainPendingTriage(db, aiEnv, aiBudget, observedAt, pendingDrainEnabled, "dedup");
+      const dedupDrain = await maybeDrainPendingTriage(db, aiEnv, aiBudget, observedAt, pendingDrainEnabled, "dedup", allItems);
       await recordIngestDiagnostics(db, observedAt, {
         fetchEventFailedBatches: fetchEventLog.failedBatches,
         failedSourceCount: failedSources.length,
@@ -2510,10 +2700,11 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
     const limit = Number.isSafeInteger(requestedLimit) && requestedLimit >= 1 && requestedLimit <= 100
       ? requestedLimit
       : 50;
-    const itemsToProcess = newItems.slice(0, limit);
+    const intake = selectIntakeBatch(newItems, limit);
+    const itemsToProcess = intake.selected;
     console.log(`[api/cron/scrape] Processing ${itemsToProcess.length} out of ${newItems.length} new items (limit: ${limit})`);
     const retrySourceIds = sourceIdsForUrls(
-      newItems.slice(itemsToProcess.length).map((item) => item.sourceUrl),
+      intake.deferred.map((item) => item.sourceUrl),
       sourceIdsByUrl,
     );
     const markItemsForRetry = (items: readonly { sourceUrl: string }[]) => {
@@ -2813,6 +3004,17 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
         const published = await publishGroupedInserts(
           publicationDb,
           async (batch) => {
+            if (batch.some(row => row.sourceId?.startsWith("workable:")
+              && assessPostingFreshness(row.postedAt, new Date().toISOString()).state !== "WITHIN_WINDOW")) {
+              throw new Error("WORKABLE_PUBLICATION_POSTING_FRESHNESS");
+            }
+            if (batch[0]?.sourceId?.startsWith("workable:")) {
+              const admission = await loadWorkableAdmission(publicationDb, batch[0].sourceId, new Date().toISOString());
+              if (!admission.ok) throw new Error(`WORKABLE_ADMISSION_HOLD: ${admission.reason}`);
+              let changes = 0;
+              for (const row of batch) changes += d1Changes(await insertAdmittedWorkableRow(db, row, admission));
+              return changes;
+            }
             const res = await db.insert(opportunities).values(batch).onConflictDoNothing();
             if (res && (res as any).meta && typeof (res as any).meta.changes === "number") return d1Changes(res);
             throw new Error("D1 insert metadata did not include meta.changes");
@@ -2938,7 +3140,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
     const unclearSkepticUnavailable = unclearSweep.skepticUnavailable ?? 0;
     // Recover any `pending-triage` backlog inline with leftover AI budget (no-op
     // under durable-triage opt-in, where Inngest owns the queue).
-    const pendingDrain = await maybeDrainPendingTriage(db, aiEnv, aiBudget, observedAt, pendingDrainEnabled, "post-ingest");
+    const pendingDrain = await maybeDrainPendingTriage(db, aiEnv, aiBudget, observedAt, pendingDrainEnabled, "post-ingest", allItems);
 
     console.log(`[api/cron/scrape] Finished. Processed ${itemsToProcess.length}, accepted ${triagedItems.length}, attempted ${attemptedInsert}, actual DB changes: ${actualChanges}, failed batches: ${insertFailedBatches}, budget-deferred: ${triageBudgetDeferred}, aiCalls: ${aiBudget.calls()}`);
     await recordIngestDiagnostics(db, observedAt, {

@@ -1,6 +1,7 @@
 import type { NewOpportunity } from "@va-hub/db";
 import { toContentHash } from "./contentHash";
 import { collectionHeaders } from "./userAgent";
+import { normalizeWorkablePublishedDate } from "./source-posting-date";
 
 function normalizeText(raw: string | undefined): string {
   if (!raw) return "";
@@ -225,7 +226,7 @@ async function fetchWorkable(token: string, companyName: string): Promise<NewOpp
         locationType: "remote" as const,
         locationRaw: job.telecommuting === false ? `${locationRaw ?? ""} (onsite)`.trim() : locationRaw,
         description: null,
-        postedAt: safeNormalizeDate(job.published_on || job.created_at),
+        postedAt: normalizeWorkablePublishedDate(job.published_on),
         isActive: true,
         contentHash: toContentHash(title, sourceUrl),
       };

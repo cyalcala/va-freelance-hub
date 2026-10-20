@@ -92,6 +92,14 @@ export const triageDrain = inngest.createFunction(
       pending.map((row) =>
         step.run(`triage-${row.id}`, async () => {
           const observedAt = new Date().toISOString();
+          // The separate durable Workable activation writer has no accepted
+          // shared-round concurrency/cap proof. Do not bypass the governed
+          // inline writer if this optional pilot is enabled later.
+          if (row.sourceId?.startsWith("workable:")) {
+            console.log(JSON.stringify({ event: "WORKABLE_PENDING_HOLD", sourceId: row.sourceId, opportunityId: row.id,
+              reason: "DURABLE_WORKABLE_PUBLICATION_NOT_ACCEPTED", observedAt }));
+            return "deferred" as const;
+          }
           const baseTags = row.tags ?? [];
 
           // Deterministic geo verdict is cheap (no AI); re-derived rather than

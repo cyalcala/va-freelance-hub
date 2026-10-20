@@ -193,12 +193,12 @@ test("pins robots enforcement to the reviewed six-source rollout", () => {
 
   const expanded = approved.replace(reviewedIds, reviewedIds.replace("]", ', "future-source"]'));
   expect(inspectRobotsEnforcementPolicy(expanded).errors).toContain(
-    "apps/web/src/pages/api/cron/scrape.ts: robots enforce set must use the exact empty or reviewed six-source literal initializer",
+    "apps/web/src/pages/api/cron/scrape.ts: robots enforce set must use an exact reviewed initializer: empty rollback, six-source rollback, or six feeds plus seven admitted Workable sources",
   );
 
   const partial = approved.replace(reviewedIds, '["we-work-remotely"]');
   expect(inspectRobotsEnforcementPolicy(partial).errors).toContain(
-    "apps/web/src/pages/api/cron/scrape.ts: robots enforce set must use the exact empty or reviewed six-source literal initializer",
+    "apps/web/src/pages/api/cron/scrape.ts: robots enforce set must use an exact reviewed initializer: empty rollback, six-source rollback, or six feeds plus seven admitted Workable sources",
   );
 
   for (const globalFlip of [
@@ -221,7 +221,7 @@ test("pins robots enforcement to the reviewed six-source rollout", () => {
       bypass,
     );
     expect(inspectRobotsEnforcementPolicy(candidate).errors).toContain(
-      "apps/web/src/pages/api/cron/scrape.ts: robots enforce set must use the exact empty or reviewed six-source literal initializer",
+      "apps/web/src/pages/api/cron/scrape.ts: robots enforce set must use an exact reviewed initializer: empty rollback, six-source rollback, or six feeds plus seven admitted Workable sources",
     );
   }
   expect(inspectRobotsEnforcementPolicy("function robotsModeForSourceId() {}").errors).toContain(
@@ -263,3 +263,63 @@ test("inspectAutonomySavepointGate accepts L2+ when graduation package exists", 
   expect(result.errors).toEqual([]);
 });
 
+
+const reviewedRobotsWithWorkable = [
+  'const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set([',
+  '  "we-work-remotely", "remotive", "real-work-from-anywhere", "remote-ok",',
+  '  "jobicy-admin-support-apac", "jobicy-supporting-apac",',
+  '  "workable:coconutva", "workable:crewbloom", "workable:hello-rache",',
+  '  "workable:hunt-st", "workable:pearltalent", "workable:pineapple-staffing", "workable:rocketams",',
+  ']);',
+].join("\n");
+const sourceScopedSelectors = "\nconst sourceMode = robotsModeForSourceId(source.id);\nconst atsMode = robotsModeForSourceId(key);";
+const reviewedRobotsIds = ["we-work-remotely", "remotive", "real-work-from-anywhere", "remote-ok",
+  "jobicy-admin-support-apac", "jobicy-supporting-apac", "workable:coconutva", "workable:crewbloom",
+  "workable:hello-rache", "workable:hunt-st", "workable:pearltalent", "workable:pineapple-staffing", "workable:rocketams"];
+
+test("accepts exactly the reviewed six feeds plus seven already-admitted Workable robots identities", () => {
+  expect(inspectRobotsEnforcementPolicy(reviewedRobotsWithWorkable + sourceScopedSelectors).errors).toEqual([]);
+});
+
+test("current actual scrape source satisfies the reviewed robots contract", async () => {
+  const source = await Bun.file(new URL("../../apps/web/src/pages/api/cron/scrape.ts", import.meta.url)).text();
+  expect(inspectRobotsEnforcementPolicy(source).errors).toEqual([]);
+});
+
+for (const id of reviewedRobotsIds) {
+  test(`rejects omission or duplicate of reviewed robots identity ${id}`, () => {
+    const literal = JSON.stringify(id);
+    for (const altered of [
+      reviewedRobotsWithWorkable.replace(`${literal},`, ""),
+      reviewedRobotsWithWorkable.replace(literal, `${literal}, ${literal}`),
+    ]) expect(inspectRobotsEnforcementPolicy(altered + sourceScopedSelectors).errors.length).toBeGreaterThan(0);
+  });
+}
+
+test("reviewed Workable extension still rejects unknown identities, computed additions and duplicate declarations", () => {
+  for (const altered of [
+    reviewedRobotsWithWorkable.replace('"workable:coconutva"', '"workable:unreviewed"'),
+    reviewedRobotsWithWorkable.replace('"workable:pineapple-staffing"', '"workable:pineapple"'),
+    reviewedRobotsWithWorkable.replace('"workable:coconutva"', '"workable:*"'),
+    reviewedRobotsWithWorkable.replace('"workable:coconutva"', '"lever:coconutva"'),
+    reviewedRobotsWithWorkable.replace('"workable:coconutva"', 'dynamicId'),
+    reviewedRobotsWithWorkable.replace('"workable:coconutva"', '...extraIds'),
+    reviewedRobotsWithWorkable + "\n" + reviewedRobotsWithWorkable,
+  ]) expect(inspectRobotsEnforcementPolicy(altered + sourceScopedSelectors).errors.length).toBeGreaterThan(0);
+});
+
+test("reviewed Workable extension cannot bypass source-scoped selectors or globally enforce ATS", () => {
+  const approved = reviewedRobotsWithWorkable + sourceScopedSelectors;
+  for (const call of ["robotsModeForSourceId(source.id)", "robotsModeForSourceId(key)"]) {
+    expect(inspectRobotsEnforcementPolicy(approved.replace(call, '"enforce"')).errors.length).toBeGreaterThan(0);
+  }
+  expect(inspectRobotsEnforcementPolicy(approved + '\nconst ROBOTS_MODE = "enforce";').errors)
+    .toContain("apps/web/src/pages/api/cron/scrape.ts: global robots enforcement is forbidden");
+});
+
+test("reviewed multiline robots initializer accepts Windows line endings without normalizing source identities", () => {
+  const approved = reviewedRobotsWithWorkable + sourceScopedSelectors;
+  expect(inspectRobotsEnforcementPolicy(approved.replace(/\n/g, "\r\n")).errors).toEqual([]);
+  expect(inspectRobotsEnforcementPolicy(approved.replace("workable:coconutva", "workable:coconut va")).errors.length)
+    .toBeGreaterThan(0);
+});
