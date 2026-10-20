@@ -1,0 +1,43 @@
+name: Persist generated report to canonical SSM and GitHub
+description: Use the existing GCP identity and workflow token for fixed report paths; GitLab remains pending.
+inputs:
+  report-key:
+    description: Fixed report owner (directory, enrichment, hunter, sentinel, medic, prospector, workable, economics)
+    required: true
+  gcp-credentials-json:
+    description: Existing GCP_SA_KEY secret; no new credential or permission is created
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Authenticate existing GCP identity
+      id: auth
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ inputs.gcp-credentials-json }}
+        project_id: antigravity-494415
+        create_credentials_file: true
+        cleanup_credentials: true
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        version: '>= 395.0.0'
+    - name: Persist fixed generated report
+      shell: bash
+      env:
+        REPORT_KEY: ${{ inputs.report-key }}
+        GH_REPORT_TOKEN: ${{ github.token }}
+      run: bash "$GITHUB_ACTION_PATH/../../../scripts/gha/persist-generated-report.sh"
+    - name: Remove ephemeral auth file
+      if: ${{ always() }}
+      shell: bash
+      env:
+        AUTH_FILE: ${{ steps.auth.outputs.credentials_file_path }}
+      run: |
+        set -euo pipefail
+        if [[ -n "$AUTH_FILE" ]]; then
+          case "$AUTH_FILE" in
+            "$GITHUB_WORKSPACE"/gha-creds-*.json) rm -f -- "$AUTH_FILE" ;;
+            *) echo '::error::Refusing cleanup outside the generated auth-file path.'; exit 1 ;;
+          esac
+        fi
