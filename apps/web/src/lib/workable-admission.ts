@@ -85,6 +85,7 @@ export async function insertAdmittedWorkableRow(db: ReturnType<typeof getDb>, ro
   const keys = (Object.keys(columns) as Array<keyof typeof columns>).filter(key => row[key] !== undefined);
   const names = keys.map(key => sql.identifier(columns[key].name));
   const values = keys.map(key => sql`${row[key] === null ? null : columns[key].mapToDriverValue(row[key] as never)}`);
-  return db.run(sql`INSERT INTO ${opportunities} (${sql.join(names, sql`, `)})
-    SELECT ${sql.join(values, sql`, `)} WHERE ${workableAdmissionWhere(current)} ON CONFLICT DO NOTHING`);
+  return db.all<{ id: number }>(sql`INSERT INTO ${opportunities} (${sql.join(names, sql`, `)})
+    SELECT ${sql.join(values, sql`, `)} WHERE ${workableAdmissionWhere(current)} ON CONFLICT DO NOTHING
+    RETURNING ${sql.identifier(columns.id.name)}`);
 }

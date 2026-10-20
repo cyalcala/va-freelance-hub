@@ -3011,9 +3011,11 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
             if (batch[0]?.sourceId?.startsWith("workable:")) {
               const admission = await loadWorkableAdmission(publicationDb, batch[0].sourceId, new Date().toISOString());
               if (!admission.ok) throw new Error(`WORKABLE_ADMISSION_HOLD: ${admission.reason}`);
-              let changes = 0;
-              for (const row of batch) changes += d1Changes(await insertAdmittedWorkableRow(db, row, admission));
-              return changes;
+              const ids: number[] = [];
+              for (const row of batch) {
+                for (const inserted of await insertAdmittedWorkableRow(db, row, admission)) ids.push(inserted.id);
+              }
+              return { publishedCount: ids.length, ids };
             }
             const res = await db.insert(opportunities).values(batch).onConflictDoNothing();
             if (res && (res as any).meta && typeof (res as any).meta.changes === "number") return d1Changes(res);

@@ -41,7 +41,7 @@ async function canaryClampedProposal(
 
 export async function publishGroupedInserts(
   publicationDb: PublicationDatabase,
-  insertBatch: (rows: NewOpportunity[]) => Promise<number>,
+  insertBatch: (rows: NewOpportunity[]) => Promise<number | { publishedCount: number; ids: number[] }>,
   rows: NewOpportunity[],
   now: string,
   channel: string,
@@ -66,7 +66,7 @@ export async function publishGroupedInserts(
       proposedCount,
       persist: async (allowed) => {
         const written = await insertBatch(group.slice(0, allowed));
-        return { publishedCount: written, ids: [] };
+        return typeof written === "number" ? { publishedCount: written, ids: [] } : written;
       },
     });
     if (!result.ok) return { published, failed: true };

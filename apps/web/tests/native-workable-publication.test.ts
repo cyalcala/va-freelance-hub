@@ -20,6 +20,12 @@ async function native(scenario: Record<string,unknown>) {
   expect(r.finalRegistry).toEqual(r.initialRegistry);
   expect(r.appliedMigrations.at(-1)).toBe("0054_public_serving_snapshot.sql");
   expect(r.clockProjection).toHaveLength(1);
+  for (const entry of r.ledger.filter((entry:any)=>entry.source_id.startsWith("workable:") && entry.retry_key.includes(":insert:"))) {
+    const ids = JSON.parse(entry.published_ids_json);
+    expect(ids).toHaveLength(entry.published_count);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids.every((id:number)=>!r.initialOpportunityIds.includes(id))).toBe(true);
+  }
   return r;
 }
 test("fresh date-only Workable opening reaches real public rows and FTS under retained canary cap",async()=>{
@@ -29,6 +35,44 @@ test("fresh date-only Workable opening reaches real public rows and FTS under re
   expect(r.publicRows.every((x:any)=>Number.isSafeInteger(x.id)&&x.id>0)).toBe(true);
   expect(r.ftsCount).toBe(2);
   expect(r.ledger.every((x:any)=>x.published_count<=2)).toBe(true);
+  const insertedIds = r.ledger.flatMap((entry:any) => JSON.parse(entry.published_ids_json)).sort((a:number,b:number)=>a-b);
+  expect(insertedIds).toEqual(r.publicRows.map((row:any)=>row.id).sort((a:number,b:number)=>a-b));
+  expect(r.ledger.every((entry:any)=>JSON.parse(entry.published_ids_json).length===entry.published_count)).toBe(true);
+},45000);
+
+for (const insertProbe of ["zero", "duplicate", "partial", "replay"]) {
+  test(`native insert receipt ${insertProbe} counts only returned physical IDs`, async () => {
+    const r = await native({ insertProbe });
+    const ids = r.ledger.flatMap((entry:any)=>JSON.parse(entry.published_ids_json));
+    expect(ids).toEqual(r.newlyInsertedPublicIds);
+    expect(r.insertProbe.error).toBe(null);
+    expect(r.ftsCount).toBe(r.publicRows.length);
+    if (insertProbe === "zero") {
+      expect(r.insertProbe.calls).toBe(0);
+      expect(r.ledger).toEqual([]);
+    } else if (insertProbe === "duplicate") {
+      expect(r.insertProbe.calls).toBe(1);
+      expect(r.ledger[0].published_count).toBe(0);
+      expect(r.publicRows).toHaveLength(1);
+    } else {
+      expect(ids).toHaveLength(1);
+      expect(r.ledger).toHaveLength(1);
+      expect(r.insertProbe.calls).toBe(1);
+      if (insertProbe === "partial") expect(r.publicRows).toHaveLength(2);
+      if (insertProbe === "replay") expect(r.insertProbe.results).toEqual([
+        { published: 1, failed: false }, { published: 1, failed: false },
+      ]);
+    }
+  },45000);
+}
+
+test("native partial insert error remains unreceipted rather than inventing atomic rollback or IDs", async () => {
+  const r = await native({ insertProbe: "partial-error" });
+  expect(r.insertProbe.error).toContain("Failed query:");
+  expect(r.insertProbe.cause).toContain("NOT NULL constraint failed");
+  expect(r.newlyInsertedPublicIds).toHaveLength(1);
+  expect(r.ftsCount).toBe(1);
+  expect(r.ledger).toEqual([]);
 },45000);
 test("admitted registry-only tenants escape disabled directory rotation and a full RSS head",async()=>{
   const r=await native({kind:"fresh",starvation:true,rssHead:true});
@@ -106,13 +150,15 @@ for (const admission of ["missing", "stale-revision", "expired"]) {
   },45000);
 }
 
-for (const admission of ["publish-race", "reactivate-race"]) {
+for (const admission of ["publish-race", "reactivate-race", "lease-race"]) {
   test(`native Workable ${admission} invalidates admission at public mutation`, async () => {
     const r = await native({ admission, ...(admission === "reactivate-race" ? { reactivation: "fresh" } : {}) });
     expect(r.raceInjected).toBe(true);
+    expect(r.raceMethod).toBe(admission === "reactivate-race" ? "run" : "all");
     expect(r.publicRows).toEqual([]);
     expect(r.rows.every((row:any) => row.is_active === 0)).toBe(true);
     expect(r.ledger.every((row:any) => row.published_count === 0)).toBe(true);
+    expect(r.ledger.every((row:any) => row.published_ids_json === "[]")).toBe(true);
   },45000);
 }
 

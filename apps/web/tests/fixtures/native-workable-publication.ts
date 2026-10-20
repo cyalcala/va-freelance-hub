@@ -3,12 +3,13 @@ import { setSystemTime } from "bun:test";
 import { readFileSync, readdirSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
-import { getDb, opportunities } from "@va-hub/db";
+import { getDb, opportunities, type NewOpportunity } from "@va-hub/db";
 import { enabledSources } from "@va-hub/scraper";
 import { publicOpportunityFilters } from "../../src/lib/public-opportunities";
 import { createScrapeHandler } from "../../src/pages/api/cron/scrape";
 import { seedNativeWorkableAdmissions } from "./native-workable-admission";
 import { loadWorkableAdmission, insertAdmittedWorkableRow } from "../../src/lib/workable-admission";
+import { publicationDbFromEnv, publishGroupedInserts } from "../../src/lib/publish-opportunities";
 import { triageDrain } from "../../src/lib/inngest/functions/triage-drain";
 
 // Native SQLite and Date use separate clocks. The sole ledger 'now' literal
@@ -20,7 +21,8 @@ const scenario = JSON.parse(process.argv[2]!) as {
   kind?: "fresh" | "stale" | "future" | "impossible" | "created-only" | "us" | "onsite" | "mixed";
   starvation?: boolean; rssHead?: boolean; repeat?: boolean;
   robots?: "disallowed" | "http503"; invalidAttempt?: boolean;
-  admission?: "missing" | "stale-revision" | "expired" | "publish-race" | "reactivate-race";
+  admission?: "missing" | "stale-revision" | "expired" | "publish-race" | "reactivate-race" | "lease-race";
+  insertProbe?: "zero" | "duplicate" | "partial" | "replay" | "partial-error";
   nonWorkable?: boolean;
   codec?: boolean;
   pending?: "fresh" | "stale" | "onsite" | "mixed" | "facts-race" | "drain-fresh" | "drain-stale" | "drain-onsite" | "drain-race" | "drain-company-race" | "drain-application-race" | "durable";
@@ -180,22 +182,22 @@ try {
   if (scenario.unclearPending) sqlite.exec("UPDATE opportunities SET location_raw=NULL,description=NULL WHERE content_hash LIKE 'pending-%'");
   const bindingParameters: number[] = [];
   let raceInjected = false;
+  let raceMethod: string | null = null;
   const binding = { prepare(query: string) {
     const statement = sqlite.query(query); let params: any[] = [];
-    return { bind(...values: any[]) {
-      bindingParameters.push(values.length);
-      if (values.length > 100) throw new Error(`D1_BINDING_BUDGET_EXCEEDED:${values.length}`);
-      params=values; return this;
-    }, async first(){return statement.get(...params);},async all(){return {results:statement.all(...params)};},
-    async raw(){return statement.values(...params);},async run(){
+    function beforeMutation(method: string) {
       const activationMutation = /^update "opportunities" set ([\s\S]*?) where /i.exec(query)?.[1]?.includes('"is_active" = ?') === true;
-      if (!raceInjected && ((scenario.admission === "publish-race" && /^INSERT INTO "opportunities"/i.test(query))
+      if (!raceInjected && (((scenario.admission === "publish-race" || scenario.admission === "lease-race") && /^INSERT INTO "opportunities"/i.test(query))
         || (scenario.admission === "reactivate-race" && activationMutation))) {
         raceInjected = true;
-        sqlite.exec("UPDATE source_registry SET governance_revision=governance_revision+1 WHERE source_id LIKE 'workable:%'");
+        raceMethod = method;
+        sqlite.exec(scenario.admission === "lease-race"
+          ? "UPDATE source_registry SET policy_expiry='2020-01-01T00:00:00.000Z',governance_revision=governance_revision+1 WHERE source_id LIKE 'workable:%'"
+          : "UPDATE source_registry SET governance_revision=governance_revision+1 WHERE source_id LIKE 'workable:%'");
       }
       if (!raceInjected && scenario.reactivation?.endsWith("-race") && activationMutation) {
         raceInjected = true;
+        raceMethod = method;
         const change = scenario.reactivation === "source-race" ? "source_id='workable:other'"
           : scenario.reactivation === "facts-race" ? "location_raw='United States (onsite)'"
           : scenario.reactivation === "date-race" ? "posted_at='2020-01-14T00:00:00.000Z'"
@@ -204,11 +206,20 @@ try {
       }
       if (!raceInjected && scenario.pending?.endsWith("-race") && activationMutation) {
         raceInjected = true;
+        raceMethod = method;
         const change = scenario.pending === "drain-company-race" ? "company='Changed Company'"
           : scenario.pending === "drain-application-race" ? "application_url='https://apply.workable.com/j/changed/'"
             : "location_raw='United States (onsite)'";
         sqlite.exec(`UPDATE opportunities SET ${change} WHERE content_hash LIKE 'pending-%'`);
       }
+    }
+    return { bind(...values: any[]) {
+      bindingParameters.push(values.length);
+      if (values.length > 100) throw new Error(`D1_BINDING_BUDGET_EXCEEDED:${values.length}`);
+      params=values; return this;
+    }, async first(){return statement.get(...params);},async all(){beforeMutation("all");return {results:statement.all(...params)};},
+    async raw(){return statement.values(...params);},async run(){
+      beforeMutation("run");
       const result=statement.run(...params);return {success:true,meta:{changes:result.changes}};
     } };
   }};
@@ -217,7 +228,18 @@ try {
     aiCalls++; return {response:JSON.stringify({eligibleForFilipinos:true,eligible:true,reason:"PH fixture",category:"admin",tags:["remote"]})};
   }}};
   const replies = [];
-  for (let tick=0; tick<(scenario.repeat ? 2 : 1);tick++) {
+  const db = getDb({DB:binding as any});
+  const probeRow = (label: string): NewOpportunity => ({
+    title: `Virtual Assistant insert probe ${label}`, company: "Native", type: "full-time",
+    sourceUrl: `https://apply.workable.com/j/insert-probe-${label}/`, sourcePlatform: "Native",
+    sourceId: "workable:coconutva", contentHash: `insert-probe-${label}`, category: "admin", tags: ["remote"],
+    postedAt: "2026-10-17T00:00:00.000Z", scrapedAt: REFERENCE, isActive: true,
+    phEligibility: "eligible_verified", locationType: "remote", locationRaw: "Philippines",
+  });
+  if (scenario.insertProbe === "duplicate" || scenario.insertProbe === "partial") await db.insert(opportunities).values(probeRow("existing"));
+  const initialOpportunityIds = (sqlite.query("SELECT id FROM opportunities ORDER BY id").all() as Array<{id:number}>).map(row => row.id);
+  const insertProbe = { calls: 0, results: [] as Array<{published:number;failed:boolean}>, error: null as string | null, cause: null as string | null };
+  for (let tick=0; tick<(scenario.insertProbe ? 0 : scenario.repeat ? 2 : 1);tick++) {
     const now = tick ? "2026-10-18T09:00:00.000Z" : REFERENCE;
     // Keep the sole native ledger clock aligned with the explicit Date seam.
     // Only its literal changes; authority/cap/body predicates remain unchanged.
@@ -238,7 +260,23 @@ try {
       replies.push({status:response.status,body:await response.json()});
     }
   }
-  const db = getDb({DB:binding as any});
+  if (scenario.insertProbe) {
+    const current = await loadWorkableAdmission(binding as any, "workable:coconutva", REFERENCE);
+    if (!current.ok) throw new Error(current.reason);
+    const rows = scenario.insertProbe === "zero" ? [] : scenario.insertProbe === "duplicate" ? [probeRow("existing")]
+      : scenario.insertProbe === "partial" ? [probeRow("existing"), probeRow("new")]
+        : scenario.insertProbe === "partial-error" ? [probeRow("new"), {...probeRow("invalid"), title: null as any}] : [probeRow("new")];
+    const persist = async (batch: NewOpportunity[]) => {
+      insertProbe.calls++;
+      const ids: number[] = [];
+      for (const row of batch) for (const inserted of await insertAdmittedWorkableRow(db, row, current)) ids.push(inserted.id);
+      return { publishedCount: ids.length, ids };
+    };
+    try {
+      insertProbe.results.push(await publishGroupedInserts(publicationDbFromEnv(env)!, persist, rows, REFERENCE, "scrape"));
+      if (scenario.insertProbe === "replay") insertProbe.results.push(await publishGroupedInserts(publicationDbFromEnv(env)!, persist, rows, REFERENCE, "scrape"));
+    } catch (error) { insertProbe.error = String(error); insertProbe.cause = String((error as Error).cause); }
+  }
   const codecComparison = [];
   if (scenario.codec) {
     const current = await loadWorkableAdmission(binding as any, "workable:coconutva", REFERENCE);
@@ -256,8 +294,9 @@ try {
   }
   const publicRows = await db.select({id:opportunities.id,title:opportunities.title,sourceId:opportunities.sourceId,sourceUrl:opportunities.sourceUrl,postedAt:opportunities.postedAt}).from(opportunities).where(publicOpportunityFilters());
   console.log(`NATIVE_WORKABLE_PUBLICATION_RESULT ${JSON.stringify({scope:"ACTUAL_0054_ROUTE_PARSER_GEOGATE_AI_ADAPTER_SQLITE_FTS_GATEWAY_SYNTHETIC_TRANSPORT_INITIAL_AUTHORITY_AND_VALIDATED_PACKETS",scenario,clockProjection,appliedMigrations,
-    replies,publicRows,rows:sqlite.query("SELECT id,title,source_id,is_active,inactive_reason,ph_eligibility,posted_at,scraped_at,location_type,location_raw FROM opportunities ORDER BY id").all(),raceInjected,codecComparison,
-    ledger:sqlite.query("SELECT source_id,tick_key,mode,published_count,published_ids_json FROM source_publication_ledger ORDER BY id").all(),
+    replies,publicRows,rows:sqlite.query("SELECT id,title,source_id,is_active,inactive_reason,ph_eligibility,posted_at,scraped_at,location_type,location_raw FROM opportunities ORDER BY id").all(),raceInjected,raceMethod,codecComparison,
+    initialOpportunityIds,newlyInsertedPublicIds:publicRows.filter(row=>!initialOpportunityIds.includes(row.id)).map(row=>row.id),insertProbe,
+    ledger:sqlite.query("SELECT source_id,tick_key,retry_key,mode,published_count,published_ids_json FROM source_publication_ledger ORDER BY id").all(),
     ftsCount:(sqlite.query("SELECT count(*) AS n FROM opportunities_fts").get() as any).n,
     initialRegistry,finalRegistry:registry(),transports,aiCalls,maxBoundParameters:Math.max(0,...bindingParameters),
     attempts:sqlite.query("SELECT source_id,last_attempt_at FROM source_fetch_state WHERE source_id LIKE 'workable:%'").all()})}`);

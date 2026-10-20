@@ -26,6 +26,16 @@ function row(i: number, sourceId = "breezy:test") {
 }
 
 describe("publishGroupedInserts canary cap clamp", () => {
+  test("retains physical insert IDs from an existing publication receipt", async () => {
+    const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW] });
+    const result = await publishGroupedInserts(db, async () => ({ publishedCount: 1, ids: [41] }),
+      [row(1), row(2)], NOW, "scrape");
+    expect(result).toEqual({ published: 1, failed: false });
+    const ledger = db.runs.find(run => run.query.includes("INSERT INTO source_publication_ledger"));
+    expect(ledger?.values[5]).toBe(1);
+    expect(ledger?.values[6]).toBe("[41]");
+  });
+
   test("clamps a canary batch to canaryMaxNewItemsPerTick so the gateway never rolls back", async () => {
     const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW] });
     const persistedBatches: number[] = [];
@@ -43,6 +53,7 @@ describe("publishGroupedInserts canary cap clamp", () => {
     expect(persistedBatches).toEqual([2]);
     const ledgerInsert = db.runs.find((run) => run.query.includes("INSERT INTO source_publication_ledger"));
     expect(ledgerInsert?.values).toContain("capped");
+    expect(ledgerInsert?.values[6]).toBe("[]"); // Numeric callers have no ID evidence.
   });
 
   test("unregistered exact-six source publishes the full batch unchanged", async () => {
@@ -62,6 +73,7 @@ describe("publishGroupedInserts canary cap clamp", () => {
     expect(persistedBatches).toEqual([3]);
     const ledgerInsert = db.runs.find((run) => run.query.includes("INSERT INTO source_publication_ledger"));
     expect(ledgerInsert?.values).toContain("unlimited");
+    expect(ledgerInsert?.values[6]).toBe("[]");
   });
 
   test("invalid canary cap proposes zero so the gateway owns the fail-closed rollback", async () => {
