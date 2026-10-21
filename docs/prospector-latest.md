@@ -1,7 +1,7 @@
 # Prospector Latest
 
 Date: 2026-10-21
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39641082471
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39680490837
 
 | Metric | Value |
 | --- | ---: |
@@ -23,7 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39641082
 
 ## Auto-added companies
 
-- StackAdapt
+- Apollo
 
 ## Durable candidate queue (SP-06, non-publishing)
 
