@@ -1,16 +1,16 @@
 # Directory Enrichment — Latest
 
-Date: 2026-10-20
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39484159474
+Date: 2026-10-21
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39572164622
 
 | Metric | Value |
 | --- | ---: |
-| Companies processed | 1 |
+| Companies processed | 0 |
 | Websites set | 0 |
-| Hiring pages set | 1 |
+| Hiring pages set | 0 |
 | Auto-verified | 0 |
 | Budget | 40 |
 
 ## Enrichment details
 
-- #995 Tenna: hiring_page=https://jobs.lever.co/tenna
+- (none this run)
