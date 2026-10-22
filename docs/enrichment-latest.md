@@ -1,16 +1,16 @@
 # Directory Enrichment — Latest
 
-Date: 2026-10-21
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39662227663
+Date: 2026-10-22
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39750984468
 
 | Metric | Value |
 | --- | ---: |
 | Companies processed | 1 |
 | Websites set | 0 |
-| Hiring pages set | 0 |
+| Hiring pages set | 1 |
 | Auto-verified | 1 |
 | Budget | 40 |
 
 ## Enrichment details
 
-- #1010 Sanctuary Computer: auto-verified (1 verified, 4 PH-eligible jobs)
+- #1018 Outsourced Staff: hiring_page=https://jobs.lever.co/outsourcedstaff; auto-verified (5 verified, 5 PH-eligible jobs)
