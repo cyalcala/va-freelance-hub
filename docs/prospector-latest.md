@@ -1,7 +1,7 @@
 # Prospector Latest
 
 Date: 2026-10-22
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39819842626
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39858084919
 
 | Metric | Value |
 | --- | ---: |
@@ -12,21 +12,21 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39819842
 | Rejected for quality | 2 |
 | ATS proposals filed | 2 |
 | Mass-add guard tripped | false |
-| Durable candidates discovered (distinct ATS) | 64 |
+| Durable candidates discovered (distinct ATS) | 65 |
 | Durable candidates inserted | 1 |
-| Durable candidates refreshed | 44 |
-| Durable candidates skipped (duplicate) | 63 |
+| Durable candidates refreshed | 45 |
+| Durable candidates skipped (duplicate) | 64 |
 | Durable candidates skipped (opt-out) | 0 |
-| Candidate backlog (needs_review/candidate) | 45 |
+| Candidate backlog (needs_review/candidate) | 46 |
 | Candidate overdue (past 14d deadline) | 34 |
 | Candidate anomaly guard | false |
 
 ## Auto-added companies
 
-- Railway
+- Flipper
 
 ## Durable candidate queue (SP-06, non-publishing)
 
-- Inserted: ashby:railway
-- Refreshed: greenhouse:janes, ashby:foundry-for-good, lever:vacancies, lever:truezerotech, lever:snappr, lever:tenna, lever:deliverect, lever:applydigital, ashby:gradient, lever:outsourcedstaff, lever:decilegroup, lever:brafton, lever:willowinc, ashby:payscale, lever:lwolf, lever:repurposeglobal, ashby:molecule, ashby:the-studio, lever:parcelvision, lever:gushwork, ashby:circulareconomysystems, ashby:luxor, ashby:getground, lever:beaverprocess, lever:trustarc, greenhouse:trainingthestreet, ashby:homera-health, lever:hso, ashby:finch, lever:90seconds, workable:myoutdesk, workable:outsource-access, workable:staff-domain-inc, workable:superstaff, breezy:vaaphilippines-recruitment, workable:virtualstaff365, workable:global-strategic, workable:connectos, lever:vaultoutsourcing, ashby:ashby, ashby:supabase, ashby:camunda, ashby:tremendous, ashby:amplify
+- Inserted: ashby:flipper
+- Refreshed: greenhouse:janes, ashby:foundry-for-good, lever:vacancies, lever:truezerotech, lever:snappr, lever:tenna, lever:deliverect, ashby:railway, lever:applydigital, ashby:gradient, lever:outsourcedstaff, lever:decilegroup, lever:brafton, lever:willowinc, ashby:payscale, lever:lwolf, lever:repurposeglobal, ashby:molecule, ashby:the-studio, lever:parcelvision, lever:gushwork, ashby:circulareconomysystems, ashby:luxor, ashby:getground, lever:beaverprocess, lever:trustarc, greenhouse:trainingthestreet, ashby:homera-health, lever:hso, ashby:finch, lever:90seconds, workable:myoutdesk, workable:outsource-access, workable:staff-domain-inc, workable:superstaff, breezy:vaaphilippines-recruitment, workable:virtualstaff365, workable:global-strategic, workable:connectos, lever:vaultoutsourcing, ashby:ashby, ashby:supabase, ashby:camunda, ashby:tremendous, ashby:amplify
 - Mode: non-publishing-candidate-only
