@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-10-23
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39901923027
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39946914945
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 8 |
-| Auto-added this run | 0 |
+| Candidates considered | 10 |
+| Auto-added this run | 2 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 6 |
 | Rejected for quality | 2 |
@@ -23,7 +23,8 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/39901923
 
 ## Auto-added companies
 
-- (none this run)
+- T-Maxx International
+- Cadence Health
 
 ## Durable candidate queue (SP-06, non-publishing)
 
