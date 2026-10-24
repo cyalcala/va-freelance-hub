@@ -26,12 +26,6 @@ const GEO_SCOPE_OPTIONS = [
   { value: 'apac_incl_ph', label: 'APAC incl. PH' },
   { value: 'worldwide', label: 'Worldwide' },
 ];
-const SHIFT_OPTIONS = [
-  { value: 'day_shift', label: 'Day shift (PH / AU / NZ / APAC)' },
-  { value: 'flexible', label: 'Flexible / Async' },
-  { value: 'mid_shift', label: 'Mid shift (UK / Europe)' },
-  { value: 'night_shift', label: 'Night shift (US / Graveyard)' },
-];
 
 const searchParams = Astro.url.searchParams;
 const parsedRequest = parseJobBoardRequest(searchParams);
@@ -46,8 +40,7 @@ const selectedCategory = parseJobCategory(category);
 const type = searchParams.get('type') || '';
 const platform = searchParams.get('platform') || '';
 const geoScope = searchParams.get('geoScope') || '';
-const shiftParam = searchParams.get('shift') || '';
-const shift = SHIFT_OPTIONS.some((o) => o.value === shiftParam) ? shiftParam : '';
+const shift = searchParams.get('shift') === 'day_shift' ? 'day_shift' : '';
 const activeFilterCount = [category, type, platform, geoScope, fresh, shift].filter(Boolean).length;
 const hasActiveFilters = Boolean(query || activeFilterCount > 0);
 const offset = (currentPage - 1) * PAGE_SIZE;
@@ -92,7 +85,7 @@ const activeFilters = [
   { key: 'platform', value: platform, label: `Source: ${platform}` },
   { key: 'geoScope', value: geoScope, label: `Scope: ${GEO_SCOPE_OPTIONS.find((option) => option.value === geoScope)?.label ?? geoScope}` },
   { key: 'fresh', value: fresh, label: `Arrivals: ${fresh === 'today' ? 'Today (Manila)' : 'Last 24 hours'}` },
-  { key: 'shift', value: shift, label: `Schedule: ${SHIFT_OPTIONS.find((option) => option.value === shift)?.label ?? shift}` },
+  { key: 'shift', value: shift, label: 'Schedule: Day shift' },
 ].filter((filter) => filter.value);
 
 try {
@@ -105,7 +98,7 @@ try {
     platform: platform || undefined,
     geoScope: geoScope && GEO_SCOPE_OPTIONS.some((option) => option.value === geoScope) ? geoScope : undefined,
     fresh,
-    shift: shift || undefined,
+    shift,
     query,
     offset,
     limit: PAGE_SIZE,
@@ -203,13 +196,12 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
               </select>
             </div>
             <div>
-              <label for="shift" class="field-label">Work schedule</label>
-              <select id="shift" name="shift" form="search" class="field-select">
-                <option value="">All schedules</option>
-                {SHIFT_OPTIONS.map((option) => (
-                  <option value={option.value} selected={shift === option.value}>{option.label}</option>
-                ))}
+              <label for="shift" class="field-label">Schedule</label>
+              <select id="shift" name="shift" form="search" aria-describedby="schedule-note" class="field-select">
+                <option value="" selected={!shift}>All schedules</option>
+                <option value="day_shift" selected={shift === 'day_shift'}>Day shift</option>
               </select>
+              <p id="schedule-note" class="field-note">Source mentions a day schedule. Confirm exact hours in the original listing.</p>
             </div>
             <div>
               <label for="fresh" class="field-label">New arrivals</label>

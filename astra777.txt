@@ -223,6 +223,23 @@ Accepted MATH remains 0/13. Certified new publications/day remain UNKNOWN.
 Retain canonical identities, two slots/60min, robots enforcement,
 US/onsite/stale/future/invalid-date controls, current admissions, caps and rollback.
 
+Known-URL title freezes advance through `updatedAdmissionTitle`.
+Active D1 rows update their stored title when the live feed supplies a clean,
+non-empty, distinct title free of foreign geo-locks or non-English markers.
+The scrape compare-and-set enforces `isActive = true`, `title = storedTitle`,
+and `sourceUrl = url`. It does not clear policy state, alter `inactive_reason`,
+or revive rejected listings. Tested and verified on CrewBloom D9C0BD9475 (id 8189,
+"Recruitment Specialist" -> "Talent Acquisition Specialist") in
+`apps/web/tests/scrape-title-advance.test.ts` and `packages/scraper/updated-admission-title.test.ts`.
+
+Public board dayshift filtering is consolidated to the single authoritative
+classification `classifyShift(job).category === "day_shift"`, removing
+unvalidated `isDayshift` and `shiftCategory` overrides. `shiftClassifier`
+time-range parsing now isolates start/end boundaries via `(?:\s*[-–—]\s*|\s+to\s+)`
+preventing character-class leakage (e.g. "ooo"), and excludes "US morning shift"
+from PH day_shift per MATH-10 requirements. Verified across 239 targeted tests
+(1,531 assertions) with zero failures.
+
 The retained pre-release source archive has1182 byte-verified files, SHA256
 11f1403cf75b9efa8cd5b2644f2bb40861daf2996fec5091b0c65ffb22347968.
 A separate ignored proof extraction is `tmp/workable-rotation-release-proof/source`.

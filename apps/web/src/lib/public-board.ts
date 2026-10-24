@@ -142,18 +142,8 @@ export function slicePublicJobs(
     if (options.geoScope && job.geoScope !== options.geoScope) return false;
     if (options.fresh && !matchesFreshFilter(job.scrapedAt, options.fresh, now)) return false;
     if (options.query && !matchesJobQuery(job, options.query)) return false;
-    if (options.shift) {
-      const resolvedCategory = job.shiftCategory ?? (job.isDayshift ? "day_shift" : classifyShift({
-        clientTimezone: job.clientTimezone,
-        title: job.title,
-        description: job.description,
-      }).category);
-      if (options.shift === "day_shift") {
-        if (resolvedCategory !== "day_shift" && !job.isDayshift) return false;
-      } else if (resolvedCategory !== options.shift) {
-        return false;
-      }
-    }
+    if (options.shift === "day_shift" && classifyShift(job).category !== "day_shift") return false;
+    if (options.shift === "flexible" && classifyShift(job).category !== "flexible") return false;
     return true;
   });
   const ordered = [...filtered].sort(options.fresh ? byScrapedDesc : byEffectiveDesc);

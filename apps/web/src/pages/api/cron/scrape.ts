@@ -18,7 +18,7 @@ import { d1Changes } from "@/lib/d1-result";
 import { normalizePersistedOpportunityIds, publicationDbFromEnv, publishGroupedActivations, publishGroupedInserts, PublicationOutcomeUnknownError } from "@/lib/publish-opportunities";
 import { publicationRetryKey, snapshotPublicationUpdate } from "@/lib/publication-retry-key";
 import { noExplicitNonRemoteWorkplace } from "@/lib/publication-remote";
-import { D1_MAX_BOUND_PARAMETERS, assessPostingFreshness, hasExplicitNonRemoteLocationType, newerAdmissionPostedAt, publishPublicExposure, publicationTickKey, resolvePublicationOutboundUrl } from "@va-hub/scraper";
+import { D1_MAX_BOUND_PARAMETERS, assessPostingFreshness, hasExplicitNonRemoteLocationType, newerAdmissionPostedAt, publishPublicExposure, publicationTickKey, resolvePublicationOutboundUrl, updatedAdmissionTitle } from "@va-hub/scraper";
 import { createRobotsStore } from "@/lib/robots-store";
 import {
   buildIngestDiagRow,
@@ -2622,6 +2622,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
     const existingUrls = new Set<string>();
     const recoverableInactiveUrls = new Set<string>();
     const storedPostedAtByUrl = new Map<string, string | null>();
+    const storedTitleByUrl = new Map<string, { title: string; isActive: boolean | null } | null>();
     for (let i = 0; i < allScrapedUrls.length; i += BATCH_SIZE) {
       const batch = allScrapedUrls.slice(i, i + BATCH_SIZE);
       const found = await db.select({
@@ -2629,6 +2630,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
         isActive: opportunities.isActive,
         inactiveReason: opportunities.inactiveReason,
         postedAt: opportunities.postedAt,
+        title: opportunities.title,
       })
         .from(opportunities)
         .where(inArray(opportunities.sourceUrl, batch));
@@ -2636,6 +2638,13 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
         existingUrls.add(row.sourceUrl);
         const prior = storedPostedAtByUrl.get(row.sourceUrl);
         storedPostedAtByUrl.set(row.sourceUrl, prior === undefined || prior === row.postedAt ? row.postedAt : null);
+        const priorTitle = storedTitleByUrl.get(row.sourceUrl);
+        storedTitleByUrl.set(
+          row.sourceUrl,
+          priorTitle === undefined || (priorTitle && priorTitle.title === row.title && priorTitle.isActive === row.isActive)
+            ? { title: row.title, isActive: row.isActive }
+            : null,
+        );
         if (!row.isActive && isFeedRecoverableInactiveReason(row.inactiveReason)) {
           recoverableInactiveUrls.add(row.sourceUrl);
         }
@@ -2691,8 +2700,42 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       if (postingDateAdvanced > 0) {
         console.log(`[api/cron/scrape] Advanced ${postingDateAdvanced} stored posting date(s) to a newer source publication instant`);
       }
-    } catch (err) {
+        } catch (err) {
       console.warn(`[api/cron/scrape] Posting-date advance failed:`, errorMessage(err));
+    }
+
+    // An active known URL keeps its stored title unless the live feed carries an
+    // updated, unambiguous title. Inactive, policy-rejected, or conflicting rows
+    // stay untouched. Activity and inactive_reason are never changed.
+    try {
+      const sourceTitleByUrl = new Map<string, string | null>();
+      for (const item of allItems) {
+        if (!item.sourceUrl) continue;
+        const rawTitle = typeof item.title === "string" ? item.title.trim() : null;
+        if (!rawTitle) continue;
+        const prior = sourceTitleByUrl.get(item.sourceUrl);
+        sourceTitleByUrl.set(item.sourceUrl, prior === undefined || prior === rawTitle ? rawTitle : null);
+      }
+      let titleAdvanced = 0;
+      for (const [sourceUrl, stored] of storedTitleByUrl) {
+        if (!stored || !stored.isActive || !stored.title) continue;
+        const sourceTitle = sourceTitleByUrl.get(sourceUrl);
+        const nextTitle = updatedAdmissionTitle(stored.title, sourceTitle);
+        if (!nextTitle) continue;
+        const res = await db.update(opportunities)
+          .set({ title: nextTitle, updatedAt: observedAt })
+          .where(and(
+            eq(opportunities.sourceUrl, sourceUrl),
+            eq(opportunities.title, stored.title),
+            eq(opportunities.isActive, true),
+          ));
+        titleAdvanced += d1Changes(res);
+      }
+      if (titleAdvanced > 0) {
+        console.log(`[api/cron/scrape] Advanced ${titleAdvanced} active stored job title(s) to updated source title`);
+      }
+    } catch (err) {
+      console.warn(`[api/cron/scrape] Job title advance failed:`, errorMessage(err));
     }
 
     // A feed is the source of truth for availability. Revive only rows that
