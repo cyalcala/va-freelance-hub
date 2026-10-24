@@ -1,4 +1,5 @@
 import { isAdmissionInstant } from "./admission-evidence";
+import { assessPostingFreshness } from "./publication-freshness";
 
 const ISO_POSTING_DATE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/i;
 const RSS_POSTING_DATE = /^(?:(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s*)?(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{4})\s+(\d{2}):(\d{2})(?::(\d{2}))?\s+(UT|UTC|GMT|EST|EDT|CST|CDT|MST|MDT|PST|PDT|[+-]\d{2}:?\d{2})$/i;
@@ -56,4 +57,20 @@ export function normalizeWorkablePublishedDate(value: unknown): string | null {
     return isAdmissionInstant(instant) ? instant : null;
   }
   return normalizeSourcePostingDate(raw);
+}
+
+/**
+ * A later admissible source posting date replaces the stored clock.
+ * The caller passes the original publication instant, never created_at.
+ * A missing, invalid, future, equal, or older source date does not replace it.
+ * This does not change activity or inactive_reason.
+ */
+export function newerAdmissionPostedAt(stored: unknown, source: unknown, observedAt: string): string | null {
+  const sourceAssessment = assessPostingFreshness(source, observedAt);
+  const storedAssessment = assessPostingFreshness(stored, observedAt);
+  const sourceUsable = sourceAssessment.state === "WITHIN_WINDOW" || sourceAssessment.state === "STALE";
+  const storedUsable = storedAssessment.state === "WITHIN_WINDOW" || storedAssessment.state === "STALE";
+  if (!sourceUsable || !storedUsable || !sourceAssessment.postedAt || !storedAssessment.postedAt) return null;
+  if (Date.parse(sourceAssessment.postedAt) <= Date.parse(storedAssessment.postedAt)) return null;
+  return sourceAssessment.postedAt;
 }

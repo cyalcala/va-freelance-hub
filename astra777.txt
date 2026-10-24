@@ -108,8 +108,36 @@ permission. Trace each real caller before attributing a result to this model.
   sibling is visible to geoGate. That does not reactivate 9686. Do not clear
   `inactive_reason` in bulk. Live CrewBloom on 2026-10-24T02:45:38Z returned
   HTTP 200, 89 location rows, 35 URLs. Shortcode 5902EBE6B1 was absent.
-  Shipped consolidation returned 35 openings, 17 `eligible_verified`. D1
-  publication of those 17 is UNKNOWN. One URL listed a non-PH country first.
+  Shipped consolidation returned 35 openings, 17 `eligible_verified`.
+  Read-only D1 on 2026-10-24, after a second widget read at 02:53:29Z
+  (still 89/35/17), matched 16 of those 17 URLs. All 16 are
+  `is_active=1`, `ph_eligibility=eligible_verified`, `inactive_reason` null.
+  The 7 openings inside the 30-day window are public: sampled Pages URLs
+  `https://remotejobs-ph.pages.dev/jobs/{10089,10010,10015,9565,8542,8452,8194}`
+  returned HTTP 200. `remotejobs.ph` did not resolve from this host.
+  The one absent URL is Intake Specialist (Mandarin), shortcode B25E2E9413.
+  Widget order is Malaysia, then Singapore, then Philippines, one shared URL,
+  `published_on` 2026-09-03. Deployed `f34965b0` emits one row per location.
+  The first row is Malaysia, and no Malaysia/Intake row exists in D1, so the
+  PH sibling never became the stored opening. The location join in
+  `1a8e1ccd` would make that opening `eligible_verified`, then
+  `assessPostingFreshness` returns STALE (older than 30 days), so the
+  committed scrape would store it inactive as `posting-freshness-stale`.
+  It would not be published. Do not deploy this checkout to apply the join.
+  Nine other geo-eligible openings are also older than 30 days and are still
+  active. `publicOpportunityFilters` is only `is_active` plus public PH
+  eligibility. Known URLs are omitted before that freshness withhold, and the
+  existing-row update bumps `last_seen_in_feed_at` only. Sampled stale pages
+  8175, 8182, 8184, and 8189 returned HTTP 200.
+  Senior Executive Assistant, shortcode 727F0B9A05, is public as id 8194 with
+  stored `posted_at` 2026-03-24. The same shipped parser now reads
+  `published_on` 2026-10-23. The job page shows Mar 24, 2026. Known-URL
+  handling does not advance a newer source posting date and does not use
+  `created_at`. The widget has no description field, so no dayshift was stated
+  or invented. Role loss was not an AI verdict: deterministic geo/language
+  rejects were false, and the no-model decision was `eligible` only because
+  structured geo stands when AI is absent. Production role outcome for a new
+  row remains a separate judgment. `requireModelApproval` is still unwired.
   Receipts: docs/evidence/workable-flow-acceptance-2026-10-20/.
 - Existing insert receipts retain empty ID arrays; do not sum their counts
   into certified new publications. Global writer/cap closure remains unproven.
@@ -165,9 +193,28 @@ Do not relax the complete Autonomy Cutover Predicate or source-specific scope.
 
 ## ACTIVE / NEXT
 
-Highest-value next action: read D1 for the 17 live CrewBloom openings that
-are geo-eligible after location join, and record each loss after freshness,
-role triage, and the publication gateway. Do not deploy this checkout.
+Known-URL posting clocks advance only through `newerAdmissionPostedAt`.
+Both instants must be WITHIN_WINDOW or STALE, the source instant must be
+strictly newer, and the scrape compare-and-set writes `posted_at` and
+`updated_at` only. It does not change `is_active` or `inactive_reason`, and
+the Workable caller still passes `published_on`, never `created_at`. A failure
+in that update does not stop ingest. Recoverable reactivation remains
+`stale-feed` and `link-unavailable` only. This is not deployed. The witness is
+CrewBloom Senior EA id 8194: stored 2026-03-24, widget `published_on`
+2026-10-23. `f34965b0` never advanced a retained posting date; that freeze is
+the defect this replaces. Do not commit the dirty scrape rewrite, do not clear
+`inactive_reason`, and do not deploy this checkout.
+Already-active rows older than 30 days stay public because known URLs never
+re-enter the freshness withhold. Hello Rache Dental VA id 8200 is public with
+`posted_at` 2021-02-08. Pineapple Staffing's three current widget openings are
+Arizona, country-locked, and stale, so zero public rows is the geo/freshness
+result, not a silent tenant miss.
+Highest-value next action: the same known-URL skip freezes titles. CrewBloom
+`D9C0BD9475` is public as id 8189 with stored title "Recruitment Specialist"
+while the live widget title is "Talent Acquisition Specialist". Trace that
+write once, and do not refresh a title by clearing policy state. Intake
+Specialist `B25E2E9413` is still absent and STALE (`published_on` 2026-09-03);
+the exact persist miss is not named, and publishing it would violate freshness.
 `requireModelApproval` is still unwired, so a recovered policy rejection can
 still skip role triage if a later scrape change treats structured geo as
 enough. An observed empty publication set with a positive expected-eligible

@@ -18,7 +18,7 @@ import { d1Changes } from "@/lib/d1-result";
 import { normalizePersistedOpportunityIds, publicationDbFromEnv, publishGroupedActivations, publishGroupedInserts, PublicationOutcomeUnknownError } from "@/lib/publish-opportunities";
 import { publicationRetryKey, snapshotPublicationUpdate } from "@/lib/publication-retry-key";
 import { noExplicitNonRemoteWorkplace } from "@/lib/publication-remote";
-import { D1_MAX_BOUND_PARAMETERS, assessPostingFreshness, hasExplicitNonRemoteLocationType, publishPublicExposure, publicationTickKey, resolvePublicationOutboundUrl } from "@va-hub/scraper";
+import { D1_MAX_BOUND_PARAMETERS, assessPostingFreshness, hasExplicitNonRemoteLocationType, newerAdmissionPostedAt, publishPublicExposure, publicationTickKey, resolvePublicationOutboundUrl } from "@va-hub/scraper";
 import { createRobotsStore } from "@/lib/robots-store";
 import {
   buildIngestDiagRow,
@@ -2621,17 +2621,21 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
     const BATCH_SIZE = 50;
     const existingUrls = new Set<string>();
     const recoverableInactiveUrls = new Set<string>();
+    const storedPostedAtByUrl = new Map<string, string | null>();
     for (let i = 0; i < allScrapedUrls.length; i += BATCH_SIZE) {
       const batch = allScrapedUrls.slice(i, i + BATCH_SIZE);
       const found = await db.select({
         sourceUrl: opportunities.sourceUrl,
         isActive: opportunities.isActive,
         inactiveReason: opportunities.inactiveReason,
+        postedAt: opportunities.postedAt,
       })
         .from(opportunities)
         .where(inArray(opportunities.sourceUrl, batch));
       found.forEach((row) => {
         existingUrls.add(row.sourceUrl);
+        const prior = storedPostedAtByUrl.get(row.sourceUrl);
+        storedPostedAtByUrl.set(row.sourceUrl, prior === undefined || prior === row.postedAt ? row.postedAt : null);
         if (!row.isActive && isFeedRecoverableInactiveReason(row.inactiveReason)) {
           recoverableInactiveUrls.add(row.sourceUrl);
         }
@@ -2657,6 +2661,38 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
         updatedCount += d1Changes(res);
       }
       console.log(`[api/cron/scrape] Debounced lastSeenInFeedAt: ${updatedCount} of ${existingUrls.size} existing jobs updated`);
+    }
+
+    // A known URL keeps its stored posted_at unless this fetch carries a
+    // strictly newer admissible source posting instant. Callers must pass the
+    // original publication instant, never created_at. Activity and
+    // inactive_reason stay untouched. A failure here must not block ingest.
+    try {
+      const sourcePostedAtByUrl = new Map<string, string | null>();
+      for (const item of allItems) {
+        if (!item.sourceUrl) continue;
+        const postedAt = typeof item.postedAt === "string" ? item.postedAt : null;
+        const prior = sourcePostedAtByUrl.get(item.sourceUrl);
+        sourcePostedAtByUrl.set(item.sourceUrl, prior === undefined || prior === postedAt ? postedAt : null);
+      }
+      let postingDateAdvanced = 0;
+      for (const [sourceUrl, storedPostedAt] of storedPostedAtByUrl) {
+        const sourcePostedAt = sourcePostedAtByUrl.get(sourceUrl);
+        const nextPostedAt = newerAdmissionPostedAt(storedPostedAt, sourcePostedAt, observedAt);
+        if (!nextPostedAt || !storedPostedAt) continue;
+        const res = await db.update(opportunities)
+          .set({ postedAt: nextPostedAt, updatedAt: observedAt })
+          .where(and(
+            eq(opportunities.sourceUrl, sourceUrl),
+            eq(opportunities.postedAt, storedPostedAt),
+          ));
+        postingDateAdvanced += d1Changes(res);
+      }
+      if (postingDateAdvanced > 0) {
+        console.log(`[api/cron/scrape] Advanced ${postingDateAdvanced} stored posting date(s) to a newer source publication instant`);
+      }
+    } catch (err) {
+      console.warn(`[api/cron/scrape] Posting-date advance failed:`, errorMessage(err));
     }
 
     // A feed is the source of truth for availability. Revive only rows that
