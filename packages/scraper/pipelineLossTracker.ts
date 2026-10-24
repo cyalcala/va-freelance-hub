@@ -68,13 +68,14 @@ export interface EmployerReconciliationRecord {
   recallRate: number | null;
   dropoffsByStage: Record<PipelineStage, number>;
   losses: PipelineLossItem[];
-  status: "UNKNOWN" | "COVERAGE_DEFECT";
+  status: "UNKNOWN" | "COVERAGE_DEFECT" | "ZERO_PUBLICATION";
 }
 
 export class PipelineLossTracker {
   private stageCounters: Map<PipelineStage, StageCounter> = new Map();
   private losses: PipelineLossItem[] = [];
   private publications: Map<string, { id: string; sourceId: string }> = new Map();
+  private observedPublicationSets = new Map<string, Set<string>>();
 
   constructor() {
     for (const stage of PIPELINE_STAGES) {
@@ -96,6 +97,21 @@ export class PipelineLossTracker {
       counter.entered += count;
       counter.passed += count;
     }
+  }
+
+  /**
+   * Records that this source's publication set was actually read.
+   * An empty id list is a measured zero. Omitting the call leaves the
+   * source unobserved. Receipts from recordPublication are included.
+   */
+  public recordObservedPublications(sourceId: string, ids: readonly string[]): void {
+    if (!sourceId.trim()) throw new Error("publication observation requires a source identity");
+    const set = this.observedPublicationSets.get(sourceId) ?? new Set<string>();
+    for (const id of ids) {
+      if (!id.trim()) throw new Error("publication observation requires a vacancy identity");
+      set.add(id);
+    }
+    this.observedPublicationSets.set(sourceId, set);
   }
 
   /** Records a publication observation by exact source and vacancy identity.
@@ -162,6 +178,7 @@ export class PipelineLossTracker {
     companyName: string,
     authoritativeOpenings: number,
     isConstitutionalZero = false,
+    expectedEligible: number | null = null,
   ): EmployerReconciliationRecord {
     const employerLosses = this.losses.filter(
       (l) => l.sourceId === employerId,
@@ -173,10 +190,27 @@ export class PipelineLossTracker {
     }
 
     const observations = [...this.publications.values()].filter(item => item.sourceId === employerId);
-    const published = observations.length > 0 ? observations.length : null;
-    // A zero expectation cannot erase a real publication. Without complete
-    // cohort observations all other health/zero claims remain unproven.
-    const status = isConstitutionalZero && published !== null ? "COVERAGE_DEFECT" : "UNKNOWN";
+    const observedSet = this.observedPublicationSets.get(employerId);
+    let published: number | null;
+    if (observedSet) {
+      const ids = new Set(observedSet);
+      for (const item of observations) ids.add(item.id);
+      published = ids.size;
+    } else {
+      published = observations.length > 0 ? observations.length : null;
+    }
+    // A zero expectation cannot erase a real publication. Without an explicit
+    // observed set, absence is UNKNOWN, not zero. A measured empty set with a
+    // positive expected-eligible count is a coverage alarm, not a recall rate.
+    const measuredZero = published === 0
+      && expectedEligible !== null
+      && Number.isSafeInteger(expectedEligible)
+      && expectedEligible > 0;
+    const status = isConstitutionalZero && published !== null && published > 0
+      ? "COVERAGE_DEFECT"
+      : measuredZero
+        ? "ZERO_PUBLICATION"
+        : "UNKNOWN";
 
     return {
       employerId,

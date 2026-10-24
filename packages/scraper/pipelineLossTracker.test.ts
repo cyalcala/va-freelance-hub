@@ -216,6 +216,26 @@ describe("13-Stage Pipeline Loss Tracking & Systematic Reconciliation (Milestone
       expect(rec.status).toBe("UNKNOWN");
     });
 
+    test("an unobserved cohort stays UNKNOWN and a measured empty set with expected openings alarms", () => {
+      const unobserved = new PipelineLossTracker();
+      const missing = unobserved.reconcileEmployer("workable:hunt-st", "Hunt St", 20, false, 16);
+      expect(missing.published).toBeNull();
+      expect(missing.recallRate).toBeNull();
+      expect(missing.status).toBe("UNKNOWN");
+
+      const observed = new PipelineLossTracker();
+      observed.recordObservedPublications("workable:hunt-st", []);
+      const alarm = observed.reconcileEmployer("workable:hunt-st", "Hunt St", 20, false, 16);
+      expect(alarm.published).toBe(0);
+      expect(alarm.recallRate).toBeNull();
+      expect(alarm.status).toBe("ZERO_PUBLICATION");
+
+      observed.recordPublication({ id: "receipt-1", sourceId: "workable:hunt-st" });
+      const recovered = observed.reconcileEmployer("workable:hunt-st", "Hunt St", 20, false, 16);
+      expect(recovered.published).toBe(1);
+      expect(recovered.status).toBe("UNKNOWN");
+    });
+
     test("policy losses expose their reasons without assuming publication completeness", () => {
       const tracker = new PipelineLossTracker();
 

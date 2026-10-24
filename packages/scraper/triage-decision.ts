@@ -58,9 +58,13 @@ export interface TriageDecisionInput {
  */
 export async function decideTriage(
   input: TriageDecisionInput,
-  gate: { geoScope: GeoScope },
+  gate: { geoScope: GeoScope; requireModelApproval?: boolean },
   env: any,
 ): Promise<TriageDecision> {
+  const deterministicReject =
+    isObviousGeoRestriction(input.title, input.description || "") ||
+    isObviousNonEnglishOrLocalOnly(input.title, input.description || "");
+
   // `null` inputs are normalized to `undefined` here; both render identically in
   // `contextBlock` (truthy / optional-chaining checks), so the prompt is
   // unchanged whether a caller passes `null` or omits the field.
@@ -80,14 +84,14 @@ export async function decideTriage(
   // geoGate already decided these scopes. A model vote is the same question
   // and must not hide the opening. A keyword lock still can: that is a
   // contradiction in the text, not a model opinion. Unknown scope stays
-  // fail-closed, including when AI is down.
+  // fail-closed, including when AI is down. Location-corrected rows that
+  // skipped initial role triage (`requireModelApproval`) still require an
+  // actual model decision before publication.
   const structuredGeo =
-    gate.geoScope === "ph_only" ||
-    gate.geoScope === "apac_incl_ph" ||
-    gate.geoScope === "worldwide";
-  const deterministicReject =
-    isObviousGeoRestriction(input.title, input.description || "") ||
-    isObviousNonEnglishOrLocalOnly(input.title, input.description || "");
+    !gate.requireModelApproval &&
+    (gate.geoScope === "ph_only" ||
+      gate.geoScope === "apac_incl_ph" ||
+      gate.geoScope === "worldwide");
 
   if (triage.aiUnavailable) {
     if (structuredGeo && !deterministicReject) {

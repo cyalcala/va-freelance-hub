@@ -17,7 +17,6 @@
 //   layer decides. This gate must be precise, not clever.
 
 import { hasExplicitNonRemoteLocationType } from "./publication-remote";
-import { isObviousNonEnglishOrLocalOnly } from "./triage.js";
 
 export type GeoScope =
   | "worldwide"
@@ -125,6 +124,39 @@ const CITY_TOKENS = [
 const REGION_EXCL_PH_REGEX =
   /\b(emea|europe|european union|eu only|eea|latam|latin america|north america|americas|middle east|africa|nordics|dach|benelux|oceania|anz)\b/i;
 
+export const LOCAL_OR_NON_ENGLISH_REGEX = new RegExp(
+  "\\b(" +
+  [
+    "m/w/d",
+    "w/m/d",
+    "m/w/x",
+    "d/m/w",
+    "h/f",
+    "werkstudent",
+    "werkstudenten",
+    "alternance",
+    "apprentissage",
+    "cdd",
+    "cdi",
+    "praktikum",
+    "praktikant",
+    "stagiaire",
+    "stellenangebot",
+    "vollzeit",
+    "teilzeit"
+  ].join("|") +
+  ")\\b",
+  "i"
+);
+
+/**
+ * Perform a fast check for non-English or localized EU-only terms
+ */
+export function isObviousNonEnglishOrLocalOnly(title: string, description?: string | null): boolean {
+  const content = `${title} ${description || ""}`.toLowerCase();
+  return LOCAL_OR_NON_ENGLISH_REGEX.test(content);
+}
+
 // Hard residence / authorization locks (checked AFTER PH positives).
 const RESIDENCE_LOCK_REGEX = new RegExp(
   "\\b(" +
@@ -141,7 +173,7 @@ const RESIDENCE_LOCK_REGEX = new RegExp(
     "work permit (?:for|in|required)",
     "valid (?:us|uk|eu) work",
     "local(?:ly)? (?:candidates|applicants) only",
-    "(?:us|uk|eu|canada|australia)[- ]only",
+    "(?:us|usa|united states|uk|united kingdom|canada|canadian|australia|australian|germany|france|netherlands|spain|italy|europe|eu|emea|latam|north america)[- ]only",
     "only (?:us|uk|eu|canadian|australian) (?:candidates|applicants|residents)",
     "(?:active )?(?:security|secret|top secret|ts\/sci) clearance (?:is )?required",
     "must (?:have|hold|possess) (?:an? )?(?:active )?(?:security|secret|top secret|ts\/sci) clearance",
@@ -149,6 +181,11 @@ const RESIDENCE_LOCK_REGEX = new RegExp(
     "us tax resident",
     "must be (?:a )?us citizen",
     "us citizenship (?:is )?required",
+    "must be in the us",
+    "must reside in (?:the )?(?:us|usa|united states|uk|canada|australia)",
+    "must be located in (?:the )?(?:us|usa|united states|uk|canada|australia)",
+    "must be us resident",
+    "work from (?:the )?(?:us|usa|united states)",
     "(?:australia|canad(?:a|ian)|germany|france|netherlands|spain|italy)[- ]only",
     "must (?:be )?(?:based|located|residing|reside|live|living) in (?:the )?(?:us|usa|united states|uk|canada|australia|germany|france|spain|netherlands)",
   ].join("|") +
@@ -167,6 +204,61 @@ const US_STATE_CODE_LOCATION_REGEX =
 // Title-level country/regional pins: "Role (US Remote)", "Role - US Only", "Role [USA]"
 const TITLE_COUNTRY_LOCK_REGEX =
   /(?:[\(\[\-–—\/]\s*(?:us|usa|u\.s\.|uk|canada|australia|emea|latam|europe|eu)(?![a-z])\s*(?:only|remote)?[\)\]]?|\b(?:us|usa|u\.s\.|uk|canada|australia|emea|latam|europe|eu)\s+only\b|\b(?:us|usa|u\.s\.|uk|canada|australia)[- ]remote\b)/i;
+
+// Explicit non-PH locks only. Generic "citizens of" / "must be based in"
+// phrases also match the Philippines, so they stay in the post-PH residence
+// check and must not veto a posting before that positive evidence is read.
+const EXPLICIT_NON_PH_LOCK_REGEX = new RegExp(
+  "\\b(" +
+  [
+    "us only",
+    "usa only",
+    "united states only",
+    "us citizens? only",
+    "us residents? only",
+    "uk only",
+    "united kingdom only",
+    "uk residents? only",
+    "canada only",
+    "canadian residents? only",
+    "australia only",
+    "australian residents? only",
+    "europe only",
+    "european residents? only",
+    "eu only",
+    "emea only",
+    "latam only",
+    "north america only",
+    "must be in the us",
+    "must reside in the us",
+    "must reside in (?:the )?(?:us|usa|united states|uk|united kingdom|canada|australia)",
+    "must be located in the us",
+    "must be located in (?:the )?(?:us|usa|united states|uk|united kingdom|canada|australia)",
+    "must be us resident",
+    "authorized to work in the us",
+    "authorized to work in us",
+    "citizenship required",
+    "us citizenship required",
+    "must be a us citizen",
+    "work from the us",
+    "work from (?:the )?(?:us|usa|united states)",
+    "(?:active )?(?:security|secret|top secret|ts/sci) clearance (?:is )?required",
+    "must (?:have|hold|possess) (?:an? )?(?:active )?(?:security|secret|top secret|ts/sci) clearance",
+    "w-?2 only",
+  ].join("|") +
+  ")\\b",
+  "i",
+);
+
+/**
+ * Explicit non-PH residence, citizenship, or regional locks.
+ * "US citizens only" still rejects a posting that also names the Philippines.
+ * "Citizens of the Philippines" does not.
+ */
+export function isObviousGeoRestriction(title: string, description?: string | null): boolean {
+  const content = `${title} ${description || ""}`;
+  return EXPLICIT_NON_PH_LOCK_REGEX.test(content);
+}
 
 // Onsite/hybrid — TITLE and LOCATION string only (never free description).
 const ONSITE_TITLE_REGEX = /\b(on[- ]?site|in[- ]office|hybrid)\b/i;

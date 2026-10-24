@@ -30,6 +30,21 @@ describe("source-stated shift hints", () => {
     expect(classifyShift(input).phWorkingHours).toBeNull();
   });
 
+  test("keeps an explicit Philippine daytime span and ignores unstated or non-PH hours", () => {
+    const stated = classifyShift({ description: "Schedule: 8am - 5pm Manila time" });
+    expect(stated.category).toBe("day_shift");
+    expect(stated.phWorkingHours).toBe("8am - 5pm Manila time");
+    const ambiguous = classifyShift({ description: "Coverage 10 to 2 PHT" });
+    expect(ambiguous.phWorkingHours).toBeNull();
+    expect(ambiguous.category).toBe("unknown");
+    const usMorning = classifyShift({ description: "Hours: 9am - 5pm EST" });
+    expect(usMorning.phWorkingHours).toBeNull();
+    expect(usMorning.category).toBe("unknown");
+    const nz = classifyShift({ description: "New Zealand business hours" });
+    expect(nz.category).toBe("day_shift");
+    expect(nz.phWorkingHours).toBeNull();
+  });
+
   test("preserves supplied timezone without fabricating an inferred one", () => {
     const result = classifyShift({ clientTimezone: "EST", description: "Work whenever you want" });
     expect(result.clientTimezone).toBe("EST");

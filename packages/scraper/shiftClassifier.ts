@@ -17,7 +17,7 @@ export interface ShiftClassifierInput {
 }
 
 const FLEXIBLE = /\b(async(?:hronous)?|work whenever|flexible (?:hours|schedule|working hours)|any timezone|set your own hours|work on your own time)\b/i;
-const PHT_DAYTIME_SPAN = /\b((?:(?:0?[6-9]|10)(?::[0-5][0-9])?\s*(?:am|a\.m\.)?)\s*[-–—to]+\s*(?:(?:0?[2-6]|1[4-8])(?::[0-5][0-9])?\s*(?:pm|p\.m\.)?)\s*(?:pht\b|manila(?:\s*time)?|philippine(?:\s*time)?|\(pht\)))/i;
+const PHT_DAYTIME_SPAN = /\b((?:(?:0?[6-9]|10)(?::[0-5][0-9])?\s*(?:am|a\.m\.))\s*[-–—to]+\s*(?:(?:0?[2-6]|1[4-8])(?::[0-5][0-9])?\s*(?:pm|p\.m\.))\s*(?:pht\b|manila(?:\s*time)?|philippine(?:\s*time)?|\(pht\)))/i;
 
 const SHIFT_MARKERS: Array<[ShiftCategory, RegExp]> = [
   ["day_shift", /\b(day[- ]?shift|daytime (?:shift|hours)|morning shift|australian (?:business )?hours|philippine (?:business )?hours|new zealand (?:business )?hours|apac (?:business )?hours|au (?:business )?hours|nz (?:business )?hours|aest (?:business )?hours|awst (?:business )?hours)\b/i],

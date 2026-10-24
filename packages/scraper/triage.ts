@@ -1,4 +1,9 @@
 import { categorizeOpportunityTitle } from "./categorizer.js";
+import {
+  isObviousGeoRestriction,
+  isObviousNonEnglishOrLocalOnly,
+  LOCAL_OR_NON_ENGLISH_REGEX,
+} from "./geoGate.js";
 
 export interface TriageResult {
   eligibleForFilipinos: boolean;
@@ -16,85 +21,7 @@ export interface TriageResult {
   aiUnavailable?: boolean;
 }
 
-// Simple regex list for obvious geo-exclusion checks before running LLM (saves tokens)
-const GEOGRAPHIC_EXCLUSION_REGEX = new RegExp(
-  "\\b(" +
-  [
-    "us only",
-    "usa only",
-    "united states only",
-    "us citizens? only",
-    "us residents? only",
-    "uk only",
-    "united kingdom only",
-    "uk residents? only",
-    "canada only",
-    "canadian residents? only",
-    "australia only",
-    "australian residents? only",
-    "europe only",
-    "european residents? only",
-    "eu only",
-    "emea only",
-    "latam only",
-    "must be in the us",
-    "must reside in the us",
-    "must be located in the us",
-    "must be us resident",
-    "must reside in (?:the )?(?:uk|canada|australia)",
-    "must be located in (?:the )?(?:uk|canada|australia)",
-    "authorized to work in the us",
-    "authorized to work in us",
-    "citizenship required",
-    "us citizenship required",
-    "must be a us citizen",
-    "work from the us",
-    "north america only",
-    "(?:active )?(?:security|secret|top secret|ts/sci) clearance (?:is )?required",
-    "must (?:have|hold|possess) (?:an? )?(?:active )?(?:security|secret|top secret|ts/sci) clearance",
-    "w-?2 only",
-  ].join("|") +
-  ")\\b",
-  "i"
-);
-
-const LOCAL_OR_NON_ENGLISH_REGEX = new RegExp(
-  "\\b(" +
-  [
-    "m/w/d",
-    "w/m/d",
-    "m/w/x",
-    "d/m/w",
-    "h/f",
-    "werkstudent",
-    "werkstudenten",
-    "alternance",
-    "apprentissage",
-    "cdd",
-    "cdi",
-    "praktikum",
-    "praktikant",
-    "stagiaire",
-    "stellenangebot",
-    "vollzeit",
-    "teilzeit"
-  ].join("|") +
-  ")\\b",
-  "i"
-);
-
-export function isObviousGeoRestriction(title: string, description: string): boolean {
-  const content = `${title} ${description}`.toLowerCase();
-  return GEOGRAPHIC_EXCLUSION_REGEX.test(content);
-}
-
-/**
- * Perform a fast check for non-English or localized EU-only terms
- */
-export function isObviousNonEnglishOrLocalOnly(title: string, description: string): boolean {
-  const content = `${title} ${description}`.toLowerCase();
-  return LOCAL_OR_NON_ENGLISH_REGEX.test(content);
-}
+export { isObviousGeoRestriction, isObviousNonEnglishOrLocalOnly, LOCAL_OR_NON_ENGLISH_REGEX };
 
 /** Extra structured context for triage (geo masterplan L2, 2026-07). */
 export interface TriageContext {
@@ -336,7 +263,7 @@ export async function triageJob(
 ): Promise<TriageResult> {
   const cleanDescription = (description || "").slice(0, 1500); // limit payload size
 
-  // 1. Perform heuristic check first
+  // 1. Perform deterministic heuristic check first (consolidated in geoGate.ts)
   if (isObviousGeoRestriction(title, cleanDescription)) {
     return {
       eligibleForFilipinos: false,

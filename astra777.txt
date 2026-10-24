@@ -47,6 +47,16 @@ selected ATS tenants through policy/robots/cadence/backoff, parses provider
 metadata, attaches exact source identity, normalizes URLs, reactivates known
 URLs, deduplicates, selects the shared intake batch, runs geoGate and then
 triage, and persists per-source groups through the publication gateway.
+Local checkpoint behavior, not the deployed f349 artifact: Workable widget rows that share one apply URL are location alternatives.
+`fetchWorkable` now returns one opening per URL with the joined location text
+before dedup. Conflicting title, shortcode, remote flag, or original date
+holds the URL with `IDENTITY_CONFLICT`, `REMOTE_UNKNOWN`, `REMOTE_CONFLICT`,
+or `POSTING_DATE_CONFLICT`. A date-only `published_on` stays that UTC calendar
+day. `created_at` is not a posting date. PH text in the joined location is
+the geo decision. An explicit non-PH lock such as "US citizens only" still
+rejects. Generic "citizens of" does not. Structured PH/APAC/worldwide scope
+stands over a model rejection unless `requireModelApproval` is set. That flag
+is not wired by the deployed scrape route.
 Rejections are inactive; AI/budget failures can enter hidden pending triage.
 Inline/Inngest drains and unclear sweep are additional exposure paths.
 Public readers require active/public-PH rows and then serve the snapshot.
@@ -93,10 +103,13 @@ permission. Trace each real caller before attributing a result to this model.
   ten others explicitly record AI subrequest budget exhaustion.
 - Crew5902EBE6B1/id9686 retains Pakistan, country_locked/ineligible, tag
   geo-gate-rejected and exact location-pin evidence despite a current PH variant.
-  Native baseline reproduces rejected-sibling URL poisoning. Parser consolidation
-  prevents new poisoning but does not recover already-policy-rejected9686.
-  A separate current-evidence requeue contract is needed; never blanket-reactivate
-  policy rejections or skip the role triage that this row never passed.
+  The October 20 widget order let a Pakistan sibling occupy the shared URL and
+  geo-pin id 9686. New fetches join the location alternatives first, so a PH
+  sibling is visible to geoGate. That does not reactivate 9686. Do not clear
+  `inactive_reason` in bulk. Live CrewBloom on 2026-10-24T02:45:38Z returned
+  HTTP 200, 89 location rows, 35 URLs. Shortcode 5902EBE6B1 was absent.
+  Shipped consolidation returned 35 openings, 17 `eligible_verified`. D1
+  publication of those 17 is UNKNOWN. One URL listed a non-PH country first.
   Receipts: docs/evidence/workable-flow-acceptance-2026-10-20/.
 - Existing insert receipts retain empty ID arrays; do not sum their counts
   into certified new publications. Global writer/cap closure remains unproven.
@@ -152,13 +165,14 @@ Do not relax the complete Autonomy Cutover Predicate or source-specific scope.
 
 ## ACTIVE / NEXT
 
-Highest-value next action: finish the fresh combined proof for isolated source
-bcfdbdce (actual INSERT IDs, per-opening location consolidation, existing day-shift
-classifier filter and dependency-free archived CLI), then fresh control/artifact
-checks and ordinary-flow acceptance. Its14-path union is reviewed; test/build
-acceptance and deployment are pending. Keep observing the remaining15 misses;
-no complete cohort recovery,
-independent PH precision, cross-writer cap closure or daily certification is claimed.
+Highest-value next action: read D1 for the 17 live CrewBloom openings that
+are geo-eligible after location join, and record each loss after freshness,
+role triage, and the publication gateway. Do not deploy this checkout.
+`requireModelApproval` is still unwired, so a recovered policy rejection can
+still skip role triage if a later scrape change treats structured geo as
+enough. An observed empty publication set with a positive expected-eligible
+count returns `ZERO_PUBLICATION`. An unobserved cohort stays UNKNOWN.
+Accepted MATH remains 0/13. Certified new publications/day remain UNKNOWN.
 Retain canonical identities, two slots/60min, robots enforcement,
 US/onsite/stale/future/invalid-date controls, current admissions, caps and rollback.
 

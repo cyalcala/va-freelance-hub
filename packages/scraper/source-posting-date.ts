@@ -44,3 +44,16 @@ export function normalizeSourcePostingDate(value: unknown): string | null {
   if (!Number.isFinite(millis) || millis + offset * 60_000 !== Date.parse(wall)) return null;
   return new Date(millis).toISOString();
 }
+
+/** Workable published_on is a calendar date on the widget surface. Preserve the
+ * existing UTC date conversion, but validate the original calendar first. No
+ * creation/edit clock substitutes for a missing original publication field. */
+export function normalizeWorkablePublishedDate(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const instant = `${raw}T00:00:00.000Z`;
+    return isAdmissionInstant(instant) ? instant : null;
+  }
+  return normalizeSourcePostingDate(raw);
+}

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { geoGate, type GeoGateInput } from "./geoGate";
+import { geoGate, isObviousGeoRestriction, type GeoGateInput } from "./geoGate";
 import { decideTriage } from "./triage-decision";
 import { assessPostingFreshness } from "./publication-freshness";
 
@@ -56,5 +56,43 @@ describe("Employer discovery metadata cannot grant per-opening PH eligibility", 
 
   test("employer metadata cannot change original-date freshness", () => {
     expect(assessPostingFreshness("2020-01-01T00:00:00.000Z", "2026-10-18T00:00:00.000Z").state).toBe("STALE");
+  });
+
+  test("employer confidence, freshness, PH eligibility, and role approval stay separate decisions", async () => {
+    const phCitizens = geoGate({
+      ...remoteOpening,
+      company: "CrewBloom",
+      sourceId: "workable:crewbloom",
+      title: "Virtual Assistant",
+      description: "Open to citizens of the Philippines.",
+      locationRaw: "Philippines",
+    });
+    expect(isObviousGeoRestriction("Virtual Assistant", "Open to citizens of the Philippines.")).toBe(false);
+    expect(isObviousGeoRestriction("Virtual Assistant", "Must be based in the Philippines.")).toBe(false);
+    expect(phCitizens.phEligibility).toBe("eligible_verified");
+    expect(assessPostingFreshness("2020-01-01T00:00:00.000Z", "2026-10-20T00:00:00.000Z").state).toBe("STALE");
+
+    const contradiction = await decideTriage(
+      { ...remoteOpening, title: "Executive Virtual Assistant (US citizens only)", description: "Must reside in the United States.", locationRaw: "Philippines" },
+      { geoScope: "apac_incl_ph" },
+      { AI: { run: async () => { throw new Error("explicit contradiction must not call a model"); } } },
+    );
+    expect(contradiction.kind).toBe("ineligible");
+
+    let modelCalls = 0;
+    const modelRejected = await decideTriage(
+      { ...remoteOpening, locationRaw: "India; Pakistan; Philippines", description: "Remote support for an APAC team." },
+      { geoScope: "apac_incl_ph" },
+      { AI: { run: async () => { modelCalls += 1; return { response: JSON.stringify({ eligibleForFilipinos: false, eligible: false, reason: "uncertain", category: "other", tags: [] }) }; } } },
+    );
+    expect(modelRejected.kind).toBe("eligible");
+    expect(modelCalls).toBe(1);
+
+    const roleHeld = await decideTriage(
+      { ...remoteOpening, locationRaw: "Philippines" },
+      { geoScope: "ph_only", requireModelApproval: true },
+      {},
+    );
+    expect(roleHeld.kind).toBe("ai-unavailable");
   });
 });
