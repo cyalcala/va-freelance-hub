@@ -1,18 +1,18 @@
 # Prospector Latest
 
 Date: 2026-10-25
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/40188437867
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/40210484147
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 12 |
-| Auto-added this run | 3 |
+| Candidates considered | 10 |
+| Auto-added this run | 1 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 7 |
 | Rejected for quality | 2 |
-| ATS proposals filed | 4 |
+| ATS proposals filed | 1 |
 | Mass-add guard tripped | false |
-| Durable candidates discovered (distinct ATS) | 75 |
+| Durable candidates discovered (distinct ATS) | 76 |
 | Durable candidates inserted | 0 |
 | Durable candidates refreshed | 0 |
 | Durable candidates skipped (duplicate) | 68 |
@@ -23,9 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/40188437
 
 ## Auto-added companies
 
-- Jet Support Services, Inc.
-- Whippy
-- ScaleMath
+- Gemini
 
 ## Durable candidate queue (SP-06, non-publishing)
 
