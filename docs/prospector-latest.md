@@ -1,18 +1,18 @@
 # Prospector Latest
 
 Date: 2026-10-25
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/40162480430
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/40188437867
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 11 |
-| Auto-added this run | 2 |
+| Candidates considered | 12 |
+| Auto-added this run | 3 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 7 |
 | Rejected for quality | 2 |
-| ATS proposals filed | 3 |
+| ATS proposals filed | 4 |
 | Mass-add guard tripped | false |
-| Durable candidates discovered (distinct ATS) | 71 |
+| Durable candidates discovered (distinct ATS) | 75 |
 | Durable candidates inserted | 0 |
 | Durable candidates refreshed | 0 |
 | Durable candidates skipped (duplicate) | 68 |
@@ -23,8 +23,9 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/40162480
 
 ## Auto-added companies
 
-- Trust Wallet
-- Nibiru
+- Jet Support Services, Inc.
+- Whippy
+- ScaleMath
 
 ## Durable candidate queue (SP-06, non-publishing)
 
