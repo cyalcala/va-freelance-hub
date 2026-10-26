@@ -1,18 +1,23 @@
 ﻿# Astra777 — operational continuation contract
 
-Updated 2026-10-20, Singapore/Manila (+08:00). Mission remains active: move toward
+Updated 2026-10-27, Singapore/Manila (+08:00). Mission remains active: move toward
 100–150+ independently verified new PH-eligible remote publications/day while
 preserving quality and reducing unnecessary behavior. No daily throughput or
 MATH-01–13 completion is certified.
 
 ## CURRENT: authority and actual execution
 
-- Google Secure Source Manager (`origin`) is canonical Git. GitHub (`github`)
-  and GitLab (`gitlab`) are mirrors/continuity. SSM default HEAD is `main`.
-- GitHub-only bot reports repeatedly advanced beyond SSM. The initial 27 and
+- GitHub (`origin`, https://github.com/cyalcala/va-freelance-hub.git) is canonical
+  Git; GitLab (`gitlab`) is the secondary mirror. The owner directed emergency
+  removal of Secure Source Manager after an unexpected $520 charge. All earlier
+  Git-host, credential and report-persistence instructions are superseded. Use
+  docs/operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md for actual
+  preservation, remote and cloud-removal evidence; do not recreate the service.
+- Historical October 20 readbacks: GitHub-only bot reports repeatedly advanced
+  beyond SSM. The initial 27 and
   later 20 descendants were preserved. October 20 10:20Z main readback matched
   `5c46edf4` on all three hosts. This is named-ref equality, not all-ref or
-  unattended parity. Shared SSM-first report persistence is active on main:
+  unattended parity. The former SSM-first report persistence was active on main:
   runner39409286844 wrote d88365ed to SSM then GitHub. Main23b9202a passed
   full CI39410570310 with production deployment skipped. GitLab was mirrored
   manually; unattended GitLab and recurring continuity remain unproven.
@@ -159,8 +164,9 @@ facts/CAS checks; lets current explicit PH outweigh unclear stored text; and
 never advances a retained posting date. Missing/ambiguous current openings hold.
 The separate Inngest Workable path explicitly defers pending concurrency proof.
 Two actual minimal-field positives also pass native SQLite/public/FTS replay;
-authority, AI and transport remain synthetic. Source is backed up on a dedicated
-SSM release branch. Exact compatible artifact deployment succeeded11:28:54Z after
+authority, AI and transport remain synthetic. At the October 20 observation,
+source was backed up on a dedicated SSM release branch (historical host).
+Exact compatible artifact deployment succeeded11:28:54Z after
 81dist/19source hashes were rechecked; refreshed preflight8/8 and post-control5/5
 pass. Real ordinary-clock/public acceptance remains pending; keep root scope separate.
 The manual Hunt/Crew observations count toward the existing hourly cadence:
@@ -168,8 +174,10 @@ first recurrent collection must be after 2026-10-20T11:14:42.417Z (use11:14:43Z)
 No collector attempt was fabricated to advance its clock. Artifact readiness and
 the supported 8c649da0 rollback are retained in the isolated proof directory.
 
-Parallel next work: preserve/report canonical/mirror refs per bounded checkpoint;
-observe recurrent SSM-first reports and the pending GitLab credential boundary;
+Emergency NEXT: complete and verify the GitHub cutover and cloud removal in
+docs/operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md. Then resume
+parallel work: preserve/report GitHub canonical and GitLab secondary refs;
+observe generated-report persistence to GitHub and the GitLab credential boundary;
 collect authoritative employer cohorts with exact missing-opening reasons;
 bind any future employer hiring evidence to current source/role scope; continue
 canonical MATH/SSAE proof cards without claiming implementation is acceptance.
@@ -177,7 +185,10 @@ canonical MATH/SSAE proof cards without claiming implementation is acceptance.
 ## EVIDENCE / RECOVERY
 
 Read AGENTS.md, current SYSTEM_SAVEPOINT, source constitution/masterplan and sole
-Source Perpetuity queue before admissions. Relevant current receipts:
+Source Perpetuity queue before admissions. Current Git authority and verification:
+- docs/operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md
+
+Dated implementation/runtime receipts (old Git-host instructions superseded):
 - docs/operations/REPOSITORY_PARITY_2026-10-18.md
 - docs/operations/CONTINUATION_EVIDENCE_2026-10-20.md
 - docs/operations/GENERATED_REPORT_CANONICAL_PERSISTENCE_2026-10-20.md

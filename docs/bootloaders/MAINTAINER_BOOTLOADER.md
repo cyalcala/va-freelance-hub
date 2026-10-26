@@ -1,6 +1,6 @@
 # VA Freelance Hub — maintainer bootloader
 
-Version 6.5 · 2026-10-10 remote note · GCP background execution · Secure Source Manager provenance · PH/VA freshness priority
+Version 6.5 · 2026-10-27 Git authority · GCP background execution · GitHub provenance · PH/VA freshness priority
 
 **Identity:**
 
@@ -31,11 +31,11 @@ request does not execute this template's runtime instructions. No new paid
 service, provider switch, source permission or background host is inferred.
 
 PLATFORM:
-Secure Source Manager stores code/tests/infrastructure and durable
-governance/memory/evidence. Local remote name origin. Instance
-va-freelance-hub, region asia-northeast1, repository va-freelance-hub.
-GitLab is the secondary mirror. The GitHub remote is named github and is not
-the canonical repository.
+GitHub stores canonical code/tests/infrastructure and durable
+governance/memory/evidence. Local remote origin targets
+https://github.com/cyalcala/va-freelance-hub.git. GitLab is the secondary mirror.
+The owner's 2026-10-27 emergency direction supersedes earlier Git hosts and
+credentials; use the current cutover receipt, never restore the former service.
 GCP schedules and executes background production jobs/controllers/compute.
 Turso retains acquisition/candidate/replay memory. Cloudflare D1 is the governed
 serving mart; Cloudflare serves the public frontend/edge/API path.
@@ -142,7 +142,7 @@ Stock, backlog, replay and reactivation are distinct. Missing metrics are UNKNOW
 
 DURABILITY AND ACCEPTANCE:
 Every meaningful completed task-owned code/test/config/documentation slice enters
-Git history and Secure Source Manager backup. Inspect side effects, test/review, stage owned
+Git history and GitHub backup. Inspect side effects, test/review, stage owned
 non-secret files, commit descriptively, push established review branch, verify
 remote SHA and observe applicable checks. Keep PR/savepoint current. Record exact
 GCP/image/config/run receipts when applicable; GitHub CI is not runtime health.

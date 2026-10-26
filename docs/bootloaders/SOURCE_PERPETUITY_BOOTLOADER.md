@@ -1,10 +1,10 @@
 # Source Perpetuity Program — Reusable AI Bootloader
 
-> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
-> (`origin`, instance `va-freelance-hub`, `asia-northeast1`). GitLab is the
-> secondary mirror. The GitHub remote is named `github`. Older push-to-GitHub
-> sentences in this bootloader are dated.
-> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+> **Git authority, 2026-10-27:** GitHub is the canonical repository
+> (`origin`, `https://github.com/cyalcala/va-freelance-hub.git`).
+> GitLab is the secondary mirror. This owner-directed emergency change
+> supersedes all earlier Git-host and push instructions. GCP runtime ownership
+> is unchanged. [Cutover status and evidence](../operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md).
 
 Use this prompt to resume the sustainable source-perpetuity program in a new AI
 session. It is deliberately repository-driven: chat history may help, but it is
@@ -21,8 +21,8 @@ The dated unit history below remains evidence; recover the newest savepoint.
 
 ```text
 You are resuming the SOURCE PERPETUITY program for cyalcala/va-freelance-hub.
-Canonical Git remote is Secure Source Manager (origin). GitLab is the secondary
-mirror. The GitHub remote is named github and is not canonical.
+Canonical Git remote is GitHub (origin), https://github.com/cyalcala/va-freelance-hub.git.
+GitLab is the secondary mirror. Earlier Git-host instructions are superseded.
 
 PRIMARY OUTCOME
 Build and maintain an adaptable, renewable portfolio of legitimate public job
@@ -61,7 +61,7 @@ PRODUCTION REALITY TO PRESERVE
 - Active documented acquisition memory: Turso evidence/data lake under scripts/lake.
 - Lake execution/publication: existing GCP jobs where configured, alongside Worker/Actions; recover exact deployed revisions and runtime receipts.
 - Primary ingestion clock: Cloudflare Worker every ten minutes.
-- Scheduled maintenance/evidence: residual GitHub Actions. Canonical Git remote: Secure Source Manager (origin).
+- Scheduled maintenance/evidence: residual GitHub Actions. Canonical Git remote: GitHub (origin).
 - Active scraper code: TypeScript under packages/scraper.
 - Historical Next.js, Vercel, legacy Turso application, Trigger.dev, and Zig assets are not the
   production path. Do not revive them unless an approved strategy explicitly
@@ -89,7 +89,7 @@ Read these before proposing or changing anything:
    milestone/interruption recovery history. The savepoint is the sole mutable
    current-session baton.
 11. Relevant docs/gauntlet/evidence/*, generated docs/*-latest.md reports, code,
-   tests, Git history on Secure Source Manager, residual GitHub Actions runs
+   tests, Git history on GitHub, residual GitHub Actions runs
    when a workflow was actually inspected, and read-only production evidence.
 12. docs/strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md and its complete source directive; current master section 10C; sparse strategy/cards; latest cohort coverage and owned holds. No historical count or research claim becomes current evidence by being copied.
 
@@ -244,11 +244,11 @@ For an approved EXECUTE unit:
    inherit a green claim from an earlier SHA.
 5. Obtain the independent review/critic required by the unit. Resolve or record
    every finding; critic approval does not replace objective gates.
-6. Commit the behavioral slice atomically, push it to Secure Source Manager
+6. Commit the behavioral slice atomically, push it to GitHub
    (`origin`), and capture the
    exact behavior SHA. Never push secrets, personal data, raw credentials, or
    unredacted external payloads.
-7. Confirm the exact SHA on Secure Source Manager (origin). Residual GitHub
+7. Confirm the exact SHA on GitHub (origin). Residual GitHub
    Actions is not the canonical backup and is not runtime acceptance. A green
    workflow for another commit is not evidence. Do not accept a workflow solely
    by its conclusion; inspect its required steps and payload-level outputs.
@@ -265,10 +265,10 @@ For an approved EXECUTE unit:
     decision changes; change docs/HANDOFF.md or docs/AI_RECOVERY_TRAIL.md only
     at a milestone or interruption. Record base
     and behavior SHAs, branch/worktree, files, exact commands/results, the
-    Secure Source Manager remote SHA, any residual GitHub run ID that was
+    GitHub remote SHA, any residual GitHub run ID that was
     actually inspected, deploy/live/D1 evidence, assumptions, terminal decision,
     rollback point, remaining risks, and one next exact action. Commit and push
-    the evidence/docs checkpoint so another AI can resume from Secure Source Manager alone.
+    the evidence/docs checkpoint so another AI can resume from GitHub alone.
 
 STOP CONDITIONS
 STOP before mutation, deployment, or expansion when any of these is true:
@@ -304,7 +304,7 @@ RECOVERY RULES
   and approves the exact targets after a read-only inventory.
 - If behavior is unsafe after deployment, use the unit's tested rollback through
   the path that shipped it (Cloudflare or GCP), verify the rollback SHA on
-  Secure Source Manager (origin), and record live evidence. Preserve forensic
+  GitHub (origin), and record live evidence. Preserve forensic
   evidence without exposing secrets.
 - If interrupted before acceptance, label the branch/unit IN_PROGRESS or
   VERIFYING; never call it accepted. Push only when the partial checkpoint is

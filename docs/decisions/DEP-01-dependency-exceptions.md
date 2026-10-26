@@ -1,9 +1,10 @@
 # Dependency Exceptions and Reporting Policy
 
-> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
-> (`origin`). GitLab is the secondary mirror. The GitHub remote is named
-> `github`. This note does not change the dependency-exception policy.
-> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+> **Git authority, 2026-10-27:** GitHub is the canonical repository
+> (`origin`, `https://github.com/cyalcala/va-freelance-hub.git`).
+> GitLab is the secondary mirror. This owner-directed emergency change
+> supersedes all earlier Git-host and push instructions. GCP runtime ownership
+> is unchanged. [Cutover status and evidence](../operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md).
 
 Date: 2026-08-15
 Owner: Cyrus Alcala

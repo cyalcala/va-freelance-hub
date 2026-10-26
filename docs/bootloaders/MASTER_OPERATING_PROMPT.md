@@ -294,21 +294,22 @@ without a deliverable.
 
 ## 7. Architectural ownership
 
-The canonical separation is **Secure Source Manager stores and remembers; GCP schedules and
+The canonical separation is **GitHub stores and remembers; GCP schedules and
 executes background work; Turso retains acquisition memory; Cloudflare D1 and
 Cloudflare serve the public website**. Source code stored in Git is not code
-executing in GCP. On 2026-10-10 the owner made Secure Source Manager the
-canonical Git remote: local name `origin`, instance `va-freelance-hub`, region
-`asia-northeast1`. GitLab is the secondary mirror. The GitHub remote is named
-`github`. The [October 4 owner directive](../directives/2026-10-04-PH-VA-FRESHNESS-GCP-CANONICAL-UPGRADE.md)
-is dated on the GitHub-as-repository point; the [SSM receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md)
-supersedes that remote. Do not move the frontend or database merely from the phrase "GCP migration."
+executing in GCP. On 2026-10-27 the owner restored GitHub as canonical Git:
+local remote `origin`, `https://github.com/cyalcala/va-freelance-hub.git`.
+GitLab is the secondary mirror. The
+[emergency cutover](../operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md)
+supersedes all earlier Git-host and credential requirements. Do not recreate
+the removed source-control service. Do not move the frontend or database
+merely from the phrase "GCP migration."
 
 | Responsibility | Canonical boundary |
 | --- | --- |
-| Secure Source Manager | Canonical Git history: source code, tests, infrastructure/deployment definitions, parameters, ADRs, prompts, plans, savepoints, non-secret evidence, reviews and durable version history |
+| GitHub | Canonical Git history: source code, tests, infrastructure/deployment definitions, parameters, ADRs, prompts, plans, savepoints, non-secret evidence, reviews and durable version history |
 | GitLab | Secondary mirror and fallback. Not the canonical repository |
-| GitHub | Local remote `github`. Residual Actions clocks and historical CI. Not the canonical Git history |
+| GitHub Actions | Source/CI verification and separately classified residual clocks. Git authority does not establish runtime health |
 | GCP | Production background orchestration, Cloud Scheduler/Cloud Run jobs/controllers, miners, reconciliation, publication batches, appropriate analytics and runtime logs |
 | Turso | Acquisition lake, candidate reservoir, observations, source/intake memory and replay/refinement state |
 | Cloudflare D1 | Governed public serving mart and publication/control records |
@@ -591,7 +592,7 @@ After all 13 are accepted, validate their interactions and maintain drift checks
 recovery drills and source resilience. Supply targets and autonomous cutover still
 require their own evidence; 13/13 is not a guarantee of perpetual daily supply.
 
-Verify current GCP scheduling and execution receipts. Secure Source Manager
+Verify current GCP scheduling and execution receipts. GitHub
 holds source control and history. GitHub Actions must not be the required
 production clock. Classify retained edge and residual GitHub Actions clocks
 from evidence. Do not infer clocks from a plan. Trigger.dev assets remain historical/future work unless a separate
@@ -1070,10 +1071,10 @@ Retain all 15 PH fields, 108-label steady-state coverage, complete Manila-day fr
 first-publication flow, 100/day floor and 150/day stretch. Raw throughput/stock,
 backlog imports, duplicate reactivations and replays are separate outcomes.
 
-### Secure Source Manager durability and GCP deployment provenance
+### GitHub durability and GCP deployment provenance
 
 All meaningful task-owned code, tests, infrastructure/config, decisions and evidence
-enter Git history and the Secure Source Manager remote `origin`. That remote is
+enter Git history and the GitHub remote `origin`. That remote is
 source control and memory, not the operational clock. GitLab stays the secondary
 mirror. Keep GCP execution artifacts/state backed up by actual
 supported mechanisms; a Git push is not a database backup or restoration drill.

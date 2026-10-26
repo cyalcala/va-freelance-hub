@@ -22,16 +22,16 @@ Current active architecture:
 - Cloudflare Pages hosting
 - Cloudflare D1 database
 - TypeScript scraper code in `packages/scraper`
-- Canonical Git and recovery history: Google Cloud Secure Source Manager
-  (`origin`, instance `va-freelance-hub`, region `asia-northeast1`)
+- Canonical Git and recovery history: GitHub
+  (`origin`, `https://github.com/cyalcala/va-freelance-hub.git`)
 - GitLab: secondary mirror, not the canonical repository
-- GitHub: local remote `github` only. Residual GitHub Actions clocks may still
-  exist; they are not the canonical history and not a required production clock
+- GitHub Actions: residual clocks may still exist; Git authority does not
+  make them a required production clock
 
-The 2026-10-10 receipt is
-`docs/operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md`. Older notes
-that say GitHub is the durable source repository describe the state before
-that migration.
+The current decision and verification status is
+`docs/operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md`.
+The owner directed removal of the former source-control service from the setup;
+earlier host, credential and push instructions are superseded.
 
 Do not assume the older Next.js, Vercel, Turso, Trigger.dev, or Zig-parser plan
 is the active production path unless a newer accepted decision explicitly says

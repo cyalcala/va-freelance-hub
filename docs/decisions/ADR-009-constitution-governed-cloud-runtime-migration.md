@@ -3,13 +3,13 @@
 ## Status
 Accepted (Governed under Master Operating Constitution v3.0, Unit GCP-01)
 
-## 2026-10-10 Git remote
+## 2026-10-27 Git authority
 
-Secure Source Manager is the canonical Git repository. Local remote `origin`,
-instance `va-freelance-hub`, region `asia-northeast1`. GitLab is the secondary
-mirror. The GitHub remote is named `github`. This note does not change the
-runtime-migration decision below.
-[Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+GitHub is the canonical Git repository. Local remote `origin` targets
+`https://github.com/cyalcala/va-freelance-hub.git`. GitLab is the secondary
+mirror. The owner's emergency direction supersedes all earlier Git-host and
+credential instructions. The runtime-migration decision below is unchanged.
+[Cutover status and evidence](../operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md).
 
 ## October 4 canonical reconciliation
 

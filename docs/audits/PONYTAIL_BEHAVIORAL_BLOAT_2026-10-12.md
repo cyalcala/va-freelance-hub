@@ -1,3 +1,8 @@
+> **Historical Git-host evidence:** The Git-host state and commands below
+> describe the dated observation only. Since 2026-10-27, GitHub `origin`
+> is canonical; do not restore or reconnect the former service.
+> [Current cutover status](../operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md).
+
 What this repo does: VA Freelance Hub collects permitted public job metadata, keeps acquisition evidence in Turso, publishes through governed Cloudflare D1 controls, and serves a shared public snapshot. Google Secure Source Manager is canonical engineering memory, GitLab is its mirror, and GCP is the intended primary background owner.
 
 Assumed load: 100 unique, newly published, independently verified Philippines-eligible jobs per Manila day, with 150 as stretch; complete private intake for permitted openings at existing VA/Australian/day-shift companies. Preserve source-specific permissions, original posting-date checks, remote/PH restrictions, source cadence, 200 requests/source/day, 500 AI calls/day, 50,000 storage writes/day and five cents/net-new publication. A ten-minute wake is not permission to fetch a source every ten minutes.

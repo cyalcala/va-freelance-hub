@@ -1,10 +1,10 @@
 # Master Execution Plan — Karpathy-First Competence Gauntlet
 
-**Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
-(`origin`, instance `va-freelance-hub`, `asia-northeast1`). GitLab is the
-secondary mirror. The GitHub remote is named `github`. Older backup
-instructions in this plan are dated.
-[Receipt](operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+**Git authority, 2026-10-27:** GitHub is the canonical repository
+(`origin`, `https://github.com/cyalcala/va-freelance-hub.git`). GitLab is the
+secondary mirror. This owner-directed emergency change supersedes older
+Git-host, credential and backup instructions.
+[Cutover status and evidence](operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md).
 
 **Planning checkpoint:** 2026-08-22
 

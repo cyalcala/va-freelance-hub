@@ -1,5 +1,24 @@
 # Current resume pointer
 
+## 2026-10-27 — Emergency GitHub canonical cutover
+
+The owner reported an unexpected $520 charge and directed removal of Secure
+Source Manager from the setup. GitHub `cyalcala/va-freelance-hub` is now the
+canonical Git authority, with `origin` targeting
+`https://github.com/cyalcala/va-freelance-hub.git`; GitLab remains secondary.
+All active commit/push, provenance, recovery and generated-report instructions
+must use GitHub. Earlier SSM/three-host directives below are historical and
+must not recreate that service or require it for Git operations.
+
+Use the [emergency cutover receipt](../operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md) for verified Git preservation,
+remote configuration and cloud resource removal status. This decision entry
+does not itself certify a push, instance deletion, billing stop or refund.
+The owner has contacted support. GCP runtime, Cloudflare, Turso, D1 and source
+publication gates retain their existing authority and controls.
+
+**NEXT:** complete and verify the emergency Git/cloud cutover recorded in
+that receipt before resuming the prior product continuation.
+
 Current owner priority (2026-10-14): cut behavioral bloat and surface verified
 Philippines openings from employers that are clearly hiring. Read `astra777.txt`
 first. The public board was HTTP 200, fresh, 1697 jobs at 2026-10-14T14:18:26Z.
