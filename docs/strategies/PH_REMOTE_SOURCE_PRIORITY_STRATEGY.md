@@ -1,8 +1,10 @@
 # PH Remote Source Priority Expansion
 
-> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
-> (`origin`). GitLab is the secondary mirror. The GitHub remote is named
-> `github`. [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+> **Git authority, 2026-10-27:** GitHub is the canonical repository
+> (`origin`, `https://github.com/cyalcala/va-freelance-hub.git`).
+> GitLab is the secondary mirror. This owner-directed emergency change
+> supersedes all earlier Git-host and push instructions. GCP runtime ownership
+> is unchanged. [Cutover status and evidence](../operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md).
 
 **Date:** 2026-10-03. **Status:** documented priority overlay; runtime integration unverified.
 **Epoch:** `ph_remote_priority:2026-10-03`.

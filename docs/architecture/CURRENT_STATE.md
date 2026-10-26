@@ -1,11 +1,21 @@
 # VA Freelance Hub — current architectural ownership and evidence
 
-**Version:** 1.5 · 2026-10-20. **Purpose:** canonical ownership, current evidence
+**Version:** 1.6 · 2026-10-27. **Purpose:** canonical ownership, current evidence
 pointers and unresolved migration facts. This map does not dispatch runtime work.
 The [October 4 owner resource](../directives/2026-10-04-PH-VA-FRESHNESS-GCP-CANONICAL-UPGRADE.md)
 clarifies source control versus execution. The [October 1 topology snapshot](CURRENT_STATE_2026-10-01_SNAPSHOT.md)
 is preserved verbatim as historical evidence; it is not today's runtime inventory.
 Read the newest savepoint and verify deployed versions before acting.
+
+## October 27 emergency Git authority
+
+The owner directed removal of Secure Source Manager following an unexpected
+charge. GitHub `https://github.com/cyalcala/va-freelance-hub.git` is canonical
+under local remote `origin`; GitLab remains the secondary mirror. This decision
+supersedes all older Git-host and report-persistence requirements. Read the
+[cutover receipt](../operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md)
+for actual remote, preservation and cloud-removal evidence. GCP background
+execution, Cloudflare serving and database ownership are unchanged.
 
 ## October 20 current deployed subset
 
@@ -16,8 +26,9 @@ post-control 5/5 pass, including unchanged configuration/five secret_text
 names/types and five public routes returning 200. This is artifact/control-plane
 evidence; remote function bytes and secret values are not attested. Keep
 rollback `8c649da0`. Other combined-root code is not deployed. Observe ordinary
-clocks and the 17 unique misses before claiming flow/recall. Shared reports have
-one actual SSM-first/GitHub runner receipt; GitLab runtime and recurrent
+clocks and the 17 unique misses before claiming flow/recall. The historical shared-report
+mechanism has one actual SSM-first/GitHub runner receipt; that Git-host design
+was superseded on October 27. GitLab runtime and recurrent
 continuity remain unproven. See the [current evidence](../operations/CONTINUATION_EVIDENCE_2026-10-20.md)
 and [release receipt](../operations/WORKABLE_ROTATION_RELEASE_2026-10-20.md).
 Post-release attempts are observed at 11:32 and 11:36 with robots enforced; caller
@@ -27,7 +38,7 @@ trace now precede any recovery/recall acceptance.
 
 ## October 18 historical verified subset
 
-SSM remains canonical; GitHub and GitLab are mirrors/continuity. Branch equality
+At that observation date SSM was canonical; GitHub and GitLab were mirrors/continuity. Branch equality
 does not prove whole-repository or unattended mirroring parity. The
 [remote audit](../operations/REPOSITORY_PARITY_2026-10-18.md) found 27 GitHub-only
 report descendants, subsequently preserved in SSM and GitLab by fast-forward.
@@ -46,12 +57,12 @@ the bounded0054-compatible release NEXT. No migration or new clock is claimed.
 ## Canonical operating model
 
 ```text
-Secure Source Manager: canonical Git remote and durable engineering memory
+GitHub: canonical Git remote and durable engineering memory
   code/tests/infra, version history, review, governance, evidence/recovery
-  instance va-freelance-hub, region asia-northeast1, local remote name origin
+  https://github.com/cyalcala/va-freelance-hub.git, local remote name origin
   -> reproducible committed build/config with immutable deployment provenance
 GitLab: secondary mirror, not the canonical repository
-GitHub: local remote name github; residual Actions clocks are not Git authority
+GitHub Actions: source checks and separately classified residual clocks
 GCP: Cloud Scheduler -> Cloud Run jobs/controllers/background compute
   -> Turso: permitted acquisition, source/intake memory, qualified candidates
   -> source/item policy + current publication gateway/ledger
@@ -59,7 +70,7 @@ GCP: Cloud Scheduler -> Cloud Run jobs/controllers/background compute
   -> Cloudflare: Astro public frontend/edge/API -> observed eligible visibility
 ```
 
-Secure Source Manager stores the canonical code history. It does not supply the required production clock. GitLab is the secondary mirror. CI/release
+GitHub stores the canonical code history. Git authority does not supply the required production clock. GitLab is the secondary mirror. CI/release
 verification is separate from production scheduling. GCP migration does not imply
 moving Turso, D1 or the public frontend. Retained edge/API execution is an explicit
 dependency, not an architecture contradiction. Every collection/publication still
@@ -80,9 +91,9 @@ It covers one project/region and sampled workflows, not the entire fleet.
 | gha-lake-miner | CURRENT residual background runtime | Active recent scheduled GitHub execution; GCP runner/definition alone is not migration acceptance |
 | gha-directory-pulse / gha-hunter-pulse | CURRENT residual runtime | Active recent scheduled GitHub executions; replacement/retirement ownership unresolved |
 | GitHub project validation | CI-ONLY as runtime role | Tests/build/type checks validate inspected source; not GCP health or production publication |
-| Secure Source Manager repository | CURRENT canonical Git remote | Instance `va-freelance-hub` in `asia-northeast1`; receipt `../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md` |
+| GitHub repository | CURRENT canonical Git authority | `cyalcala/va-freelance-hub`, local remote `origin`; [October 27 cutover status](../operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md) |
 | GitLab mirror | SECONDARY fallback | Not the canonical repository. Older GitLab readbacks remain dated evidence |
-| GitHub docs/ADRs/prompts/history | MIRROR remote `github` / not canonical Git | Preserve canonical history as a mirror; residual Actions clocks stay separately classified |
+| GitHub docs/ADRs/prompts/history | CANONICAL durable engineering memory | Commit/push task-owned changes and verify exact remote SHA; residual Actions clocks stay separately classified |
 | GCP miner / other migrated controllers | UNKNOWN outside inspected scope | No miner job/scheduler in inspected region; don't infer none elsewhere |
 | Exact Git SHA -> running image/config | UNKNOWN | Artifact images/tags exist; immutable source-to-execution mapping not recovered |
 | Historical Trigger/Vercel/Next application paths | LEGACY unless new evidence | Preserve artifacts; don't revive old clocks merely for familiarity |
@@ -97,7 +108,7 @@ before bounded replacement/retirement. No uncontrolled duplicate publication clo
 ## Runtime provenance and durability
 
 All meaningful code/tests/infrastructure/config/doc changes enter Git history and
-the Secure Source Manager remote `origin`. Every deployed GCP revision maps to Git SHA or a reproducible artifact
+the GitHub remote `origin`. Every deployed GCP revision maps to Git SHA or a reproducible artifact
 with Git-backed definition, immutable image digest, job/config version, deployment
 time, scheduler/policy/parameter version, execution IDs, checks and rollback.
 Mutable latest is not proof of current Git deployment. Detect drift and reconcile

@@ -1,5 +1,24 @@
 # Implementation Status
 
+## 2026-10-27 — Emergency GitHub canonical cutover
+
+The owner reported an unexpected $520 charge and directed removal of Secure
+Source Manager from the setup. GitHub `cyalcala/va-freelance-hub` is now the
+canonical Git authority, with `origin` targeting
+`https://github.com/cyalcala/va-freelance-hub.git`; GitLab remains secondary.
+All active commit/push, provenance, recovery and generated-report instructions
+must use GitHub. Earlier SSM/three-host directives below are historical and
+must not recreate that service or require it for Git operations.
+
+Use the [emergency cutover receipt](operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md) for verified Git preservation,
+remote configuration and cloud resource removal status. This decision entry
+does not itself certify a push, instance deletion, billing stop or refund.
+The owner has contacted support. GCP runtime, Cloudflare, Turso, D1 and source
+publication gates retain their existing authority and controls.
+
+**NEXT:** complete and verify the emergency Git/cloud cutover recorded in
+that receipt before resuming the prior product continuation.
+
 ## 2026-10-20 — Bounded compatible deployment, pending outcome observation
 
 Source `f34965b0` is live as production `347d95ae` since 11:28:54Z, with schema

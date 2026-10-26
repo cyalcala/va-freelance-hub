@@ -5,13 +5,12 @@
 This index tells future AI agents which documents are canonical, which are
 historical, and where to resume. Start here instead of guessing from filenames.
 
-**Git remote, 2026-10-10.** Google Cloud Secure Source Manager is the canonical
-Git repository. Local remote `origin`, instance `va-freelance-hub`, region
-`asia-northeast1`, repository `va-freelance-hub`. GitLab is the secondary
-mirror. The GitHub remote is named `github` and is not canonical. Older
-documents that say to push to GitHub, or that call GitLab the continuity
-remote, describe the state before this migration.
-[Receipt](operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+**Git authority, 2026-10-27.** GitHub is the canonical Git repository:
+`origin`, `https://github.com/cyalcala/va-freelance-hub.git`. GitLab is the
+secondary mirror. The owner's emergency direction supersedes all earlier
+Git-host, credential and push instructions. Historical receipts remain dated
+evidence, not authority to restore the former service.
+[Cutover status and evidence](operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md).
 
 ## Authoritative APEX-10X Transformation Entry Point — 2026-09-07
 

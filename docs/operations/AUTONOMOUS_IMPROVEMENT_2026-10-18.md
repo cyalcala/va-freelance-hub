@@ -1,3 +1,8 @@
+> **Historical Git-host evidence:** The Git-host state and commands below
+> describe the dated observation only. Since 2026-10-27, GitHub `origin`
+> is canonical; do not restore or reconnect the former service.
+> [Current cutover status](GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md).
+
 # Autonomous improvement checkpoint — 2026-10-18
 
 Status: verified local/source correction checkpoint; continuous mission active.

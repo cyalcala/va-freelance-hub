@@ -1,8 +1,8 @@
-> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
-> (`origin`, instance `va-freelance-hub`, `asia-northeast1`). GitLab is the
-> secondary mirror. The GitHub remote is named `github`. Older sentences below
-> that treat GitHub state as the durable store are dated.
-> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+> **Git authority, 2026-10-27:** GitHub is the canonical repository
+> (`origin`, `https://github.com/cyalcala/va-freelance-hub.git`).
+> GitLab is the secondary mirror. This owner-directed emergency change
+> supersedes all earlier Git-host and push instructions. GCP runtime ownership
+> is unchanged. [Cutover status and evidence](../operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md).
 
 > **2026-09-08 audit correction:** Historical branch narrative below is not current production evidence. See `docs/gauntlet/evidence/APEX-AUDIT-2026-09-08/AUDIT.md` and `docs/benchmarks/APEX_10X_BASELINE_2026-09-08.md`. Only three sources are in live shadow; additional allowlist entries are not admissions. Risk tiers are advisory; seven-day server policy remains enforced. Numeric estimates and exact-zero billing claims are unverified.
 

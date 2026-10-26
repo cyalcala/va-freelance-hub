@@ -1,3 +1,8 @@
+> **Historical Git-host evidence:** The Git-host state and commands below
+> describe the dated observation only. Since 2026-10-27, GitHub `origin`
+> is canonical; do not restore or reconnect the former service.
+> [Current cutover status](GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md).
+
 # Workable rotation release — October 20, 2026
 
 Pages production deployment `347d95ae-c9f2-45d5-9cc9-73fb42eafdd2`, created

@@ -100,10 +100,11 @@ active_lease:
 
 ### 3.1 Preflight Command Sequence
 
-`origin` is Google Cloud Secure Source Manager, instance `va-freelance-hub`
-in `asia-northeast1`. GitLab is the secondary mirror. The GitHub remote is
-named `github`. `git rev-parse origin/main` reads the Secure Source Manager
-`main` tip.
+`origin` is GitHub `https://github.com/cyalcala/va-freelance-hub.git`.
+GitLab is the secondary mirror. `git rev-parse origin/main` reads the fetched
+GitHub `main` tip. The owner's October 27 emergency direction supersedes older
+Git-host and credential instructions; see the
+[cutover receipt](docs/operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md).
 
 Execute portable git and runtime commands:
 ```bash

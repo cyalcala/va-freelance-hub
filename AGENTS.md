@@ -8,33 +8,32 @@ VA-friendly company directory, and demonstrates agentic engineering through a
 self-maintaining ingestion and verification system.
 
 Owner: Filipino freelance technical writer and agentic engineer
-Canonical Git: Google Cloud Secure Source Manager, project `antigravity-494415`,
-instance `va-freelance-hub`, region `asia-northeast1`, repository
-`va-freelance-hub`. Local remote name: `origin`.
+Canonical Git: GitHub `cyalcala/va-freelance-hub`,
+`https://github.com/cyalcala/va-freelance-hub.git`. Local remote name: `origin`.
 GitLab: secondary mirror `cyrus-group4793641/va-freelance-hub`.
-GitHub account: `cyalcala`. Local remote name: `github`. Not the canonical repository.
+GitHub account: `cyalcala`. GitHub is the canonical repository.
 Repository id: `va-freelance-hub`
 
 ## Current Production Reality
 
-The October 4 owner resource defined the execution split. On 2026-10-10 the
-owner made Secure Source Manager the canonical Git repository and durable
-engineering memory.
-[Receipt](docs/operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+The October 4 owner resource defined the execution split. On 2026-10-27 the
+owner directed an emergency return to GitHub as canonical Git after an
+unexpected charge. This supersedes every earlier Secure Source Manager
+requirement; do not recreate that service or require its credentials.
+[Cutover status and evidence](docs/operations/GITHUB_CANONICAL_EMERGENCY_CUTOVER_2026-10-27.md).
 
-- Secure Source Manager: source code, tests, infrastructure, governance,
+- GitHub (`origin`): source code, tests, infrastructure, governance,
   prompts, plans, evidence, reviews and recovery history. It is not a production clock.
 - GitLab: secondary mirror and fallback. It is not the canonical repository.
-- GitHub: retained local remote `github`. Residual GitHub Actions clocks and CI
-  may still run. They are not the canonical Git history and they are not a
-  required production clock.
+- GitHub Actions: source/CI checks and residual clocks may still run.
+  Canonical Git ownership does not make Actions a required production clock.
 - GCP: primary background scheduling/orchestration and jobs/controllers/compute.
 - Turso: acquisition lake, candidate reservoir, observations and replay/source memory.
 - Cloudflare D1: governed public serving mart and publication/control records.
 - Cloudflare: Astro frontend/edge/API serving and retained verified dependencies.
 
 Code stored in Git is not code executing in GCP. All meaningful code/config/
-test/doc changes must be committed and pushed to Secure Source Manager; verify
+test/doc changes must be committed and pushed to GitHub (`origin`); verify
 the remote SHA. Every GCP deployment maps to a Git SHA or reproducible artifact
 with Git-backed provenance. Keep actual artifact/state backups separately; Git
 is not a database restoration receipt.
@@ -156,7 +155,7 @@ Current 2026-08-31 planning baseline:
   remaining SP unit contracts with the masterplan through an explicit bounded
   planning decision; a state label alone does not dispatch a shadow or enforce
   a canary.
-- Automation may advance `origin/main` on Secure Source Manager; every unit
+- Automation may advance `origin/main` on GitHub; every unit
   must fetch, preserve dirty work, and restate its full start SHA.
 
 The June audits remain historical baselines. Do not use their counts or missing
@@ -170,11 +169,11 @@ project's scope:
 1. Make the smallest useful slice.
 2. Run the narrowest meaningful verification.
 3. Commit the behavior or documentation slice.
-4. Push task-owned source code, tests, infrastructure and documentation to Secure Source Manager (`origin`); verify the remote SHA. Back up GCP artifacts/state by their supported mechanisms. GitLab remains the secondary mirror. Do not treat a GitHub push as the canonical backup.
+4. Push task-owned source code, tests, infrastructure and documentation to GitHub (`origin`); verify the remote SHA. Back up GCP artifacts/state by their supported mechanisms. GitLab remains the secondary mirror.
 5. Observe applicable source/CI checks and actual GCP execution/deployment receipts separately; repository CI is not runtime acceptance.
 6. Record the checkpoint with percentage, commit hash, verification, workflow
    run ID, and next task.
-7. Push acceptance documentation to Secure Source Manager when the GCP/runtime evidence is known.
+7. Push acceptance documentation to GitHub when the GCP/runtime evidence is known.
 
 Canonical recovery docs:
 
@@ -251,7 +250,7 @@ republishing automatically compliant.
 
 ## Engineering Preferences
 
-- Keep GCP as primary background execution, Secure Source Manager as canonical Git memory, GitLab as the secondary mirror, Turso as acquisition, and Cloudflare/D1 as serving; verify actual resources and residual clocks.
+- Keep GCP as primary background execution, GitHub as canonical Git memory, GitLab as the secondary mirror, Turso as acquisition, and Cloudflare/D1 as serving; verify actual resources and residual clocks.
 - Make vertical slices that leave the site deployable after each commit.
 - Add observability before increasing ingestion complexity.
 - Prefer data-source configuration and source status tables over hard-coded
