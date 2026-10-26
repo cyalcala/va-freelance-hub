@@ -480,12 +480,11 @@ jobs:
           } > docs/source-health-latest.md
 
 
-      - name: Persist generated report in canonical SSM
+      - name: Persist generated report in canonical GitHub
         if: ${{ github.ref == 'refs/heads/main' }}
         uses: ./.github/actions/persist-generated-report
         with:
           report-key: hunter
-          gcp-credentials-json: ${{ secrets.GCP_SA_KEY }}
 
   # Tier-1 maintenance bot (2026-07-04): turn degradation warnings into a
   # tracked GitHub issue instead of scroll-past run annotations. At most one

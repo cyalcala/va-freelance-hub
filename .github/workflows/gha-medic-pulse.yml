@@ -108,12 +108,11 @@ jobs:
           } > docs/health-digest-latest.md
 
 
-      - name: Persist generated report in canonical SSM
+      - name: Persist generated report in canonical GitHub
         if: ${{ github.ref == 'refs/heads/main' }}
         uses: ./.github/actions/persist-generated-report
         with:
           report-key: medic
-          gcp-credentials-json: ${{ secrets.GCP_SA_KEY }}
 
       - name: 📊 Medic Summary
         if: always()

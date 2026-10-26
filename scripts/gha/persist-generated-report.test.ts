@@ -20,7 +20,6 @@ function fixture(key = "directory") {
   const dir = mkdtempSync(join(tmpdir(), "report-persistence-"));
   const workspace = join(dir, "workspace");
   const canonical = join(dir, "canonical.git");
-  const mirror = join(dir, "mirror.git");
   const env = { ...process.env, GIT_CONFIG_NOSYSTEM: "1", GIT_CONFIG_GLOBAL: join(dir, "empty-git-config"), GIT_TERMINAL_PROMPT: "0" };
   writeFileSync(env.GIT_CONFIG_GLOBAL, "");
   const gitRun = (cwd: string, ...args: string[]) => {
@@ -42,12 +41,11 @@ function fixture(key = "directory") {
   gitRun(workspace, "commit", "-qm", "initial");
   const base = gitRun(workspace, "rev-parse", "HEAD");
   gitRun(dir, "clone", "--bare", "-q", workspace, canonical);
-  gitRun(dir, "clone", "--bare", "-q", workspace, mirror);
   const commands = join(dir, "commands.log");
   const summary = join(dir, "summary.md");
   const wrapper = join(dir, "run.sh");
   // Run the checked-in script against real isolated bare repositories. The
-  // wrapper maps the two exact production URLs to local fixtures and rejects
+  // wrapper maps the fixed GitHub URL to a local fixture and rejects
   // every other network URL. No real credentials or external write can occur.
   writeFileSync(wrapper, `
 git() {
@@ -55,8 +53,7 @@ git() {
   for ((i=0; i<\${#args[@]}; i++)); do
     arg="\${args[$i]}"
     case "$arg" in
-      https://va-freelance-hub-296059249147-git.asia-northeast1.sourcemanager.dev/antigravity-494415/va-freelance-hub.git) args[$i]="$SSM_BARE"; service=canonical ;;
-      https://github.com/cyalcala/va-freelance-hub.git) args[$i]="$GH_BARE"; service=mirror ;;
+      https://github.com/cyalcala/va-freelance-hub.git) args[$i]="$GH_BARE"; service=canonical ;;
       https://*|http://*|ssh://*) echo 'unexpected external URL' >&2; return 99 ;;
       fetch|push|ls-remote) verb="$arg" ;;
     esac
@@ -66,9 +63,8 @@ git() {
     if [[ "$verb" == push ]]; then
       [[ "$*" != *--force* && "$*" != *--mirror* && "$*" != *--delete* ]] || return 98
       if [[ "$service" == canonical && "$FAIL_STAGE" == canonical ]]; then return 31; fi
-      if [[ "$service" == mirror && "$FAIL_STAGE" == mirror ]]; then return 32; fi
       if [[ "$service" == canonical && -n "$RACE_SHA" && ! -e "$RACE_MARKER" ]]; then
-        "$REAL_GIT" --git-dir="$SSM_BARE" update-ref refs/heads/main "$RACE_SHA" || return
+        "$REAL_GIT" --git-dir="$GH_BARE" update-ref refs/heads/main "$RACE_SHA" || return
         : > "$RACE_MARKER"
       fi
       if [[ "$service" == canonical && "$FAIL_STAGE" == readback ]]; then return 0; fi
@@ -84,7 +80,7 @@ source "$REPORT_SCRIPT"
         GITHUB_WORKSPACE: shellPath(workspace), RUNNER_TEMP: shellPath(dir),
         GITHUB_REPOSITORY: "cyalcala/va-freelance-hub", GITHUB_REF: "refs/heads/main", REPORT_KEY: key,
         GH_REPORT_TOKEN: "SYNTHETIC-TOKEN-DO-NOT-PRINT", GITHUB_STEP_SUMMARY: shellPath(summary),
-        SSM_BARE: shellPath(canonical), GH_BARE: shellPath(mirror), COMMAND_LOG: shellPath(commands),
+        GH_BARE: shellPath(canonical), COMMAND_LOG: shellPath(commands),
         FAIL_STAGE: "", RACE_SHA: "", RACE_MARKER: shellPath(join(dir, "raced")), ...extra },
       stdout: "pipe", stderr: "pipe", timeout: 90_000,
     });
@@ -105,7 +101,7 @@ source "$REPORT_SCRIPT"
     gitRun(other, "push", "-q", repo, `${sha}:${publish ? "refs/heads/main" : "refs/heads/fixture-race"}`);
     return sha;
   };
-  return { dir, workspace, canonical, mirror, base, write, run, head, advance, gitRun,
+  return { dir, workspace, canonical, base, write, run, head, advance, gitRun,
     commands: () => existsSync(commands) ? readFileSync(commands, "utf8").trim().split(/\r?\n/) : [],
     summary: () => existsSync(summary) ? readFileSync(summary, "utf8") : "",
     dispose: () => { const target = resolve(dir); if (!target.startsWith(resolve(tmpdir()) + sep) || !target.split(sep).at(-1)?.startsWith("report-persistence-")) throw new Error("unsafe fixture cleanup"); rmSync(target, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); },
@@ -119,19 +115,20 @@ test("all eight actual YAML writers use the shared main-only action and preserve
     const steps = Object.values(workflow.jobs).flatMap((job: any) => job.steps ?? []);
     const persistence = steps.filter((step: any) => step.uses === "./.github/actions/persist-generated-report");
     expect(persistence).toHaveLength(1);
-    expect(persistence[0].with).toEqual({ "report-key": owner, "gcp-credentials-json": "${{ secrets.GCP_SA_KEY }}" });
+    expect(persistence[0].with).toEqual({ "report-key": owner });
     expect(persistence[0].if).toBe("${{ github.ref == 'refs/heads/main' }}");
     expect(steps.filter((step: any) => /git (?:push origin HEAD:main|pull --(?:rebase|ff-only) origin main)/.test(step.run ?? ""))).toHaveLength(0);
     expect(workflow.on.workflow_dispatch).toBeDefined();
   }
   const action = Bun.YAML.parse(readFileSync(join(root, ".github/actions/persist-generated-report/action.yml"), "utf8")) as any;
   expect(action.runs.using).toBe("composite");
-  expect(action.runs.steps[0].with).toEqual({ credentials_json: "${{ inputs.gcp-credentials-json }}", project_id: "antigravity-494415", create_credentials_file: true, cleanup_credentials: true });
-  expect(action.runs.steps.at(-1).if).toBe("${{ always() }}");
-  expect(JSON.stringify(action)).not.toMatch(/add-iam|set-iam|print-access-token|upload-artifact|secrets (?:create|versions)/);
+  expect(Object.keys(action.inputs)).toEqual(["report-key"]);
+  expect(action.runs.steps).toHaveLength(1);
+  expect(action.runs.steps[0].env.GH_REPORT_TOKEN).toBe("${{ github.token }}");
+  expect(JSON.stringify(action)).not.toMatch(/google-github-actions|gcloud|GCP_SA_KEY|credentials-json|add-iam|set-iam|print-access-token|upload-artifact|secrets (?:create|versions)/);
 });
 
-test("actual shell persists only the report, SSM before GitHub, with verified SHA and intact caller state", () => {
+test("actual shell persists only the report to GitHub with verified SHA and intact caller state", () => {
   const f = fixture();
   try {
     f.write(files.directory, "new report\n");
@@ -144,12 +141,11 @@ test("actual shell persists only the report, SSM before GitHub, with verified SH
     if (result.exitCode !== 0) throw new Error(result.output);
     expect(result.exitCode).toBe(0);
     const saved = f.head(f.canonical);
-    expect(f.head(f.mirror)).toBe(saved);
     expect(saved).not.toBe(f.base);
     expect(f.gitRun(f.canonical, "diff-tree", "--no-commit-id", "--name-only", "-r", saved)).toBe(files.directory);
     expect(f.gitRun(f.workspace, "status", "--porcelain")).toBe(before);
     expect(f.gitRun(f.workspace, "rev-parse", "HEAD")).toBe(f.base);
-    expect(f.commands().indexOf("canonical push")).toBeLessThan(f.commands().indexOf("mirror push"));
+    expect(f.commands()).toEqual(["canonical fetch", "canonical push", "canonical ls-remote"]);
     expect(f.summary()).toContain(saved);
     expect(f.summary()).toContain("GitLab: pending");
     expect(result.output + f.summary()).not.toContain("SYNTHETIC-TOKEN");
@@ -157,39 +153,26 @@ test("actual shell persists only the report, SSM before GitHub, with verified SH
   } finally { f.dispose(); }
 }, 120_000);
 
-for (const stage of ["canonical", "readback", "mirror"]) test(`actual shell fails visibly on ${stage} failure and preserves canonical history`, () => {
+for (const stage of ["canonical", "readback"]) test(`actual shell fails visibly on ${stage} failure and preserves canonical history`, () => {
   const f = fixture();
   try {
     f.write(files.directory, "new report\n");
     const result = f.run({ FAIL_STAGE: stage });
     expect(result.exitCode).not.toBe(0);
-    expect(f.head(f.mirror)).toBe(f.base);
+    expect(f.head(f.canonical)).toBe(f.base);
     expect(f.summary()).toBe("");
-    if (stage === "mirror") {
-      const retained = f.head(f.canonical);
-      expect(retained).not.toBe(f.base);
-      expect(result.output).toContain(retained);
-      // Reset only the synthetic generated file, leaving the caller checkout
-      // unchanged: a no-change invocation must repair the failed mirror.
-      f.write(files.directory, "original report\n");
-      expect(f.run().exitCode).toBe(0);
-      expect(f.head(f.canonical)).toBe(retained);
-      expect(f.head(f.mirror)).toBe(retained);
-      expect(f.summary()).toContain("changes: `false`");
-    } else {
-      expect(f.head(f.canonical)).toBe(f.base);
-      expect(f.commands()).not.toContain("mirror push");
-    }
+    expect(f.commands().filter((x) => x === "canonical push")).toHaveLength(5);
   } finally { f.dispose(); }
 }, 120_000);
 
-test("no-change invocation still catches up a canonical-ahead GitHub mirror", () => {
+test("no-change invocation verifies the current GitHub head without creating a commit", () => {
   const f = fixture();
   try {
     const saved = f.advance(f.canonical, "docs/other.md", "canonical evidence\n");
     expect(f.run().exitCode).toBe(0);
     expect(f.head(f.canonical)).toBe(saved);
-    expect(f.head(f.mirror)).toBe(saved);
+    expect(f.summary()).toContain("changes: `false`");
+    expect(f.summary()).toContain(saved);
   } finally { f.dispose(); }
 }, 120_000);
 
@@ -205,33 +188,32 @@ test("canonical race replays the single report commit and preserves the concurre
     const saved = f.head(f.canonical);
     expect(f.gitRun(f.canonical, "rev-parse", `${saved}^`)).toBe(raced);
     expect(f.gitRun(f.canonical, "show", `${saved}:docs/other.md`)).toBe("concurrent evidence");
-    expect(f.head(f.mirror)).toBe(saved);
     expect(f.commands().filter((x) => x === "canonical push")).toHaveLength(2);
   } finally { f.dispose(); }
 }, 120_000);
 
-test("same-report concurrency conflicts fail without overwriting either history", () => {
+test("same-report concurrency conflicts fail without overwriting GitHub history", () => {
   const f = fixture();
   try {
     f.write(files.directory, "our report\n");
     const prior = f.advance(f.canonical, files.directory, "their report\n");
     expect(f.run().exitCode).not.toBe(0);
     expect(f.head(f.canonical)).toBe(prior);
-    expect(f.head(f.mirror)).toBe(f.base);
     expect(f.commands().filter((x) => x.endsWith(" push"))).toEqual([]);
   } finally { f.dispose(); }
 }, 120_000);
 
-test("GitHub-ahead and diverged histories fail without discarding mirror-only commits", () => {
+test("unpublished checkout commits fail without importing them into GitHub main", () => {
   const f = fixture();
   try {
-    const mirrorOnly = f.advance(f.mirror, "docs/mirror.md", "preserve this\n");
+    f.write("runtime.ts", "unpublished code\n");
+    f.gitRun(f.workspace, "add", "runtime.ts");
+    f.gitRun(f.workspace, "commit", "-qm", "unpublished code");
     f.write(files.directory, "new report\n");
-    expect(f.run().exitCode).not.toBe(0);
-    const canonicalOnly = f.advance(f.canonical, "docs/canonical.md", "canonical\n");
-    expect(f.run().exitCode).not.toBe(0);
-    expect(f.head(f.canonical)).toBe(canonicalOnly);
-    expect(f.head(f.mirror)).toBe(mirrorOnly);
+    const result = f.run();
+    expect(result.exitCode).not.toBe(0);
+    expect(result.output).toContain("checkout is not an ancestor");
+    expect(f.head(f.canonical)).toBe(f.base);
     expect(f.commands().filter((x) => x.endsWith(" push"))).toEqual([]);
   } finally { f.dispose(); }
 }, 120_000);
@@ -258,7 +240,6 @@ for (const extra of [{ REPORT_KEY: "../../runtime.ts" }, { GITHUB_REF: "refs/hea
     expect(f.run(extra).exitCode).not.toBe(0);
     expect(f.commands()).toEqual([]);
     expect(f.head(f.canonical)).toBe(f.base);
-    expect(f.head(f.mirror)).toBe(f.base);
   } finally { f.dispose(); }
 }, 120_000);
 
@@ -312,34 +293,6 @@ source "$CLASSIFIER"
   } finally {
     const target = resolve(dir);
     if (!target.startsWith(resolve(tmpdir()) + sep) || !target.split(sep).at(-1)?.startsWith("report-classifier-")) throw new Error("unsafe classifier cleanup");
-    rmSync(target, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
-  }
-}, 120_000);
-
-test("actual composite cleanup removes only its generated credential file", () => {
-  const dir = mkdtempSync(join(tmpdir(), "report-credentials-"));
-  try {
-    const action = Bun.YAML.parse(readFileSync(join(root, ".github/actions/persist-generated-report/action.yml"), "utf8")) as any;
-    const cleanup = action.runs.steps.at(-1).run;
-    writeFileSync(join(dir, "cleanup.sh"), cleanup);
-    const auth = join(dir, "gha-creds-fixture.json");
-    const unrelated = join(dir, "unrelated.json");
-    const secret = "SYNTHETIC-CREDENTIAL-DO-NOT-PRINT";
-    writeFileSync(auth, secret);
-    writeFileSync(unrelated, secret);
-    const run = (path: string) => Bun.spawnSync([bash, "--noprofile", "--norc", shellPath(join(dir, "cleanup.sh"))], {
-      env: { ...process.env, AUTH_FILE: shellPath(path), GITHUB_WORKSPACE: shellPath(dir) }, stdout: "pipe", stderr: "pipe", timeout: 60_000,
-    });
-    const removed = run(auth);
-    expect(removed.exitCode).toBe(0);
-    expect(existsSync(auth)).toBe(false);
-    const rejected = run(unrelated);
-    expect(rejected.exitCode).not.toBe(0);
-    expect(existsSync(unrelated)).toBe(true);
-    expect(removed.stdout.toString() + removed.stderr.toString() + rejected.stdout.toString() + rejected.stderr.toString()).not.toContain(secret);
-  } finally {
-    const target = resolve(dir);
-    if (!target.startsWith(resolve(tmpdir()) + sep) || !target.split(sep).at(-1)?.startsWith("report-credentials-")) throw new Error("unsafe credential cleanup");
     rmSync(target, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 }, 120_000);

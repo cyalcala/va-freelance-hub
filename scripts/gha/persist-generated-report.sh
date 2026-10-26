@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The eight existing report writers share one canonical-first persistence path.
+# The eight existing report writers share one GitHub persistence path.
 # Generation and the caller's branch/index remain untouched. Only known report
 # paths enter the isolated commit; no arbitrary ref/path or remote input exists.
 set -euo pipefail
@@ -21,9 +21,8 @@ case "${REPORT_KEY:-}" in
   *) fail 'unknown fixed report key' ;;
 esac
 
-readonly canonical='https://va-freelance-hub-296059249147-git.asia-northeast1.sourcemanager.dev/antigravity-494415/va-freelance-hub.git'
-readonly mirror='https://github.com/cyalcala/va-freelance-hub.git'
-export GIT_TERMINAL_PROMPT=0 CLOUDSDK_CORE_DISABLE_PROMPTS=1
+readonly canonical='https://github.com/cyalcala/va-freelance-hub.git'
+export GIT_TERMINAL_PROMPT=0
 scratch=$(mktemp -d "$RUNNER_TEMP/va-hub-report.XXXXXXXX")
 scratch=$(realpath "$scratch")
 temp_root=$(realpath "$RUNNER_TEMP")
@@ -63,10 +62,6 @@ if [[ -s "$scratch/report.patch" ]]; then
 fi
 
 network=(-c http.lowSpeedLimit=1 -c http.lowSpeedTime=30)
-ssm() {
-  git -C "$scratch/repo" "${network[@]}" -c credential.helper= \
-    -c credential.https://va-freelance-hub-296059249147-git.asia-northeast1.sourcemanager.dev.helper=gcloud.sh "$@"
-}
 # The token is the existing per-job workflow token, used only for this fixed
 # GitHub host. Do not echo the header or persist it in Git configuration.
 github_header="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_REPORT_TOKEN" | base64 | tr -d '\n')"
@@ -75,12 +70,7 @@ github() {
     -c "http.https://github.com/.extraheader=$github_header" "$@"
 }
 fetch_heads() {
-  ssm fetch --quiet --no-tags "$canonical" refs/heads/main:refs/remotes/canonical/main
-  github fetch --quiet --no-tags "$mirror" refs/heads/main:refs/remotes/mirror/main
-  # Do not silently discard or import commits made only in the mirror. The
-  # operator must preserve/reconcile that history before canonical activation.
-  git -C "$scratch/repo" merge-base --is-ancestor refs/remotes/mirror/main refs/remotes/canonical/main \
-    || fail 'GitHub main is ahead or diverged; preserve and reconcile it with SSM first'
+  github fetch --quiet --no-tags "$canonical" refs/heads/main:refs/remotes/canonical/main
   git -C "$scratch/repo" merge-base --is-ancestor "$source_head" refs/remotes/canonical/main \
     || fail 'checkout is not an ancestor of canonical main; refusing to publish checkout changes'
 }
@@ -96,41 +86,26 @@ for attempt in 1 2 3 4 5; do
     # Replay only the generated commit; conflicts are real evidence, not a
     # license to choose ours/theirs or overwrite concurrent report changes.
     git -C "$scratch/repo" rebase --onto refs/remotes/canonical/main "$source_head" \
-      || fail 'report conflicts with canonical changes; neither remote was overwritten'
+      || fail 'report conflicts with canonical changes; GitHub was not overwritten'
     source_head=$(git -C "$scratch/repo" rev-parse refs/remotes/canonical/main)
   else
     git -C "$scratch/repo" checkout --quiet --detach refs/remotes/canonical/main
   fi
   candidate=$(git -C "$scratch/repo" rev-parse HEAD)
-  if ! ssm push --porcelain --no-follow-tags "$canonical" "$candidate:refs/heads/main"; then
-    echo "Canonical push did not succeed (attempt $attempt/5); refreshing both histories."
+  if ! github push --porcelain --no-follow-tags "$canonical" "$candidate:refs/heads/main"; then
+    echo "GitHub push did not succeed (attempt $attempt/5); refreshing canonical history."
     continue
   fi
-  if ! verify_ref ssm "$canonical" "$candidate"; then
+  if ! verify_ref github "$canonical" "$candidate"; then
     echo "Canonical main moved before readback (attempt $attempt/5); refreshing."
-    continue
-  fi
-  canonical_saved="$candidate"
-  # A no-change report still repairs an outstanding mirror after an earlier
-  # canonical success. GitHub can only receive a confirmed canonical SHA.
-  if ! github push --porcelain --no-follow-tags "$mirror" "$candidate:refs/heads/main"; then
-    echo "::warning::SSM retains $canonical_saved; GitHub mirror push failed (attempt $attempt/5)."
-    continue
-  fi
-  if ! verify_ref github "$mirror" "$candidate"; then
-    echo "::warning::SSM retains $canonical_saved; GitHub moved before readback (attempt $attempt/5)."
-    continue
-  fi
-  if ! verify_ref ssm "$canonical" "$candidate"; then
-    echo "Canonical main advanced during mirror verification (attempt $attempt/5); refreshing."
     continue
   fi
   {
     echo '### Generated report persistence'
-    printf 'Report: `%s`; canonical SSM and GitHub main verified at `%s`.\n' "$REPORT_KEY" "$candidate"
+    printf 'Report: `%s`; canonical GitHub main verified at `%s`.\n' "$REPORT_KEY" "$candidate"
     printf 'Generated file changes: `%s`.\n' "$changed"
     echo 'GitLab: pending; this job has no configured GitLab runtime credential.'
   } >> "$GITHUB_STEP_SUMMARY"
   exit 0
 done
-fail "retry limit reached; canonical commit ${canonical_saved:-not confirmed}. GitHub mirror is not verified; GitLab remains pending"
+fail 'retry limit reached; canonical GitHub main is not verified; GitLab remains pending'
