@@ -1,7 +1,7 @@
 # Directory Enrichment — Latest
 
 Date: 2026-10-28
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/40668267472
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/40763697577
 
 | Metric | Value |
 | --- | ---: |
@@ -13,4 +13,4 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/40668267
 
 ## Enrichment details
 
-- #1022 Willow: hiring_page=https://jobs.lever.co/willowinc; auto-verified (4 verified, 4 PH-eligible jobs)
+- #1044 ScaleMath: hiring_page=https://jobs.ashbyhq.com/scalemath; auto-verified (1 verified, 3 PH-eligible jobs)
