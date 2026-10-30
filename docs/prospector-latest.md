@@ -1,14 +1,14 @@
 # Prospector Latest
 
-Date: 2026-10-29
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/40967966013
+Date: 2026-10-30
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/41009870741
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 7 |
-| Auto-added this run | 2 |
+| Candidates considered | 6 |
+| Auto-added this run | 0 |
 | Backlog remaining (drains next runs) | 0 |
-| Review-only (untrusted source) | 3 |
+| Review-only (untrusted source) | 4 |
 | Rejected for quality | 2 |
 | ATS proposals filed | 1 |
 | Mass-add guard tripped | false |
@@ -23,8 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/40967966
 
 ## Auto-added companies
 
-- Bullfinch Recruitment
-- Bondora
+- (none this run)
 
 ## Durable candidate queue (SP-06, non-publishing)
 
