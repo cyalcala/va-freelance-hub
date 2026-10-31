@@ -1,16 +1,16 @@
 # Directory Enrichment — Latest
 
-Date: 2026-10-30
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/41120040035
+Date: 2026-10-31
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/41190555721
 
 | Metric | Value |
 | --- | ---: |
-| Companies processed | 1 |
+| Companies processed | 0 |
 | Websites set | 0 |
-| Hiring pages set | 1 |
+| Hiring pages set | 0 |
 | Auto-verified | 0 |
 | Budget | 40 |
 
 ## Enrichment details
 
-- #1046 PicCollage: hiring_page=https://jobs.lever.co/piccollage
+- (none this run)
