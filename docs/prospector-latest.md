@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-11-04
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/41783833943
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/41847928265
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 5 |
-| Auto-added this run | 0 |
+| Candidates considered | 7 |
+| Auto-added this run | 2 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 4 |
 | Rejected for quality | 1 |
@@ -23,7 +23,8 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/41783833
 
 ## Auto-added companies
 
-- (none this run)
+- Zanda Health
+- Reframe Space Inc.
 
 ## Durable candidate queue (SP-06, non-publishing)
 
