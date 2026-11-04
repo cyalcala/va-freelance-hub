@@ -1,16 +1,16 @@
 # Directory Enrichment — Latest
 
 Date: 2026-11-04
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/41820907529
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/41916139376
 
 | Metric | Value |
 | --- | ---: |
-| Companies processed | 1 |
+| Companies processed | 0 |
 | Websites set | 0 |
-| Hiring pages set | 1 |
+| Hiring pages set | 0 |
 | Auto-verified | 0 |
 | Budget | 40 |
 
 ## Enrichment details
 
-- #1021 United Tech: hiring_page=https://jobs.lever.co/vacancies
+- (none this run)
