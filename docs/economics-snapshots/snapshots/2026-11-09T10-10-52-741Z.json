@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "metricVersion": "SP-02",
+  "generatedAt": "2026-11-09T10:10:52.741Z",
+  "runId": "42598930876",
+  "window": {
+    "asOf": "2026-11-09T10:10:42.069Z",
+    "cut7Unix": 1793614242,
+    "cut14Unix": 1793009442,
+    "cut30Unix": 1791627042,
+    "timezone": "UTC"
+  },
+  "status": "measured",
+  "metrics": {
+    "qualifiedActive": 1682,
+    "qualifiedNew7d": 136,
+    "qualifiedPerDay7d": 19.428571428571427,
+    "qualifiedNew30d": 1021,
+    "qualifiedPerDay30d": 34.03333333333333,
+    "allActive": 1682,
+    "identityCoverage": {
+      "total": 8795,
+      "withSourceId": 8795,
+      "share": 1
+    },
+    "concentration30d": {
+      "topFamily": "we-work-remotely",
+      "topShare": 0.40842311459353575,
+      "top3Share": 0.6660137120470128,
+      "topWarn": true,
+      "top3Warn": false
+    },
+    "largestUnclear7d": [
+      {
+        "sourceId": "remote-ok",
+        "unclear": 3
+      },
+      {
+        "sourceId": "real-work-from-anywhere",
+        "unclear": 2
+      },
+      {
+        "sourceId": "we-work-remotely",
+        "unclear": 2
+      },
+      {
+        "sourceId": "greenhouse:gitlab",
+        "unclear": 1
+      },
+      {
+        "sourceId": "workable:hunt-st",
+        "unclear": 1
+      }
+    ]
+  },
+  "reconciliation": {
+    "ok": true,
+    "nonZeroDeltas": []
+  },
+  "limitations": [
+    "First-stored proxy: not verified remote-only first publication.",
+    "Current-active filtering has survivorship bias.",
+    "scraped_at is the storage instant; canonical first-publication history is not reconstructed.",
+    "UTC windows; the product-target Manila-day reconciliation remains a separate contract.",
+    "largestUnclear7d cohorts are investigation inputs; unclear rows are not counted as salvageable."
+  ],
+  "prior": {
+    "snapshotKey": "2026-11-08T09-24-42-161Z",
+    "generatedAt": "2026-11-08T09:24:42.161Z",
+    "qualifiedNew7d": 143,
+    "qualifiedPerDay7d": 20.428571428571427
+  }
+}
