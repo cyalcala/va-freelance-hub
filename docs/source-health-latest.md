@@ -1,7 +1,7 @@
 # Source Health Latest
 
-Date: 2026-11-09
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/42584533813
+Date: 2026-11-10
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/42783544225
 Window: last 24 hours of source_fetch_events
 
 Derived from D1, not from a single workflow's artifact, so it
@@ -10,101 +10,103 @@ covers every scrape regardless of which clock triggered it.
 ## Summary
 
 - Sources seen: 80
-- Sources with at least one failed attempt: 7
-- Total items seen: 59817
+- Sources with at least one failed attempt: 9
+- Total items seen: 70237
 
 ## Per-Source (last 24h)
 
 | Source | Type | Compliance | Attempts | OK | Skipped | Items | Last Attempt |
 | --- | --- | --- | ---: | ---: | ---: | ---: | --- |
-| ashby:amplify | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| ashby:ashby | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| ashby:camunda | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| ashby:circulareconomysystems | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| ashby:cubic3 | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| ashby:flipper | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| ashby:foundry-for-good | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| ashby:getground | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| ashby:gradient | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| ashby:luxor | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| ashby:molecule | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| ashby:multiplymii | ATS | paused | 177 | 177 | 150 | 1215 | 2026-11-09T08:11:01.124Z |
-| ashby:payscale | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| ashby:railway | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| ashby:scalemath | ATS | paused | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| ashby:supabase | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| ashby:the-studio | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| ashby:tremendous | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| ashby:trust-wallet | ATS | paused | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| ashby:whippy | ATS | paused | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| authentic-jobs | RSS | paused | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| breezy:20four7va | ATS | paused | 354 | 354 | 327 | 3348 | 2026-11-09T08:11:01.124Z |
-| breezy:remote-craft | ATS | paused | 177 | 177 | 150 | 405 | 2026-11-09T08:11:01.124Z |
-| breezy:sourcefit | ATS | paused | 177 | 177 | 150 | 3200 | 2026-11-09T08:11:01.124Z |
-| breezy:time-etc | ATS | paused | 177 | 177 | 150 | 27 | 2026-11-09T08:11:01.124Z |
-| breezy:vaaphilippines-recruitment | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| breezy:value-virtual-assistants | ATS | paused | 177 | 177 | 150 | 270 | 2026-11-09T08:11:01.124Z |
-| breezy:yokly | ATS | paused | 177 | 177 | 150 | 108 | 2026-11-09T08:11:01.124Z |
-| dribbble | RSS | paused | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| greenhouse:canonical | ATS | paused | 177 | 177 | 150 | 8532 | 2026-11-09T08:11:01.124Z |
-| greenhouse:ghost | ATS | paused | 177 | 177 | 150 | 135 | 2026-11-09T08:11:01.124Z |
-| greenhouse:gitlab | ATS | paused | 177 | 177 | 150 | 6701 | 2026-11-09T08:11:01.124Z |
-| greenhouse:grafanalabs | ATS | paused | 177 | 177 | 150 | 3618 | 2026-11-09T08:11:01.124Z |
-| greenhouse:nearform | ATS | paused | 177 | 177 | 150 | 756 | 2026-11-09T08:11:01.124Z |
-| greenhouse:remotecom | ATS | paused | 177 | 177 | 150 | 0 | 2026-11-09T08:11:01.124Z |
-| jobicy-admin-support-apac | RSS | allowed | 177 | 177 | 150 | 108 | 2026-11-09T08:11:01.124Z |
-| jobicy-supporting-apac | RSS | allowed | 177 | 177 | 150 | 1080 | 2026-11-09T08:11:01.124Z |
-| jobspresso | RSS | paused | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:applydigital | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:audinate | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:beaverprocess | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:brafton | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:brevo | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:decilegroup | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:deliverect | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:gushwork | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:jetsupport | ATS | paused | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:lwolf | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:nibiru | ATS | paused | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:outsourcedstaff | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:parcelvision | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:piccollage | ATS | paused | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:repurposeglobal | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:snappr | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:tenna | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:truezerotech | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:vacancies | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:vaultoutsourcing | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| lever:willowinc | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| onlinejobs-ph | HTML | paused | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| problogger | RSS | paused | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| real-work-from-anywhere | RSS | allowed | 177 | 177 | 150 | 1350 | 2026-11-09T08:11:01.124Z |
-| remote-co | RSS | paused | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| remote-ok | JSON | allowed | 177 | 177 | 150 | 1120 | 2026-11-09T08:11:01.124Z |
-| remotive | RSS | allowed | 177 | 177 | 0 | 2301 | 2026-11-09T08:11:01.124Z |
-| we-work-remotely | RSS | allowed | 177 | 175 | 0 | 17500 | 2026-11-09T08:11:01.124Z |
-| workable:coconutva | ATS | paused | 177 | 163 | 150 | 429 | 2026-11-09T08:11:01.124Z |
-| workable:connectos | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| workable:crewbloom | ATS | paused | 177 | 163 | 150 | 1222 | 2026-11-09T08:11:01.124Z |
-| workable:global-strategic | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| workable:hello-rache | ATS | paused | 177 | 165 | 150 | 45 | 2026-11-09T08:11:01.124Z |
-| workable:hunt-st | ATS | paused | 177 | 165 | 150 | 1892 | 2026-11-09T08:11:01.124Z |
-| workable:myoutdesk | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| workable:outsource-access | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| workable:pearltalent | ATS | paused | 177 | 165 | 150 | 4305 | 2026-11-09T08:11:01.124Z |
-| workable:pineapple-staffing | ATS | paused | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| workable:rocketams | ATS | paused | 177 | 165 | 150 | 150 | 2026-11-09T08:11:01.124Z |
-| workable:staff-domain-inc | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| workable:superstaff | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
-| workable:virtualstaff365 | ATS | needs_review | 177 | 177 | 177 | 0 | 2026-11-09T08:11:01.124Z |
+| ashby:amplify | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| ashby:ashby | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| ashby:camunda | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| ashby:circulareconomysystems | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| ashby:cubic3 | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| ashby:flipper | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| ashby:foundry-for-good | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| ashby:getground | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| ashby:gradient | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| ashby:luxor | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| ashby:molecule | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| ashby:multiplymii | ATS | paused | 192 | 192 | 162 | 1332 | 2026-11-10T08:31:00.301Z |
+| ashby:payscale | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| ashby:railway | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| ashby:scalemath | ATS | paused | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| ashby:supabase | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| ashby:the-studio | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| ashby:tremendous | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| ashby:trust-wallet | ATS | paused | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| ashby:whippy | ATS | paused | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| authentic-jobs | RSS | paused | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| breezy:20four7va | ATS | paused | 384 | 384 | 354 | 3755 | 2026-11-10T08:31:00.301Z |
+| breezy:remote-craft | ATS | paused | 192 | 192 | 162 | 450 | 2026-11-10T08:31:00.301Z |
+| breezy:sourcefit | ATS | paused | 192 | 192 | 162 | 3373 | 2026-11-10T08:31:00.301Z |
+| breezy:time-etc | ATS | paused | 192 | 192 | 162 | 30 | 2026-11-10T08:31:00.301Z |
+| breezy:vaaphilippines-recruitment | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| breezy:value-virtual-assistants | ATS | paused | 192 | 192 | 162 | 300 | 2026-11-10T08:31:00.301Z |
+| breezy:yokly | ATS | paused | 192 | 192 | 162 | 120 | 2026-11-10T08:31:00.301Z |
+| dribbble | RSS | paused | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| greenhouse:canonical | ATS | paused | 192 | 191 | 162 | 9164 | 2026-11-10T08:31:00.301Z |
+| greenhouse:ghost | ATS | paused | 192 | 191 | 162 | 145 | 2026-11-10T08:31:00.301Z |
+| greenhouse:gitlab | ATS | paused | 192 | 192 | 162 | 7498 | 2026-11-10T08:31:00.301Z |
+| greenhouse:grafanalabs | ATS | paused | 192 | 192 | 162 | 4046 | 2026-11-10T08:31:00.301Z |
+| greenhouse:nearform | ATS | paused | 192 | 192 | 162 | 825 | 2026-11-10T08:31:00.301Z |
+| greenhouse:remotecom | ATS | paused | 192 | 192 | 162 | 0 | 2026-11-10T08:31:00.301Z |
+| jobicy-admin-support-apac | RSS | allowed | 192 | 192 | 163 | 124 | 2026-11-10T08:31:00.301Z |
+| jobicy-supporting-apac | RSS | allowed | 192 | 192 | 162 | 1200 | 2026-11-10T08:31:00.301Z |
+| jobspresso | RSS | paused | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:applydigital | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:audinate | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:beaverprocess | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:brafton | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:brevo | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:decilegroup | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:deliverect | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:gushwork | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:jetsupport | ATS | paused | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:lwolf | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:nibiru | ATS | paused | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:outsourcedstaff | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:parcelvision | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:piccollage | ATS | paused | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:repurposeglobal | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:snappr | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:tenna | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:truezerotech | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:vacancies | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:vaultoutsourcing | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| lever:willowinc | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| onlinejobs-ph | HTML | paused | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| problogger | RSS | paused | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| real-work-from-anywhere | RSS | allowed | 192 | 192 | 162 | 1500 | 2026-11-10T08:31:00.301Z |
+| remote-co | RSS | paused | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| remote-ok | JSON | allowed | 192 | 192 | 162 | 1260 | 2026-11-10T08:31:00.301Z |
+| remotive | RSS | allowed | 192 | 192 | 0 | 2496 | 2026-11-10T08:31:00.301Z |
+| we-work-remotely | RSS | allowed | 192 | 189 | 0 | 18900 | 2026-11-10T08:31:00.301Z |
+| workable:coconutva | ATS | paused | 192 | 187 | 162 | 803 | 2026-11-10T08:31:00.301Z |
+| workable:connectos | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| workable:crewbloom | ATS | paused | 192 | 187 | 162 | 2312 | 2026-11-10T08:31:00.301Z |
+| workable:global-strategic | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| workable:hello-rache | ATS | paused | 192 | 189 | 163 | 78 | 2026-11-10T08:31:00.301Z |
+| workable:hunt-st | ATS | paused | 192 | 186 | 163 | 2882 | 2026-11-10T08:31:00.301Z |
+| workable:myoutdesk | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| workable:outsource-access | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| workable:pearltalent | ATS | paused | 192 | 189 | 163 | 7414 | 2026-11-10T08:31:00.301Z |
+| workable:pineapple-staffing | ATS | paused | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| workable:rocketams | ATS | paused | 192 | 186 | 163 | 230 | 2026-11-10T08:31:00.301Z |
+| workable:staff-domain-inc | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| workable:superstaff | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
+| workable:virtualstaff365 | ATS | needs_review | 192 | 192 | 192 | 0 | 2026-11-10T08:31:00.301Z |
 
 ## Failing Sources
 
-- **we-work-remotely**: 2/177 failed — [rss] Failed to fetch We Work Remotely: The operation was aborted due to timeout
-- **workable:coconutva**: 14/177 failed — [ats] Failed to fetch workable feed for Coconut VA: Workable HTTP 429
-- **workable:crewbloom**: 14/177 failed — [ats] Failed to fetch workable feed for CrewBloom: Workable HTTP 429
-- **workable:hello-rache**: 12/177 failed — [ats] Failed to fetch workable feed for Hello Rache: Workable HTTP 429
-- **workable:hunt-st**: 12/177 failed — [ats] Failed to fetch workable feed for Hunt St: Workable HTTP 429
-- **workable:pearltalent**: 12/177 failed — [ats] Failed to fetch workable feed for Pearl Talent: Workable HTTP 429
-- **workable:rocketams**: 12/177 failed — [ats] Failed to fetch workable feed for RocketAMS: Workable HTTP 429
+- **greenhouse:canonical**: 1/192 failed — [ats] Failed to fetch greenhouse feed for Canonical: The operation was aborted due to timeout
+- **greenhouse:ghost**: 1/192 failed — [ats] Failed to fetch greenhouse feed for Ghost: The operation was aborted due to timeout
+- **we-work-remotely**: 3/192 failed — [rss] Failed to fetch We Work Remotely: The operation was aborted due to timeout
+- **workable:coconutva**: 5/192 failed — [ats] Failed to fetch workable feed for Coconut VA: Workable HTTP 429
+- **workable:crewbloom**: 5/192 failed — [ats] Failed to fetch workable feed for CrewBloom: Workable HTTP 429
+- **workable:hello-rache**: 3/192 failed — [ats] Failed to fetch workable feed for Hello Rache: Workable HTTP 429
+- **workable:hunt-st**: 6/192 failed — [ats] Failed to fetch workable feed for Hunt St: Workable HTTP 429
+- **workable:pearltalent**: 3/192 failed — [ats] Failed to fetch workable feed for Pearl Talent: Workable HTTP 429
+- **workable:rocketams**: 6/192 failed — [ats] Failed to fetch workable feed for RocketAMS: Workable HTTP 429
 
