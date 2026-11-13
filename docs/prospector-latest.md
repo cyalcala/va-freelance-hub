@@ -1,12 +1,12 @@
 # Prospector Latest
 
-Date: 2026-11-12
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/43244210189
+Date: 2026-11-13
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/43379935377
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 4 |
-| Auto-added this run | 0 |
+| Candidates considered | 5 |
+| Auto-added this run | 1 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 3 |
 | Rejected for quality | 1 |
@@ -23,7 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/43244210
 
 ## Auto-added companies
 
-- (none this run)
+- Veeva Systems
 
 ## Durable candidate queue (SP-06, non-publishing)
 
