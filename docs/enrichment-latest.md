@@ -1,7 +1,7 @@
 # Directory Enrichment — Latest
 
-Date: 2026-11-15
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/43758395887
+Date: 2026-11-16
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/43862199711
 
 | Metric | Value |
 | --- | ---: |
@@ -13,4 +13,4 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/43758395
 
 ## Enrichment details
 
-- #1058 D2B: auto-verified (13 verified, 14 PH-eligible jobs)
+- #552 CloudLinux: auto-verified (1 verified, 14 PH-eligible jobs)
