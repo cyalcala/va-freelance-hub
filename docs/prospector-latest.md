@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-11-18
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/44258234856
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/44391146210
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 3 |
-| Auto-added this run | 0 |
+| Candidates considered | 5 |
+| Auto-added this run | 2 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 2 |
 | Rejected for quality | 1 |
@@ -23,7 +23,8 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/44258234
 
 ## Auto-added companies
 
-- (none this run)
+- RFA
+- Magic, Inc
 
 ## Durable candidate queue (SP-06, non-publishing)
 
