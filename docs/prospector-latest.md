@@ -1,12 +1,12 @@
 # Prospector Latest
 
-Date: 2026-11-19
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/44609278085
+Date: 2026-11-20
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/44692710163
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 3 |
-| Auto-added this run | 0 |
+| Candidates considered | 5 |
+| Auto-added this run | 2 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 2 |
 | Rejected for quality | 1 |
@@ -23,7 +23,8 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/44609278
 
 ## Auto-added companies
 
-- (none this run)
+- Sumo Logic
+- Modern Health
 
 ## Durable candidate queue (SP-06, non-publishing)
 
