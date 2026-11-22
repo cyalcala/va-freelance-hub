@@ -1,12 +1,12 @@
 # Prospector Latest
 
-Date: 2026-11-21
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/44939460342
+Date: 2026-11-22
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/44994806757
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 7 |
-| Auto-added this run | 4 |
+| Candidates considered | 3 |
+| Auto-added this run | 0 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 3 |
 | Rejected for quality | 0 |
@@ -23,10 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/44939460
 
 ## Auto-added companies
 
-- Oscar Health
-- Okta
-- MetaMask
-- Bitwarden
+- (none this run)
 
 ## Durable candidate queue (SP-06, non-publishing)
 
