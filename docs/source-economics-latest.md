@@ -1,6 +1,6 @@
 # Source economics — latest (SP-02)
 
-- **As of:** 2026-11-22T10:09:29.389Z
+- **As of:** 2026-11-23T11:06:47.973Z
 - **Windows:** 7d/14d/30d net-new by `scraped_at`
 - **Reconciliation:** OK (every partition delta is zero)
 - Read-only report; regenerate with `scripts/diagnostics/source-economics.ts`.
@@ -11,35 +11,35 @@ Excludes unclear/ineligible rows. Historical publication and later deactivation 
 
 | qualified active | qualified new 7d | per day (7d) | qualified new 30d | per day (30d) |
 | ---: | ---: | ---: | ---: | ---: |
-| 1817 | 446 | 63.71 | 1045 | 34.83 |
+| 1853 | 521 | 74.43 | 1104 | 36.80 |
 
 ## Identity coverage (SP-01)
 
 | total | with source_id | null source_id | coverage | active null-id |
 | ---: | ---: | ---: | ---: | ---: |
-| 9978 | 9978 | 0 | 100.0% | 0 |
+| 10120 | 10120 | 0 | 100.0% | 0 |
 
 ## Net-new accepted supply
 
 | active | net-new 7d | net-new 14d | net-new 30d |
 | ---: | ---: | ---: | ---: |
-| 1817 | 446 | 606 | 1045 |
+| 1853 | 521 | 681 | 1104 |
 
 ## Provider-family concentration (ADR-006 §7)
 
-- **Net-new 30d:** top family `we-work-remotely` 53.9% ⚠️ >40%; top-3 76.3% ⚠️ >70%.
-- **Active:** top family `we-work-remotely` 37.6%; top-3 68.9%.
+- **Net-new 30d:** top family `we-work-remotely` 56.8% ⚠️ >40%; top-3 77.6% ⚠️ >70%.
+- **Active:** top family `we-work-remotely` 39.2%; top-3 70.0%.
 - `(unknown)` legacy rows are excluded from these shares.
 
 | provider family | active | net-new 30d | net-new 7d | source ids |
 | --- | ---: | ---: | ---: | --- |
-| we-work-remotely | 683 | 563 | 341 | we-work-remotely |
-| breezy | 332 | 94 | 13 | breezy:20four7va, breezy:sourcefit, breezy:remote-craft, breezy:value-virtual-assistants, breezy:yokly, breezy:time-etc |
-| workable | 237 | 127 | 37 | workable:hunt-st, workable:crewbloom, workable:coconutva, workable:pearltalent, workable:rocketams, workable:hello-rache, workable:pineapple-staffing |
-| real-work-from-anywhere | 153 | 107 | 25 | real-work-from-anywhere |
+| we-work-remotely | 726 | 627 | 410 | we-work-remotely |
+| breezy | 338 | 94 | 19 | breezy:20four7va, breezy:sourcefit, breezy:remote-craft, breezy:value-virtual-assistants, breezy:yokly, breezy:time-etc |
+| workable | 233 | 128 | 36 | workable:hunt-st, workable:coconutva, workable:crewbloom, workable:pearltalent, workable:rocketams, workable:hello-rache, workable:pineapple-staffing |
+| real-work-from-anywhere | 146 | 102 | 25 | real-work-from-anywhere |
 | greenhouse | 130 | 2 | 2 | greenhouse:canonical, greenhouse:gitlab, greenhouse:ghost, greenhouse:grafanalabs, greenhouse:janes, greenhouse:nearform, greenhouse:remotecom, greenhouse:solarwinds, greenhouse:trainingthestreet, greenhouse:trinityparktalent |
 | ashby | 96 | 40 | 1 | ashby:multiplymii, ashby:trust-wallet, ashby:scalemath, ashby:whippy, ashby:cubic3, ashby:flutterflow, ashby:amplify, ashby:ashby, ashby:camunda, ashby:circulareconomysystems, ashby:finch, ashby:flipper, ashby:foundry-for-good, ashby:getground, ashby:gradient, ashby:homera-health, ashby:luxor, ashby:molecule, ashby:payscale, ashby:railway, ashby:supabase, ashby:the-studio, ashby:tremendous |
-| remote-ok | 76 | 51 | 20 | remote-ok |
+| remote-ok | 74 | 50 | 21 | remote-ok |
 | jobicy | 66 | 25 | 7 | jobicy-supporting-apac, jobicy-admin-support-apac |
 | lever | 32 | 32 | 0 | lever:levelup, lever:nibiru, lever:brevo, lever:jetsupport, lever:piccollage, lever:audinate, lever:alltrails, lever:90seconds, lever:applydigital, lever:beaverprocess, lever:brafton, lever:decilegroup, lever:deliverect, lever:gushwork, lever:hso, lever:lwolf, lever:outsourcedstaff, lever:parcelvision, lever:repurposeglobal, lever:snappr, lever:tenna, lever:truezerotech, lever:trustarc, lever:vacancies, lever:willowinc |
 | remotive | 12 | 4 | 0 | remotive |
@@ -51,23 +51,23 @@ Excludes unclear/ineligible rows. Historical publication and later deactivation 
 
 | source_id | platform | active | net-new 7d | net-new 30d | inactive |
 | --- | --- | ---: | ---: | ---: | ---: |
-| we-work-remotely | WeWorkRemotely | 683 | 341 | 563 | 2263 |
-| breezy:20four7va | 20Four7VA | 181 | 9 | 63 | 164 |
-| workable:hunt-st | Hunt St | 166 | 28 | 83 | 164 |
-| real-work-from-anywhere | RealWorkFromAnywhere | 153 | 25 | 107 | 675 |
+| we-work-remotely | WeWorkRemotely | 726 | 410 | 627 | 2330 |
+| breezy:20four7va | 20Four7VA | 181 | 9 | 58 | 164 |
+| workable:hunt-st | Hunt St | 163 | 27 | 84 | 174 |
+| real-work-from-anywhere | RealWorkFromAnywhere | 146 | 25 | 102 | 683 |
+| breezy:sourcefit | Breezy/sourcefit | 124 | 8 | 33 | 203 |
 | greenhouse:canonical | Canonical | 122 | 1 | 1 | 204 |
-| breezy:sourcefit | Breezy/sourcefit | 118 | 2 | 27 | 202 |
-| remote-ok | RemoteOK | 76 | 20 | 51 | 1389 |
 | ashby:multiplymii | Ashby/multiplymii | 74 | 1 | 18 | 26 |
+| remote-ok | RemoteOK | 74 | 21 | 50 | 1408 |
 | jobicy-supporting-apac | Jobicy | 59 | 7 | 23 | 175 |
-| workable:crewbloom | CrewBloom | 28 | 2 | 21 | 81 |
 | workable:coconutva | Coconut VA | 27 | 5 | 14 | 59 |
+| workable:crewbloom | CrewBloom | 27 | 2 | 21 | 82 |
 | workable:pearltalent | Pearl Talent | 15 | 2 | 9 | 74 |
 | breezy:remote-craft | Remote Craft | 14 | 0 | 0 | 1 |
 | ashby:trust-wallet | Ashby/trust-wallet | 13 | 0 | 13 | 0 |
 | remotive | Remotive | 12 | 0 | 4 | 103 |
 | breezy:value-virtual-assistants | VALUE Virtual Assistants | 10 | 0 | 0 | 1 |
-| breezy:yokly | Yokly | 9 | 2 | 4 | 10 |
+| breezy:yokly | Yokly | 9 | 2 | 3 | 10 |
 | lever:levelup | Lever/levelup | 9 | 0 | 9 | 0 |
 | lever:nibiru | Lever/nibiru | 8 | 0 | 8 | 0 |
 | greenhouse:gitlab | GitLab | 7 | 1 | 1 | 699 |
@@ -138,86 +138,86 @@ Separates real (changed) fetches from unchanged 304 polls, intentional skips, fa
 
 | source_id | real fetches | unchanged | skips | failures | zero-yield | items |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| we-work-remotely | 214 | 686 | 0 | 16 | 0 | 20827 |
-| remotive | 160 | 756 | 0 | 0 | 0 | 2596 |
-| real-work-from-anywhere | 144 | 0 | 772 | 0 | 0 | 7200 |
-| breezy:20four7va | 142 | 0 | 1690 | 0 | 0 | 17070 |
-| breezy:remote-craft | 142 | 0 | 774 | 0 | 0 | 2130 |
-| breezy:sourcefit | 142 | 0 | 774 | 0 | 0 | 14533 |
-| breezy:time-etc | 142 | 0 | 774 | 0 | 0 | 142 |
-| breezy:value-virtual-assistants | 142 | 0 | 774 | 0 | 0 | 1420 |
-| breezy:yokly | 142 | 0 | 774 | 0 | 0 | 708 |
-| greenhouse:canonical | 142 | 0 | 774 | 0 | 0 | 44985 |
-| greenhouse:ghost | 142 | 0 | 774 | 0 | 0 | 710 |
-| greenhouse:gitlab | 142 | 0 | 774 | 0 | 0 | 35483 |
-| greenhouse:grafanalabs | 142 | 0 | 774 | 0 | 0 | 19553 |
-| greenhouse:nearform | 142 | 0 | 774 | 0 | 0 | 3405 |
-| greenhouse:remotecom | 142 | 0 | 774 | 0 | 142 | 0 |
-| ashby:multiplymii | 141 | 0 | 774 | 1 | 0 | 6383 |
-| workable:pearltalent | 84 | 0 | 777 | 55 | 0 | 24884 |
-| workable:hello-rache | 83 | 0 | 777 | 56 | 0 | 249 |
-| workable:coconutva | 78 | 0 | 776 | 62 | 0 | 2523 |
-| workable:crewbloom | 78 | 0 | 776 | 62 | 0 | 6657 |
-| workable:hunt-st | 76 | 0 | 777 | 63 | 0 | 9447 |
-| workable:rocketams | 76 | 0 | 777 | 63 | 0 | 612 |
-| remote-ok | 64 | 80 | 772 | 0 | 0 | 2840 |
-| jobicy-supporting-apac | 33 | 105 | 775 | 3 | 0 | 1320 |
-| jobicy-admin-support-apac | 3 | 136 | 775 | 2 | 0 | 14 |
-| ashby:amplify | 0 | 0 | 916 | 0 | 0 | 0 |
-| ashby:ashby | 0 | 0 | 916 | 0 | 0 | 0 |
-| ashby:camunda | 0 | 0 | 916 | 0 | 0 | 0 |
-| ashby:circulareconomysystems | 0 | 0 | 916 | 0 | 0 | 0 |
-| ashby:cubic3 | 0 | 0 | 916 | 0 | 0 | 0 |
-| ashby:flipper | 0 | 0 | 916 | 0 | 0 | 0 |
-| ashby:foundry-for-good | 0 | 0 | 916 | 0 | 0 | 0 |
-| ashby:getground | 0 | 0 | 916 | 0 | 0 | 0 |
-| ashby:gradient | 0 | 0 | 916 | 0 | 0 | 0 |
-| ashby:luxor | 0 | 0 | 916 | 0 | 0 | 0 |
-| ashby:molecule | 0 | 0 | 916 | 0 | 0 | 0 |
-| ashby:payscale | 0 | 0 | 916 | 0 | 0 | 0 |
-| ashby:railway | 0 | 0 | 916 | 0 | 0 | 0 |
-| ashby:scalemath | 0 | 0 | 916 | 0 | 0 | 0 |
-| ashby:supabase | 0 | 0 | 916 | 0 | 0 | 0 |
-| ashby:the-studio | 0 | 0 | 916 | 0 | 0 | 0 |
-| ashby:tremendous | 0 | 0 | 916 | 0 | 0 | 0 |
-| ashby:trust-wallet | 0 | 0 | 916 | 0 | 0 | 0 |
-| ashby:whippy | 0 | 0 | 916 | 0 | 0 | 0 |
-| authentic-jobs | 0 | 0 | 916 | 0 | 0 | 0 |
-| breezy:vaaphilippines-recruitment | 0 | 0 | 916 | 0 | 0 | 0 |
-| dribbble | 0 | 0 | 916 | 0 | 0 | 0 |
-| jobspresso | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:applydigital | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:audinate | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:beaverprocess | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:brafton | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:brevo | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:decilegroup | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:deliverect | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:gushwork | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:jetsupport | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:lwolf | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:nibiru | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:outsourcedstaff | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:parcelvision | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:piccollage | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:repurposeglobal | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:snappr | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:tenna | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:truezerotech | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:vacancies | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:vaultoutsourcing | 0 | 0 | 916 | 0 | 0 | 0 |
-| lever:willowinc | 0 | 0 | 916 | 0 | 0 | 0 |
-| onlinejobs-ph | 0 | 0 | 916 | 0 | 0 | 0 |
-| problogger | 0 | 0 | 916 | 0 | 0 | 0 |
-| remote-co | 0 | 0 | 916 | 0 | 0 | 0 |
-| workable:connectos | 0 | 0 | 916 | 0 | 0 | 0 |
-| workable:global-strategic | 0 | 0 | 916 | 0 | 0 | 0 |
-| workable:myoutdesk | 0 | 0 | 916 | 0 | 0 | 0 |
-| workable:outsource-access | 0 | 0 | 916 | 0 | 0 | 0 |
-| workable:pineapple-staffing | 0 | 0 | 916 | 0 | 0 | 0 |
-| workable:staff-domain-inc | 0 | 0 | 916 | 0 | 0 | 0 |
-| workable:superstaff | 0 | 0 | 916 | 0 | 0 | 0 |
-| workable:virtualstaff365 | 0 | 0 | 916 | 0 | 0 | 0 |
+| we-work-remotely | 258 | 630 | 0 | 17 | 0 | 25227 |
+| remotive | 158 | 747 | 0 | 0 | 0 | 2529 |
+| real-work-from-anywhere | 143 | 0 | 762 | 0 | 0 | 7150 |
+| ashby:multiplymii | 141 | 0 | 764 | 0 | 0 | 6245 |
+| breezy:20four7va | 141 | 0 | 1669 | 0 | 0 | 16948 |
+| breezy:remote-craft | 141 | 0 | 764 | 0 | 0 | 2115 |
+| breezy:sourcefit | 141 | 0 | 764 | 0 | 0 | 14397 |
+| breezy:time-etc | 141 | 0 | 764 | 0 | 0 | 141 |
+| breezy:value-virtual-assistants | 141 | 0 | 764 | 0 | 0 | 1410 |
+| breezy:yokly | 141 | 0 | 764 | 0 | 0 | 761 |
+| greenhouse:canonical | 141 | 0 | 764 | 0 | 0 | 44707 |
+| greenhouse:ghost | 141 | 0 | 764 | 0 | 0 | 705 |
+| greenhouse:gitlab | 141 | 0 | 764 | 0 | 0 | 35062 |
+| greenhouse:grafanalabs | 141 | 0 | 764 | 0 | 0 | 19404 |
+| greenhouse:nearform | 141 | 0 | 764 | 0 | 0 | 3300 |
+| greenhouse:remotecom | 141 | 0 | 764 | 0 | 141 | 0 |
+| workable:pearltalent | 85 | 0 | 767 | 53 | 0 | 25348 |
+| workable:hello-rache | 84 | 0 | 767 | 54 | 0 | 252 |
+| workable:coconutva | 83 | 0 | 766 | 56 | 0 | 2694 |
+| workable:crewbloom | 83 | 0 | 766 | 56 | 0 | 7054 |
+| workable:hunt-st | 81 | 0 | 766 | 58 | 0 | 10067 |
+| workable:rocketams | 81 | 0 | 766 | 58 | 0 | 648 |
+| remote-ok | 68 | 74 | 762 | 1 | 0 | 3013 |
+| jobicy-supporting-apac | 31 | 108 | 764 | 2 | 0 | 1240 |
+| jobicy-admin-support-apac | 5 | 132 | 765 | 3 | 0 | 24 |
+| ashby:amplify | 0 | 0 | 905 | 0 | 0 | 0 |
+| ashby:ashby | 0 | 0 | 905 | 0 | 0 | 0 |
+| ashby:camunda | 0 | 0 | 905 | 0 | 0 | 0 |
+| ashby:circulareconomysystems | 0 | 0 | 905 | 0 | 0 | 0 |
+| ashby:cubic3 | 0 | 0 | 905 | 0 | 0 | 0 |
+| ashby:flipper | 0 | 0 | 905 | 0 | 0 | 0 |
+| ashby:foundry-for-good | 0 | 0 | 905 | 0 | 0 | 0 |
+| ashby:getground | 0 | 0 | 905 | 0 | 0 | 0 |
+| ashby:gradient | 0 | 0 | 905 | 0 | 0 | 0 |
+| ashby:luxor | 0 | 0 | 905 | 0 | 0 | 0 |
+| ashby:molecule | 0 | 0 | 905 | 0 | 0 | 0 |
+| ashby:payscale | 0 | 0 | 905 | 0 | 0 | 0 |
+| ashby:railway | 0 | 0 | 905 | 0 | 0 | 0 |
+| ashby:scalemath | 0 | 0 | 905 | 0 | 0 | 0 |
+| ashby:supabase | 0 | 0 | 905 | 0 | 0 | 0 |
+| ashby:the-studio | 0 | 0 | 905 | 0 | 0 | 0 |
+| ashby:tremendous | 0 | 0 | 905 | 0 | 0 | 0 |
+| ashby:trust-wallet | 0 | 0 | 905 | 0 | 0 | 0 |
+| ashby:whippy | 0 | 0 | 905 | 0 | 0 | 0 |
+| authentic-jobs | 0 | 0 | 905 | 0 | 0 | 0 |
+| breezy:vaaphilippines-recruitment | 0 | 0 | 905 | 0 | 0 | 0 |
+| dribbble | 0 | 0 | 905 | 0 | 0 | 0 |
+| jobspresso | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:applydigital | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:audinate | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:beaverprocess | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:brafton | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:brevo | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:decilegroup | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:deliverect | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:gushwork | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:jetsupport | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:lwolf | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:nibiru | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:outsourcedstaff | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:parcelvision | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:piccollage | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:repurposeglobal | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:snappr | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:tenna | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:truezerotech | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:vacancies | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:vaultoutsourcing | 0 | 0 | 905 | 0 | 0 | 0 |
+| lever:willowinc | 0 | 0 | 905 | 0 | 0 | 0 |
+| onlinejobs-ph | 0 | 0 | 905 | 0 | 0 | 0 |
+| problogger | 0 | 0 | 905 | 0 | 0 | 0 |
+| remote-co | 0 | 0 | 905 | 0 | 0 | 0 |
+| workable:connectos | 0 | 0 | 905 | 0 | 0 | 0 |
+| workable:global-strategic | 0 | 0 | 905 | 0 | 0 | 0 |
+| workable:myoutdesk | 0 | 0 | 905 | 0 | 0 | 0 |
+| workable:outsource-access | 0 | 0 | 905 | 0 | 0 | 0 |
+| workable:pineapple-staffing | 0 | 0 | 905 | 0 | 0 | 0 |
+| workable:staff-domain-inc | 0 | 0 | 905 | 0 | 0 | 0 |
+| workable:superstaff | 0 | 0 | 905 | 0 | 0 | 0 |
+| workable:virtualstaff365 | 0 | 0 | 905 | 0 | 0 | 0 |
 
 ## Geo & eligibility triage outcomes (last 7 days)
 
@@ -225,17 +225,17 @@ Breakdown of stored opportunities by Philippines eligibility verdict.
 
 | source_id | eligible | unclear | ineligible | policy_rejected | total | qualified_rate |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| we-work-remotely | 341 | 2 | 202 | 204 | 545 | 62.6% |
-| remote-ok | 20 | 5 | 113 | 118 | 138 | 14.5% |
-| greenhouse:gitlab | 1 | 0 | 35 | 35 | 36 | 2.8% |
-| real-work-from-anywhere | 26 | 3 | 1 | 4 | 30 | 86.7% |
-| workable:hunt-st | 28 | 0 | 1 | 1 | 29 | 96.6% |
-| greenhouse:grafanalabs | 0 | 0 | 21 | 21 | 21 | 0.0% |
-| jobicy-supporting-apac | 7 | 0 | 10 | 10 | 17 | 41.2% |
+| we-work-remotely | 410 | 0 | 225 | 225 | 635 | 64.6% |
+| remote-ok | 21 | 5 | 129 | 134 | 155 | 13.5% |
+| greenhouse:gitlab | 1 | 0 | 31 | 31 | 32 | 3.1% |
+| workable:hunt-st | 27 | 5 | 0 | 0 | 32 | 84.4% |
+| real-work-from-anywhere | 27 | 3 | 1 | 4 | 31 | 87.1% |
+| greenhouse:grafanalabs | 0 | 0 | 19 | 19 | 19 | 0.0% |
+| jobicy-supporting-apac | 7 | 0 | 9 | 9 | 16 | 43.8% |
 | workable:pearltalent | 2 | 0 | 10 | 10 | 12 | 16.7% |
+| breezy:sourcefit | 8 | 0 | 3 | 3 | 11 | 72.7% |
 | breezy:20four7va | 9 | 0 | 0 | 0 | 9 | 100.0% |
 | workable:coconutva | 5 | 0 | 0 | 0 | 5 | 100.0% |
-| breezy:sourcefit | 2 | 0 | 2 | 2 | 4 | 50.0% |
 | greenhouse:canonical | 1 | 0 | 3 | 3 | 4 | 25.0% |
 | breezy:yokly | 2 | 0 | 0 | 0 | 2 | 100.0% |
 | workable:crewbloom | 2 | 0 | 0 | 0 | 2 | 100.0% |
@@ -249,31 +249,31 @@ UNKNOWN means a count is missing/invalid or its denominator is zero. Fetch and s
 
 | source_id | real fetches | items seen | eligible stored | yield / fetch | yield / 100 items |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| we-work-remotely | 214 | 20827 | 341 | 1.59 | 1.64 |
-| remotive | 160 | 2596 | 0 | 0.00 | 0.00 |
-| real-work-from-anywhere | 144 | 7200 | 26 | 0.18 | 0.36 |
-| breezy:20four7va | 142 | 17070 | 9 | 0.06 | 0.05 |
-| breezy:remote-craft | 142 | 2130 | UNKNOWN | UNKNOWN | UNKNOWN |
-| breezy:sourcefit | 142 | 14533 | 2 | 0.01 | 0.01 |
-| breezy:time-etc | 142 | 142 | UNKNOWN | UNKNOWN | UNKNOWN |
-| breezy:value-virtual-assistants | 142 | 1420 | UNKNOWN | UNKNOWN | UNKNOWN |
-| breezy:yokly | 142 | 708 | 2 | 0.01 | 0.28 |
-| greenhouse:canonical | 142 | 44985 | 1 | 0.01 | 0.00 |
-| greenhouse:ghost | 142 | 710 | UNKNOWN | UNKNOWN | UNKNOWN |
-| greenhouse:gitlab | 142 | 35483 | 1 | 0.01 | 0.00 |
-| greenhouse:grafanalabs | 142 | 19553 | 0 | 0.00 | 0.00 |
-| greenhouse:nearform | 142 | 3405 | UNKNOWN | UNKNOWN | UNKNOWN |
-| greenhouse:remotecom | 142 | 0 | UNKNOWN | UNKNOWN | UNKNOWN |
-| ashby:multiplymii | 141 | 6383 | 1 | 0.01 | 0.02 |
-| workable:pearltalent | 84 | 24884 | 2 | 0.02 | 0.01 |
-| workable:hello-rache | 83 | 249 | UNKNOWN | UNKNOWN | UNKNOWN |
-| workable:coconutva | 78 | 2523 | 5 | 0.06 | 0.20 |
-| workable:crewbloom | 78 | 6657 | 2 | 0.03 | 0.03 |
-| workable:hunt-st | 76 | 9447 | 28 | 0.37 | 0.30 |
-| workable:rocketams | 76 | 612 | UNKNOWN | UNKNOWN | UNKNOWN |
-| remote-ok | 64 | 2840 | 20 | 0.31 | 0.70 |
-| jobicy-supporting-apac | 33 | 1320 | 7 | 0.21 | 0.53 |
-| jobicy-admin-support-apac | 3 | 14 | UNKNOWN | UNKNOWN | UNKNOWN |
+| we-work-remotely | 258 | 25227 | 410 | 1.59 | 1.63 |
+| remotive | 158 | 2529 | 0 | 0.00 | 0.00 |
+| real-work-from-anywhere | 143 | 7150 | 27 | 0.19 | 0.38 |
+| ashby:multiplymii | 141 | 6245 | 1 | 0.01 | 0.02 |
+| breezy:20four7va | 141 | 16948 | 9 | 0.06 | 0.05 |
+| breezy:remote-craft | 141 | 2115 | UNKNOWN | UNKNOWN | UNKNOWN |
+| breezy:sourcefit | 141 | 14397 | 8 | 0.06 | 0.06 |
+| breezy:time-etc | 141 | 141 | UNKNOWN | UNKNOWN | UNKNOWN |
+| breezy:value-virtual-assistants | 141 | 1410 | UNKNOWN | UNKNOWN | UNKNOWN |
+| breezy:yokly | 141 | 761 | 2 | 0.01 | 0.26 |
+| greenhouse:canonical | 141 | 44707 | 1 | 0.01 | 0.00 |
+| greenhouse:ghost | 141 | 705 | UNKNOWN | UNKNOWN | UNKNOWN |
+| greenhouse:gitlab | 141 | 35062 | 1 | 0.01 | 0.00 |
+| greenhouse:grafanalabs | 141 | 19404 | 0 | 0.00 | 0.00 |
+| greenhouse:nearform | 141 | 3300 | UNKNOWN | UNKNOWN | UNKNOWN |
+| greenhouse:remotecom | 141 | 0 | UNKNOWN | UNKNOWN | UNKNOWN |
+| workable:pearltalent | 85 | 25348 | 2 | 0.02 | 0.01 |
+| workable:hello-rache | 84 | 252 | UNKNOWN | UNKNOWN | UNKNOWN |
+| workable:coconutva | 83 | 2694 | 5 | 0.06 | 0.19 |
+| workable:crewbloom | 83 | 7054 | 2 | 0.02 | 0.03 |
+| workable:hunt-st | 81 | 10067 | 27 | 0.33 | 0.27 |
+| workable:rocketams | 81 | 648 | UNKNOWN | UNKNOWN | UNKNOWN |
+| remote-ok | 68 | 3013 | 21 | 0.31 | 0.70 |
+| jobicy-supporting-apac | 31 | 1240 | 7 | 0.23 | 0.56 |
+| jobicy-admin-support-apac | 5 | 24 | UNKNOWN | UNKNOWN | UNKNOWN |
 | ashby:amplify | 0 | 0 | UNKNOWN | UNKNOWN | UNKNOWN |
 | ashby:ashby | 0 | 0 | UNKNOWN | UNKNOWN | UNKNOWN |
 | ashby:camunda | 0 | 0 | UNKNOWN | UNKNOWN | UNKNOWN |

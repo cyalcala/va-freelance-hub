@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "metricVersion": "SP-02",
+  "generatedAt": "2026-11-23T11:06:57.178Z",
+  "runId": "45162136360",
+  "window": {
+    "asOf": "2026-11-23T11:06:47.973Z",
+    "cut7Unix": 1794827207,
+    "cut14Unix": 1794222407,
+    "cut30Unix": 1792840007,
+    "timezone": "UTC"
+  },
+  "status": "measured",
+  "metrics": {
+    "qualifiedActive": 1853,
+    "qualifiedNew7d": 521,
+    "qualifiedPerDay7d": 74.42857142857143,
+    "qualifiedNew30d": 1104,
+    "qualifiedPerDay30d": 36.8,
+    "allActive": 1853,
+    "identityCoverage": {
+      "total": 10120,
+      "withSourceId": 10120,
+      "share": 1
+    },
+    "concentration30d": {
+      "topFamily": "we-work-remotely",
+      "topShare": 0.5679347826086957,
+      "top3Share": 0.7762681159420289,
+      "topWarn": true,
+      "top3Warn": true
+    },
+    "largestUnclear7d": [
+      {
+        "sourceId": "remote-ok",
+        "unclear": 5
+      },
+      {
+        "sourceId": "workable:hunt-st",
+        "unclear": 5
+      },
+      {
+        "sourceId": "real-work-from-anywhere",
+        "unclear": 3
+      }
+    ]
+  },
+  "reconciliation": {
+    "ok": true,
+    "nonZeroDeltas": []
+  },
+  "limitations": [
+    "First-stored proxy: not verified remote-only first publication.",
+    "Current-active filtering has survivorship bias.",
+    "scraped_at is the storage instant; canonical first-publication history is not reconstructed.",
+    "UTC windows; the product-target Manila-day reconciliation remains a separate contract.",
+    "largestUnclear7d cohorts are investigation inputs; unclear rows are not counted as salvageable."
+  ],
+  "prior": {
+    "snapshotKey": "2026-11-22T10-09-38-569Z",
+    "generatedAt": "2026-11-22T10:09:38.569Z",
+    "qualifiedNew7d": 446,
+    "qualifiedPerDay7d": 63.714285714285715
+  }
+}
