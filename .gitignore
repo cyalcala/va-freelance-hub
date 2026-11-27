@@ -104,3 +104,7 @@ bun-debug.log*
 /public-lkg-release-receipt.json
 /public-offline-smoke.json
 /apps/web/src/data/public-lkg.json.release-tmp
+
+# Rust / Lean rebuildable artifacts
+target/
+.lake/

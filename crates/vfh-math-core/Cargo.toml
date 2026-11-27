@@ -1,0 +1,17 @@
+[package]
+name = "vfh-math-core"
+version = "0.1.0"
+edition = "2021"
+license = "UNLICENSED"
+publish = false
+description = "Pure MATH-00 / MATH-09 / MATH-10 core for VA Freelance Hub. Zero I/O, no unsafe, Aeneas-friendly subset."
+readme = false
+
+[lib]
+name = "vfh_math_core"
+path = "src/lib.rs"
+
+[dependencies]
+
+[package.metadata.charon]
+# Used by: charon cargo --preset=aeneas
