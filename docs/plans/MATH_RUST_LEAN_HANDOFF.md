@@ -2,7 +2,7 @@
 
 **Read this first if you are a new agent resuming this work.** It is written so you can continue with minimal token burn: exact paths, exact commands, current MATH status, guardrails, and the single next step.
 
-Last verified: **2:45 PM Asia/Manila, Friday 27 Nov 2026** on branch `feat/math-wave1-foundation` (feature branch only — never `main`).
+Last verified: **7:23 PM Asia/Manila, Friday 27 Nov 2026** on branch `feat/math-wave1-foundation` (feature branch only — never `main`).
 
 ## 0. Guardrails (non-negotiable)
 
@@ -64,7 +64,7 @@ A leftover standalone Charon tarball also exists at `/workspace/vfh-toolchain/ch
 | MATH-06 | Publication integrity | — | — | **NOT STARTED** in Rust. Related TS: publication gateway (do not grant authority from this crate). | Stay out of `packages/db` and writers. |
 | MATH-07 | Freshness decay / reservoir | — | — | **NOT STARTED** | Candidate: `packages/scraper/source-posting-date.ts`. |
 | MATH-08 | Diversity / concentration | — | — | **NOT STARTED** | |
-| MATH-09 | Identity / content-hash encoding | `crates/vfh-math-core/src/content_hash.rs` | translated in `Funs.lean`; Lean theorems on v2 prefix + version tags | **VERIFIED** in Rust: v1 matches TypeScript cyrb53 fixtures (including the F-W2-2 alias); v2 length-prefixed encoding rejects the alias; v2 display is `v2:` + 16 hex so stored v1 16-hex D1 rows are not blindly invalidated. Formal injectivity of `encode_v2_bytes` is **NOT YET PROVED** in Lean (see Next step). | Prove `encode_v2_bytes` injectivity in Lean + Mathlib. Do not migrate D1. |
+| MATH-09 | Identity / content-hash encoding | `crates/vfh-math-core/src/content_hash.rs` | translated in `Funs.lean`; Lean theorems `v2_prefix_bytes`, `write_u32be_spec`, `encode_v2_bytes_loop0_spec`, `encode_v2_bytes_loop1_spec`, `encode_v2_bytes_spec`, `encode_v2_bytes_ok_some`, `encode_v2_bytes_injective`, `encode_v2_bytes_injective_eq` | **VERIFIED** in Rust & Lean 4 (sorry-free, standard axioms `[propext, Classical.choice, Quot.sound]` only): v1 matches TypeScript cyrb53 fixtures (including the F-W2-2 alias); v2 length-prefixed encoding rejects the alias and is formally proved injective (`encode_v2_bytes_injective`); v2 display is `v2:` + 16 hex so stored v1 16-hex D1 rows are not blindly invalidated. | Do not migrate D1; keep v2 additive until a separately authorized slice. |
 | MATH-10 | Change detection / processing mode | `crates/vfh-math-core/src/processing_mode.rs` | translated (`select_processing_mode`, `select_processing_mode_legacy`, `material_digests_changed`) | **VERIFIED** in Rust: `select_processing_mode_legacy` preserves F-W2-1 (`Reuse` when digests change and no cached snapshot is supplied — live TS behaviour). `select_processing_mode` with `Some(cached_digests)` returns `BoundedReplay` on a material digest change (F-W2-1 fix). Opt-out still outranks. | Do not change `scripts/lake/source-ranker.ts` until a shadow/parity slice is authorized. |
 | MATH-11 | AI cascade / VOI | — | — | **NOT STARTED** | Policy math only; provider I/O stays in TS. |
 | MATH-12 | Source health / SPC | — | — | **NOT STARTED** | |
@@ -83,7 +83,7 @@ Source the env first: `source /workspace/vfh-toolchain/env.sh`
 
 Or run the wrapper: `/workspace/vfh-math-work/scripts/verify-math-wave1.sh` (does not regenerate Aeneas output in-place; that would overwrite `FunsExternal.lean`).
 
-| Command | Latest verified result (27 Nov 2026, Asia/Manila afternoon) |
+| Command | Latest verified result (27 Nov 2026, 7:23 PM Asia/Manila) |
 | --- | --- |
 | `cd /workspace/vfh-math-work && bun test --no-env-file --preload ./scripts/ci/test-environment.ts ./scripts/lake/math-wave2-characterization.test.ts` | **VERIFIED** — 28 pass, 0 fail, 245 expect() |
 | `cd /workspace/vfh-math-work && bun test --no-env-file --preload ./scripts/ci/test-environment.ts ./apps/web/tests/adversarial-d1-binding-budget.test.ts ./apps/web/tests/native-direct-ingest-binding-budget.test.ts ./apps/web/tests/ai-subrequest-budget.test.ts ./apps/web/tests/directory-audit-budget.test.ts ./apps/web/tests/verify-links-budget.test.ts` | **VERIFIED** — 27 pass, 0 fail, 415 expect() |
@@ -92,6 +92,8 @@ Or run the wrapper: `/workspace/vfh-math-work/scripts/verify-math-wave1.sh` (doe
 | `aeneas -backend lean -dest /tmp/vfh-lean-regen -namespace VfhMathCore -use-lean-modules false -split-files crates/vfh-math-core/vfh_math_core.llbc` | **VERIFIED** — exit 0, no translation errors (after Aeneas-friendly Rust: no `Debug` in the lib, unrolled hex writer, no em-dash in reason strings, unknown-version flags computed while pushing mismatches). Copy `Types.lean` / `Funs.lean` / template into `proofs/vfh-math-lean/VfhMathCore/`; **do not overwrite** the hand-filled `FunsExternal.lean`. |
 | `cd /workspace/vfh-math-work/proofs/vfh-math-lean && lake build` | **VERIFIED** — exit 0, “Build completed successfully (3622 jobs)”. Mathlib cache already downloaded. Module-system warning on `VfhMathTheorems.lean` is non-fatal. |
 | `rg -n '^\s*(sorry\|axiom)\b' proofs/vfh-math-lean/VfhMathTheorems.lean proofs/vfh-math-lean/VfhMathCore/FunsExternal.lean` | **VERIFIED** — none (hand-written Lean is sorry- and axiom-free). Generated `Funs.lean` / `Types.lean` should also be axiom-free; do not add `sorry`. |
+| `cd /workspace/vfh-math-work/proofs/vfh-math-lean && printf 'import VfhMathTheorems\n#print axioms encode_v2_bytes_injective\n#print axioms encode_v2_bytes_injective_eq\n' | lake env lean --stdin` | **VERIFIED** — both depend only on `[propext, Classical.choice, Quot.sound]` (zero `sorryAx`, zero custom axioms). |
+| `source /workspace/vfh-toolchain/env.sh && bash /workspace/vfh-math-work/scripts/verify-math-wave1.sh` | **VERIFIED** — exit 0 (`WAVE1 VERIFY OK`). Script `rg` globs updated to exclude Aeneas-generated `VfhMathCore/FunsExternal_Template.lean` and `.lake/**`. |
 
 ## 4. Architecture in one paragraph
 
@@ -99,11 +101,11 @@ TypeScript on `main` stays the live implementation. `vfh-math-core` is a zero-I/
 
 ## 5. Exact next concrete step
 
-**Prove injectivity of `encode_v2_bytes` (MATH-09) in `proofs/vfh-math-lean/VfhMathTheorems.lean`, sorry-free, using Mathlib as needed; keep `lake build` green; do not touch `apps/web`, Workers, D1, or `main`.**
+MATH-09 (`encode_v2_bytes_injective`) is now proved sorry-free and axiom-free in `proofs/vfh-math-lean/VfhMathTheorems.lean`.
 
-Suggested statement (adapt to the actual generated function name in `VfhMathCore/Funs.lean`, currently under the `content_hash` namespace): if two `(title, url)` byte-string pairs produce the same length-prefixed encoding, then the pairs are equal. Use the already-built Lake package; do not re-download Mathlib unless the cache was deleted.
-
-After that, a later authorized slice can port MATH-02 (`queue-metrics.ts`) the same way (pure Rust → cargo test → charon → aeneas → lake).
+Next concrete steps (stay additive on `feat/math-wave1-foundation`; do not touch `apps/web`, Workers, D1, or `main`):
+1. Prove MATH-10 mode-selection invariants in `proofs/vfh-math-lean/VfhMathTheorems.lean` (e.g., opt-out dominance, expired policy/lease forcing `BoundedReplay`, and `select_processing_mode` returning `BoundedReplay` on material digest change when cached digests are present, fixing `F-W2-1`).
+2. Or port MATH-02 (`scripts/ci/queue-metrics.ts`) into `crates/vfh-math-core` following the same pipeline (`cargo test` → `charon` → `aeneas` → `lake build`).
 
 ## 6. Regeneration pitfalls
 

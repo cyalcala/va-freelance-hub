@@ -36,7 +36,7 @@ echo "== lake build (Wave 1 Lean) =="
 (cd proofs/vfh-math-lean && lake build)
 
 echo "== sorry / axiom check (hand-written theorems must be sorry-free) =="
-if rg -n --glob '!VfhMathCore/Funs.lean' --glob '!VfhMathCore/Types.lean' \
+if rg -n --glob '!**/VfhMathCore/Funs.lean' --glob '!**/VfhMathCore/Types.lean' --glob '!**/VfhMathCore/FunsExternal_Template.lean' --glob '!**/.lake/**' \
     '^\s*(sorry|axiom)\b' proofs/vfh-math-lean; then
   echo "FOUND sorry/axiom in hand-written Lean" >&2
   exit 1
