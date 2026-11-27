@@ -511,3 +511,655 @@ theorem encode_v2_bytes_injective_eq
     (h₂ : content_hash.encode_v2_bytes title₂ url₂ out₂ = ok (some n, res)) :
     title₁ = title₂ ∧ url₁ = url₂ :=
   encode_v2_bytes_injective title₁ url₁ out₁ title₂ url₂ out₂ n n res res h₁ h₂ rfl
+
+/-! ## MATH-10 (`F-W2-1`): Totality, soundness, and `Reuse` characterization of `select_processing_mode` -/
+
+/-- Exact predicate for when two `MaterialDigests` snapshots differ according to
+    `processing_mode.material_digests_changed`. -/
+def MaterialDigestsDiffer (a b : types.MaterialDigests) : Prop :=
+  a.fingerprint_hash ≠ b.fingerprint_hash ∨
+  a.content_hash ≠ b.content_hash ∨
+  a.policy_hash ≠ b.policy_hash ∨
+  ∃ d₁ d₂, a.description_hash = some d₁ ∧ b.description_hash = some d₂ ∧ d₁ ≠ d₂
+
+/-- An optional expiry timestamp is not expired at `now_ms`. -/
+def TimestampNotExpired (expiry_ms : Option Std.U64) (now_ms : Std.U64) : Prop :=
+  ∀ exp, expiry_ms = some exp → ¬ (exp < now_ms)
+
+/-- Exact predicate for `processing_mode.sufficient_evidence`. -/
+def HasSufficientEvidence (input : processing_mode.ModeInput) : Prop :=
+  input.last_qualified_ready > 0#i32 ∧
+  input.last_candidate_count > 0#i32 ∧
+  input.material_digests.fingerprint_hash.val.length ≠ 0 ∧
+  input.material_digests.content_hash.val.length ≠ 0
+
+private theorem wp_to_ok {α : Type _} {m : Result α} {P : α → Prop}
+    (h : m ⦃ P ⦄) : ∃ x, m = ok x ∧ P x := by
+  cases m with
+  | ret x => exact ⟨x, rfl, by simpa [WP.spec_ok] using h⟩
+  | vis e k =>
+    change Result.vis e k ⦃ P ⦄ at h
+    rw [WP.spec_vis] at h
+    exact False.elim h
+  | div =>
+    change Result.div ⦃ P ⦄ at h
+    rw [WP.spec_div] at h
+    exact False.elim h
+
+private theorem str_ne_spec (a b : Str) :
+    core.cmp.impls.PartialEqShared.ne Str.Insts.CoreCmpPartialEqStr a b ⦃ res =>
+      res = decide (a ≠ b) ⦄ := by
+  simp [core.cmp.impls.PartialEqShared.ne, core.cmp.PartialEq.ne.default,
+    Str.Insts.CoreCmpPartialEqStr.eq, WP.spec_ok]
+
+private theorem str_is_empty_spec (s : Str) :
+    core.str.Str.is_empty s ⦃ res => res = decide (s.val.length = 0) ⦄ := by
+  simp [core.str.Str.is_empty, core.slice.Slice.is_empty, WP.spec_ok]
+
+private theorem processing_mode_eq_reuse_spec (a : processing_mode.ProcessingMode) :
+    processing_mode.ProcessingMode.Insts.CoreCmpPartialEqProcessingMode.eq a
+      processing_mode.ProcessingMode.Reuse ⦃ res =>
+      res = true ↔ a = processing_mode.ProcessingMode.Reuse ⦄ := by
+  cases a <;>
+    simp [processing_mode.ProcessingMode.Insts.CoreCmpPartialEqProcessingMode.eq,
+      processing_mode.ProcessingMode.read_discriminant, WP.spec_ok]
+
+private theorem push_dep_spec
+    (deps : Array types.Dependency 8#usize) (count : Std.Usize) (dep : types.Dependency)
+    (hcount : count.val < 8) :
+    processing_mode.push_dep deps count dep ⦃ (_, n') => n'.val = count.val + 1 ⦄ := by
+  unfold processing_mode.push_dep
+  have hlt : count < processing_mode.MAX_DEPS := by
+    simp [processing_mode.MAX_DEPS, UScalar.lt_equiv, UScalar.ofNatCore_val_eq]
+    omega
+  simp only [hlt, ↓reduceIte]
+  step as ⟨deps1, _⟩
+  step as ⟨count1, hcount1⟩
+  omega
+
+private theorem is_unknown_version_total (value : Str) :
+    processing_mode.is_unknown_version value ⦃ _ => True ⦄ := by
+  unfold processing_mode.is_unknown_version
+  have h0 := str_is_empty_spec value
+  step with h0 as ⟨b, _⟩
+  split_ifs
+  · simp [WP.spec_ok]
+  · have h1 : Str.Insts.CoreCmpPartialEqStr.eq value (toStr "unknown") ⦃ _ => True ⦄ := by
+      simp [Str.Insts.CoreCmpPartialEqStr.eq, WP.spec_ok]
+    step with h1 as ⟨b1⟩
+    split_ifs
+    · simp [WP.spec_ok]
+    · simp [Str.Insts.CoreCmpPartialEqStr.eq, WP.spec_ok]
+
+private theorem check_one_spec
+    (stored current : Str) (dep : types.Dependency)
+    (out : Array types.Dependency 8#usize) (n : Std.Usize) (has_unknown : Bool)
+    (hn : n.val < 8) :
+    processing_mode.check_one stored current dep out n has_unknown ⦃ (_, n', _) =>
+      (stored = current → n' = n) ∧
+      (stored ≠ current → n'.val = n.val + 1) ⦄ := by
+  unfold processing_mode.check_one
+  have hne_s := str_ne_spec stored current
+  step with hne_s as ⟨b, hb⟩
+  by_cases h : stored = current
+  · subst h
+    have hbf : b = false := by simpa using hb
+    simp only [hbf, Bool.false_eq_true, ↓reduceIte, WP.spec_ok]
+    exact ⟨fun _ => rfl, fun hne => absurd rfl hne⟩
+  · have hbt : b = true := by simpa [h] using hb
+    simp only [hbt, ↓reduceIte]
+    have hpush := push_dep_spec out n dep hn
+    step with hpush as ⟨out1, n1, hn1⟩
+    have hunk := is_unknown_version_total stored
+    step with hunk as ⟨b1⟩
+    split_ifs <;> simp only [WP.spec_ok] <;> exact ⟨fun heq => absurd heq h, fun _ => hn1⟩
+
+private theorem check_version_mismatch_spec
+    (stored current : types.VersionDeps)
+    (out : Array types.Dependency 8#usize) (has_unknown : Bool) :
+    processing_mode.check_version_mismatch stored current out has_unknown ⦃ (n, _, _) =>
+      n.val ≤ 7 ∧ (n = 0#usize ↔ stored = current) ⦄ := by
+  unfold processing_mode.check_version_mismatch
+  have h1 := check_one_spec stored.policy_version current.policy_version
+    types.Dependency.Policy out 0#usize has_unknown (by simp [UScalar.ofNatCore_val_eq])
+  step with h1 as ⟨out1, n1, u1, hn1_eq, hn1_ne⟩
+  have hn1_le : n1.val ≤ 1 := by
+    by_cases h : stored.policy_version = current.policy_version
+    · rw [hn1_eq h]; simp [UScalar.ofNatCore_val_eq]
+    · have := hn1_ne h; simp at this; omega
+  have h2 := check_one_spec stored.processor_version current.processor_version
+    types.Dependency.Parser out1 n1 u1 (by omega)
+  step with h2 as ⟨out2, n2, u2, hn2_eq, hn2_ne⟩
+  have hn2_le : n2.val ≤ 2 := by
+    by_cases h : stored.processor_version = current.processor_version
+    · rw [hn2_eq h]; omega
+    · have := hn2_ne h; omega
+  have h3 := check_one_spec stored.geo_gate_version current.geo_gate_version
+    types.Dependency.Geo out2 n2 u2 (by omega)
+  step with h3 as ⟨out3, n3, u3, hn3_eq, hn3_ne⟩
+  have hn3_le : n3.val ≤ 3 := by
+    by_cases h : stored.geo_gate_version = current.geo_gate_version
+    · rw [hn3_eq h]; omega
+    · have := hn3_ne h; omega
+  have h4 := check_one_spec stored.triage_version current.triage_version
+    types.Dependency.Taxonomy out3 n3 u3 (by omega)
+  step with h4 as ⟨out4, n4, u4, hn4_eq, hn4_ne⟩
+  have hn4_le : n4.val ≤ 4 := by
+    by_cases h : stored.triage_version = current.triage_version
+    · rw [hn4_eq h]; omega
+    · have := hn4_ne h; omega
+  have h5 := check_one_spec stored.jev_version current.jev_version
+    types.Dependency.Model out4 n4 u4 (by omega)
+  step with h5 as ⟨out5, n5, u5, hn5_eq, hn5_ne⟩
+  have hn5_le : n5.val ≤ 5 := by
+    by_cases h : stored.jev_version = current.jev_version
+    · rw [hn5_eq h]; omega
+    · have := hn5_ne h; omega
+  have h6 := check_one_spec stored.fingerprint_version current.fingerprint_version
+    types.Dependency.Identity out5 n5 u5 (by omega)
+  step with h6 as ⟨out6, n6, u6, hn6_eq, hn6_ne⟩
+  have hn6_le : n6.val ≤ 6 := by
+    by_cases h : stored.fingerprint_version = current.fingerprint_version
+    · rw [hn6_eq h]; omega
+    · have := hn6_ne h; omega
+  have h7 := check_one_spec stored.content_hash_version current.content_hash_version
+    types.Dependency.Identity out6 n6 u6 (by omega)
+  step with h7 as ⟨out7, n7, u7, hn7_eq, hn7_ne⟩
+  have hmono1 : n1.val ≥ 0 := Nat.zero_le _
+  have hmono2 : n2.val ≥ n1.val := by
+    by_cases h : stored.processor_version = current.processor_version
+    · rw [hn2_eq h]
+    · have := hn2_ne h; omega
+  have hmono3 : n3.val ≥ n2.val := by
+    by_cases h : stored.geo_gate_version = current.geo_gate_version
+    · rw [hn3_eq h]
+    · have := hn3_ne h; omega
+  have hmono4 : n4.val ≥ n3.val := by
+    by_cases h : stored.triage_version = current.triage_version
+    · rw [hn4_eq h]
+    · have := hn4_ne h; omega
+  have hmono5 : n5.val ≥ n4.val := by
+    by_cases h : stored.jev_version = current.jev_version
+    · rw [hn5_eq h]
+    · have := hn5_ne h; omega
+  have hmono6 : n6.val ≥ n5.val := by
+    by_cases h : stored.fingerprint_version = current.fingerprint_version
+    · rw [hn6_eq h]
+    · have := hn6_ne h; omega
+  have hmono7 : n7.val ≥ n6.val := by
+    by_cases h : stored.content_hash_version = current.content_hash_version
+    · rw [hn7_eq h]
+    · have := hn7_ne h; omega
+  refine ⟨?_, ?_⟩
+  · by_cases h : stored.content_hash_version = current.content_hash_version
+    · rw [hn7_eq h]; omega
+    · have := hn7_ne h; omega
+  · constructor
+    · intro hz
+      have hz_val : n7.val = 0 := by rw [hz]; simp [UScalar.ofNatCore_val_eq]
+      cases stored
+      cases current
+      simp only [types.VersionDeps.mk.injEq]
+      refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · by_contra hne; have := hn1_ne hne; omega
+      · by_contra hne; have := hn2_ne hne; omega
+      · by_contra hne; have := hn3_ne hne; omega
+      · by_contra hne; have := hn4_ne hne; omega
+      · by_contra hne; have := hn5_ne hne; omega
+      · by_contra hne; have := hn6_ne hne; omega
+      · by_contra hne; have := hn7_ne hne; omega
+    · intro heq
+      subst heq
+      rw [hn7_eq rfl, hn6_eq rfl, hn5_eq rfl, hn4_eq rfl, hn3_eq rfl, hn2_eq rfl, hn1_eq rfl]
+
+private theorem is_targeted_total (dep : types.Dependency) :
+    processing_mode.is_targeted dep ⦃ _ => True ⦄ := by
+  cases dep <;> simp [processing_mode.is_targeted, WP.spec_ok]
+
+/-- Exact specification of `processing_mode.sufficient_evidence`. -/
+theorem sufficient_evidence_spec (input : processing_mode.ModeInput) :
+    processing_mode.sufficient_evidence input ⦃ b => b = true ↔ HasSufficientEvidence input ⦄ := by
+  unfold processing_mode.sufficient_evidence HasSufficientEvidence
+  split_ifs with h1 h2
+  · have hf := str_is_empty_spec input.material_digests.fingerprint_hash
+    step with hf as ⟨b, hb⟩
+    cases b with
+    | true =>
+      simp only [↓reduceIte, WP.spec_ok, Bool.false_eq_true, false_iff, not_and]
+      intro _ _ hfp _
+      exact hfp (of_decide_eq_true hb.symm)
+    | false =>
+      simp only [Bool.false_eq_true, ↓reduceIte]
+      have hfp : input.material_digests.fingerprint_hash.val.length ≠ 0 := by
+        intro hzero
+        have : (false : Bool) = true := by rw [hb, hzero]; decide
+        cases this
+      have hc := str_is_empty_spec input.material_digests.content_hash
+      step with hc as ⟨b1, hb1⟩
+      cases b1 with
+      | true =>
+        refine ⟨fun h => by simp at h, fun ⟨_, _, _, hch⟩ => False.elim (hch (of_decide_eq_true hb1.symm))⟩
+      | false =>
+        have hch : input.material_digests.content_hash.val.length ≠ 0 := by
+          intro hzero
+          have : (false : Bool) = true := by rw [hb1, hzero]; decide
+          cases this
+        refine ⟨fun _ => ⟨h1, h2, hfp, hch⟩, fun _ => by simp⟩
+  · simp [WP.spec_ok, h2]
+  · simp [WP.spec_ok, h1]
+
+/-- Exact specification of `processing_mode.material_digests_changed`. -/
+theorem material_digests_changed_spec (a b : types.MaterialDigests) :
+    processing_mode.material_digests_changed a b ⦃ changed =>
+      changed = true ↔ MaterialDigestsDiffer a b ⦄ := by
+  unfold processing_mode.material_digests_changed MaterialDigestsDiffer
+  have h1 := str_ne_spec a.fingerprint_hash b.fingerprint_hash
+  step with h1 as ⟨b0, hb0⟩
+  by_cases hfp : a.fingerprint_hash = b.fingerprint_hash
+  · have hb0f : b0 = false := by simpa [hfp] using hb0
+    simp only [hb0f, Bool.false_eq_true, ↓reduceIte]
+    have h2 := str_ne_spec a.content_hash b.content_hash
+    step with h2 as ⟨b1, hb1⟩
+    by_cases hch : a.content_hash = b.content_hash
+    · have hb1f : b1 = false := by simpa [hch] using hb1
+      simp only [hb1f, Bool.false_eq_true, ↓reduceIte]
+      have h3 := str_ne_spec a.policy_hash b.policy_hash
+      step with h3 as ⟨b2, hb2⟩
+      by_cases hpol : a.policy_hash = b.policy_hash
+      · have hb2f : b2 = false := by simpa [hpol] using hb2
+        simp only [hb2f, Bool.false_eq_true, ↓reduceIte]
+        cases ha : a.description_hash with
+        | none => simp [WP.spec_ok, hfp, hch, hpol]
+        | some d₁ =>
+          cases hb : b.description_hash with
+          | none => simp [WP.spec_ok, hfp, hch, hpol]
+          | some d₂ =>
+            have h4 := str_ne_spec d₁ d₂
+            step with h4 as ⟨b3, hb3⟩
+            simp [hb3, hfp, hch, hpol]
+      · have hb2t : b2 = true := by simpa [hpol] using hb2
+        simp only [hb2t, ↓reduceIte, WP.spec_ok, true_iff]
+        exact Or.inr (Or.inr (Or.inl hpol))
+    · have hb1t : b1 = true := by simpa [hch] using hb1
+      simp only [hb1t, ↓reduceIte, WP.spec_ok, true_iff]
+      exact Or.inr (Or.inl hch)
+  · have hb0t : b0 = true := by simpa [hfp] using hb0
+    simp only [hb0t, ↓reduceIte, WP.spec_ok, true_iff]
+    exact Or.inl hfp
+
+private theorem decide_legacy_version_branch
+    (input : processing_mode.ModeInput) (current : types.VersionDeps)
+    (empty : Array types.Dependency 8#usize) :
+    (do
+      let (n, empty1, has_unknown) ←
+        processing_mode.check_version_mismatch input.version_deps current empty false
+      if n > 0#usize then
+        if has_unknown then
+          ok (processing_mode.ProcessingMode.Full,
+            toStr "Unknown version dependency - conservative FULL required", empty1, n)
+        else if n = 1#usize then
+          let d ← Array.index_usize empty1 0#usize
+          let b ← processing_mode.is_targeted d
+          if b then
+            ok (processing_mode.ProcessingMode.BoundedReplay,
+              toStr "Targeted dependency version change", empty1, n)
+          else
+            ok (processing_mode.ProcessingMode.Reindex, toStr "Version mismatch", empty1, n)
+        else
+          ok (processing_mode.ProcessingMode.Reindex, toStr "Version mismatch", empty1, n)
+      else
+        let b ← processing_mode.sufficient_evidence input
+        if b then
+          ok (processing_mode.ProcessingMode.Reuse,
+            toStr "Sufficient compatible evidence exists; no dependency changes", empty, 0#usize)
+        else
+          ok (processing_mode.ProcessingMode.Full,
+            toStr "Insufficient prior evidence or first evaluation", empty, 0#usize))
+    ⦃ r => r.1 = processing_mode.ProcessingMode.Reuse ↔
+      (input.version_deps = current ∧ HasSufficientEvidence input) ⦄ := by
+  have hchk := check_version_mismatch_spec input.version_deps current empty false
+  step with hchk as ⟨n, empty1, has_unknown, hn_le, hn_zero⟩
+  by_cases hgt : n > 0#usize
+  · simp only [hgt, ↓reduceIte]
+    have hneq : input.version_deps ≠ current := by
+      intro heq
+      have hz := hn_zero.mpr heq
+      subst hz
+      simp [GT.gt] at hgt
+    cases has_unknown with
+    | true => simp [WP.spec_ok, hneq]
+    | false =>
+      simp only [Bool.false_eq_true, ↓reduceIte]
+      by_cases hone : n = 1#usize
+      · simp only [hone, ↓reduceIte]
+        have hidx : Array.index_usize empty1 0#usize ⦃ _ => True ⦄ := by
+          simp [Array.index_usize, UScalar.ofNatCore_val_eq, WP.spec_ok, empty1.property]
+        step with hidx as ⟨d⟩
+        have htgt := is_targeted_total d
+        step with htgt as ⟨b⟩
+        split_ifs <;> simp [WP.spec_ok, hneq]
+      · simp [hone, WP.spec_ok, hneq]
+  · simp only [hgt, ↓reduceIte]
+    have hz : n = 0#usize := by
+      have : ¬ (0 < n.val) := by
+        simpa [GT.gt, UScalar.lt_equiv, UScalar.ofNatCore_val_eq] using hgt
+      apply UScalar.eq_of_val_eq
+      simp [UScalar.ofNatCore_val_eq]
+      omega
+    have hv_eq : input.version_deps = current := hn_zero.mp hz
+    have hev := sufficient_evidence_spec input
+    step with hev as ⟨b, hb⟩
+    cases b with
+    | true =>
+      simp only [↓reduceIte, WP.spec_ok, true_iff]
+      exact ⟨hv_eq, hb.mp rfl⟩
+    | false =>
+      simp only [Bool.false_eq_true, ↓reduceIte, WP.spec_ok, reduceCtorEq, false_iff, not_and]
+      intro _ hev_ok
+      have := hb.mpr hev_ok
+      cases this
+
+private theorem decide_legacy_spec
+    (input : processing_mode.ModeInput) (current : types.VersionDeps) (now_ms : Std.U64) :
+    processing_mode.decide_legacy input current now_ms ⦃ r =>
+      r.1 = processing_mode.ProcessingMode.Reuse ↔
+        (input.opt_out = false ∧
+         TimestampNotExpired input.policy_expiry_ms now_ms ∧
+         TimestampNotExpired input.lease_expiry_ms now_ms ∧
+         input.version_deps = current ∧
+         HasSufficientEvidence input) ⦄ := by
+  unfold processing_mode.decide_legacy
+  dsimp only
+  cases hopt : input.opt_out with
+  | true =>
+    simp only [↓reduceIte]
+    have hp1 := push_dep_spec (Array.repeat 8#usize types.Dependency.Geo) 0#usize
+      types.Dependency.SourceAuthority (by simp [UScalar.ofNatCore_val_eq])
+    step with hp1 as ⟨e1, n1, hn1⟩
+    have hp2 := push_dep_spec e1 n1 types.Dependency.Policy (by omega)
+    step with hp2 as ⟨e2, n2, _⟩
+    simp
+  | false =>
+    simp only [Bool.false_eq_true, ↓reduceIte]
+    cases hpol : input.policy_expiry_ms with
+    | none =>
+      cases hlease : input.lease_expiry_ms with
+      | none =>
+        refine WP.spec_mono (decide_legacy_version_branch input current _) ?_
+        intro r hr
+        rw [hr]; simp [TimestampNotExpired]
+      | some exp =>
+        by_cases hexp : exp < now_ms
+        · simp only [hexp, ↓reduceIte]
+          have hp := push_dep_spec (Array.repeat 8#usize types.Dependency.Geo) 0#usize
+            types.Dependency.SourceAuthority (by simp [UScalar.ofNatCore_val_eq])
+          step with hp as ⟨e1, n1, _⟩
+          simp only [reduceCtorEq, false_iff, not_and]
+          intro _ hl _ _
+          exact hl exp rfl hexp
+        · simp only [hexp, ↓reduceIte]
+          have hexp' : now_ms.val ≤ exp.val := by
+            have : ¬ (exp.val < now_ms.val) := by simpa [UScalar.lt_equiv] using hexp
+            omega
+          refine WP.spec_mono (decide_legacy_version_branch input current _) ?_
+          intro r hr
+          rw [hr]; simp [TimestampNotExpired, hexp']
+    | some pexp =>
+      by_cases hpexp : pexp < now_ms
+      · simp only [hpexp, ↓reduceIte]
+        have hp1 := push_dep_spec (Array.repeat 8#usize types.Dependency.Geo) 0#usize
+          types.Dependency.Policy (by simp [UScalar.ofNatCore_val_eq])
+        step with hp1 as ⟨e1, n1, hn1⟩
+        have hp2 := push_dep_spec e1 n1 types.Dependency.SourceAuthority (by omega)
+        step with hp2 as ⟨e2, n2, _⟩
+        simp only [reduceCtorEq, false_iff, not_and]
+        intro hp _ _ _
+        exact hp pexp rfl hpexp
+      · simp only [hpexp, ↓reduceIte]
+        have hpexp' : now_ms.val ≤ pexp.val := by
+          have : ¬ (pexp.val < now_ms.val) := by simpa [UScalar.lt_equiv] using hpexp
+          omega
+        cases hlease : input.lease_expiry_ms with
+        | none =>
+          refine WP.spec_mono (decide_legacy_version_branch input current _) ?_
+          intro r hr
+          rw [hr]; simp [TimestampNotExpired, hpexp']
+        | some lexp =>
+          by_cases hlexp : lexp < now_ms
+          · simp only [hlexp, ↓reduceIte]
+            have hp := push_dep_spec (Array.repeat 8#usize types.Dependency.Geo) 0#usize
+              types.Dependency.SourceAuthority (by simp [UScalar.ofNatCore_val_eq])
+            step with hp as ⟨e1, n1, _⟩
+            simp only [reduceCtorEq, false_iff, not_and]
+            intro _ hl _ _
+            exact hl lexp rfl hlexp
+          · simp only [hlexp, ↓reduceIte]
+            have hlexp' : now_ms.val ≤ lexp.val := by
+              have : ¬ (lexp.val < now_ms.val) := by simpa [UScalar.lt_equiv] using hlexp
+              omega
+            refine WP.spec_mono (decide_legacy_version_branch input current _) ?_
+            intro r hr
+            rw [hr]; simp [TimestampNotExpired, hpexp', hlexp']
+
+/-- Specification of `select_processing_mode_legacy` (totality + exact `Reuse` characterization). -/
+theorem select_processing_mode_legacy_spec
+    (input : processing_mode.ModeInput) (current : types.VersionDeps) (now_ms : Std.U64) :
+    processing_mode.select_processing_mode_legacy input current now_ms ⦃ d =>
+      d.mode = processing_mode.ProcessingMode.Reuse ↔
+        (input.opt_out = false ∧
+         TimestampNotExpired input.policy_expiry_ms now_ms ∧
+         TimestampNotExpired input.lease_expiry_ms now_ms ∧
+         input.version_deps = current ∧
+         HasSufficientEvidence input) ⦄ := by
+  unfold processing_mode.select_processing_mode_legacy
+  have hdec := decide_legacy_spec input current now_ms
+  step with hdec as ⟨mode, reason, deps, n, hiff⟩
+  exact hiff
+
+/-- Specification of `select_processing_mode` (totality + exact `Reuse` characterization). -/
+theorem select_processing_mode_spec
+    (input : processing_mode.ModeInput) (current : types.VersionDeps)
+    (now_ms : Std.U64) (cached_digests : Option types.MaterialDigests) :
+    processing_mode.select_processing_mode input current now_ms cached_digests ⦃ d =>
+      d.mode = processing_mode.ProcessingMode.Reuse ↔
+        (input.opt_out = false ∧
+         TimestampNotExpired input.policy_expiry_ms now_ms ∧
+         TimestampNotExpired input.lease_expiry_ms now_ms ∧
+         input.version_deps = current ∧
+         HasSufficientEvidence input ∧
+         ∀ md, cached_digests = some md → ¬ MaterialDigestsDiffer input.material_digests md) ⦄ := by
+  unfold processing_mode.select_processing_mode
+  have hdec := decide_legacy_spec input current now_ms
+  step with hdec as ⟨mode, reason, deps, n, hiff⟩
+  have heq := processing_mode_eq_reuse_spec mode
+  step with heq as ⟨b, hb⟩
+  cases b with
+  | true =>
+    have hmode : mode = processing_mode.ProcessingMode.Reuse := hb.mp rfl
+    have hcond := hiff.mp hmode
+    simp only [↓reduceIte]
+    cases cached_digests with
+    | none =>
+      simp only [WP.spec_ok, hmode, true_iff, reduceCtorEq, false_implies, implies_true, and_true]
+      exact hcond
+    | some md =>
+      have hchg := material_digests_changed_spec input.material_digests md
+      step with hchg as ⟨b1, hb1⟩
+      cases b1 with
+      | true =>
+        simp only [↓reduceIte, WP.spec_ok, reduceCtorEq, false_iff, not_and]
+        intro _ _ _ _ _ hall
+        exact hall md rfl (hb1.mp rfl)
+      | false =>
+        simp only [Bool.false_eq_true, ↓reduceIte, WP.spec_ok, hmode, true_iff]
+        refine ⟨hcond.1, hcond.2.1, hcond.2.2.1, hcond.2.2.2.1, hcond.2.2.2.2, ?_⟩
+        intro md' hsome
+        injection hsome with hmd
+        subst hmd
+        intro hdiff
+        have := hb1.mpr hdiff
+        cases this
+  | false =>
+    have hmode : mode ≠ processing_mode.ProcessingMode.Reuse := fun hm => by
+      have := hb.mpr hm; cases this
+    simp only [Bool.false_eq_true, ↓reduceIte, WP.spec_ok, hmode, false_iff]
+    intro hcond
+    exact hmode (hiff.mpr ⟨hcond.1, hcond.2.1, hcond.2.2.1, hcond.2.2.2.1, hcond.2.2.2.2.1⟩)
+
+/-- MATH-10: `select_processing_mode_legacy` is total (never panics or overflows). -/
+theorem select_processing_mode_legacy_total
+    (input : processing_mode.ModeInput) (current : types.VersionDeps) (now_ms : Std.U64) :
+    ∃ d, processing_mode.select_processing_mode_legacy input current now_ms = ok d := by
+  obtain ⟨d, hd, _⟩ := wp_to_ok (select_processing_mode_legacy_spec input current now_ms)
+  exact ⟨d, hd⟩
+
+/-- MATH-10: `select_processing_mode` is total on all inputs (never panics or overflows). -/
+theorem select_processing_mode_total
+    (input : processing_mode.ModeInput) (current : types.VersionDeps)
+    (now_ms : Std.U64) (cached_digests : Option types.MaterialDigests) :
+    ∃ d, processing_mode.select_processing_mode input current now_ms cached_digests = ok d := by
+  obtain ⟨d, hd, _⟩ := wp_to_ok (select_processing_mode_spec input current now_ms cached_digests)
+  exact ⟨d, hd⟩
+
+/-- MATH-10: Exact characterization of when `select_processing_mode_legacy` returns `Reuse`. -/
+theorem select_processing_mode_legacy_reuse_iff
+    (input : processing_mode.ModeInput) (current : types.VersionDeps) (now_ms : Std.U64)
+    (d : processing_mode.ModeDecision)
+    (h : processing_mode.select_processing_mode_legacy input current now_ms = ok d) :
+    d.mode = processing_mode.ProcessingMode.Reuse ↔
+      (input.opt_out = false ∧
+       TimestampNotExpired input.policy_expiry_ms now_ms ∧
+       TimestampNotExpired input.lease_expiry_ms now_ms ∧
+       input.version_deps = current ∧
+       HasSufficientEvidence input) := by
+  have hspec := select_processing_mode_legacy_spec input current now_ms
+  rw [h, WP.spec_ok] at hspec
+  exact hspec
+
+/-- MATH-10 (`F-W2-1` exact `Reuse` characterization): `select_processing_mode` returns
+    `Reuse` if and only if the source is not opted out, neither policy nor lease is expired,
+    all version dependencies match `current`, prior evidence is sufficient, AND any supplied
+    cached material-digest snapshot matches `input.material_digests`. -/
+theorem select_processing_mode_reuse_iff
+    (input : processing_mode.ModeInput) (current : types.VersionDeps)
+    (now_ms : Std.U64) (cached_digests : Option types.MaterialDigests)
+    (d : processing_mode.ModeDecision)
+    (h : processing_mode.select_processing_mode input current now_ms cached_digests = ok d) :
+    d.mode = processing_mode.ProcessingMode.Reuse ↔
+      (input.opt_out = false ∧
+       TimestampNotExpired input.policy_expiry_ms now_ms ∧
+       TimestampNotExpired input.lease_expiry_ms now_ms ∧
+       input.version_deps = current ∧
+       HasSufficientEvidence input ∧
+       ∀ md, cached_digests = some md → ¬ MaterialDigestsDiffer input.material_digests md) := by
+  have hspec := select_processing_mode_spec input current now_ms cached_digests
+  rw [h, WP.spec_ok] at hspec
+  exact hspec
+
+/-- MATH-10 (`F-W2-1` soundness): whenever a cached material-digest snapshot is supplied
+    and `MaterialDigestsDiffer input.material_digests cached` holds, `select_processing_mode`
+    NEVER returns `Reuse`. -/
+theorem select_processing_mode_never_reuses_on_digest_change
+    (input : processing_mode.ModeInput) (current : types.VersionDeps)
+    (now_ms : Std.U64) (cached : types.MaterialDigests)
+    (d : processing_mode.ModeDecision)
+    (hdiff : MaterialDigestsDiffer input.material_digests cached)
+    (h : processing_mode.select_processing_mode input current now_ms (some cached) = ok d) :
+    d.mode ≠ processing_mode.ProcessingMode.Reuse := by
+  intro hreuse
+  have hcond := (select_processing_mode_reuse_iff input current now_ms (some cached) d h).mp hreuse
+  exact hcond.2.2.2.2.2 cached rfl hdiff
+
+/-- MATH-10 (`F-W2-1` upgrade to `BoundedReplay`): whenever the legacy selector would
+    return `Reuse` and `MaterialDigestsDiffer input.material_digests cached` holds,
+    `select_processing_mode` returns `BoundedReplay` with `dependency_count = 1#usize`. -/
+theorem select_processing_mode_bounded_replay_on_digest_change
+    (input : processing_mode.ModeInput) (current : types.VersionDeps)
+    (now_ms : Std.U64) (cached : types.MaterialDigests)
+    (d_leg : processing_mode.ModeDecision)
+    (hleg : processing_mode.select_processing_mode_legacy input current now_ms = ok d_leg)
+    (hreuse : d_leg.mode = processing_mode.ProcessingMode.Reuse)
+    (hdiff : MaterialDigestsDiffer input.material_digests cached) :
+    ∃ d,
+      processing_mode.select_processing_mode input current now_ms (some cached) = ok d ∧
+      d.mode = processing_mode.ProcessingMode.BoundedReplay ∧
+      d.dependency_count = 1#usize := by
+  have hwp : processing_mode.select_processing_mode input current now_ms (some cached) ⦃ d =>
+      d.mode = processing_mode.ProcessingMode.BoundedReplay ∧ d.dependency_count = 1#usize ⦄ := by
+    unfold processing_mode.select_processing_mode
+    have hdec := decide_legacy_spec input current now_ms
+    step with hdec as ⟨mode, reason, deps, n, hiff⟩
+    have hcond := (select_processing_mode_legacy_reuse_iff input current now_ms d_leg hleg).mp hreuse
+    have hmode : mode = processing_mode.ProcessingMode.Reuse := hiff.mpr hcond
+    have heq := processing_mode_eq_reuse_spec mode
+    step with heq as ⟨b, hb⟩
+    have hbt : b = true := hb.mpr hmode
+    simp only [hbt, ↓reduceIte]
+    have hchg := material_digests_changed_spec input.material_digests cached
+    step with hchg as ⟨b1, hb1⟩
+    have hb1t : b1 = true := hb1.mpr hdiff
+    simp only [hb1t, ↓reduceIte, WP.spec_ok, and_self]
+  obtain ⟨d, hd, hmode, hcnt⟩ := wp_to_ok hwp
+  exact ⟨d, hd, hmode, hcnt⟩
+
+/-- MATH-10 (`F-W2-1` legacy vs corrected contrast): when all reuse preconditions hold
+    except that `input.material_digests` differs from `cached`, the legacy selector returns
+    `Reuse` (reproducing F-W2-1) while `select_processing_mode` returns `BoundedReplay`. -/
+theorem select_processing_mode_legacy_vs_corrected_f_w2_1
+    (input : processing_mode.ModeInput) (current : types.VersionDeps)
+    (now_ms : Std.U64) (cached : types.MaterialDigests)
+    (hopt : input.opt_out = false)
+    (hpol : TimestampNotExpired input.policy_expiry_ms now_ms)
+    (hlease : TimestampNotExpired input.lease_expiry_ms now_ms)
+    (hver : input.version_deps = current)
+    (hev : HasSufficientEvidence input)
+    (hdiff : MaterialDigestsDiffer input.material_digests cached) :
+    (∃ d_leg, processing_mode.select_processing_mode_legacy input current now_ms = ok d_leg ∧
+      d_leg.mode = processing_mode.ProcessingMode.Reuse) ∧
+    (∃ d_fix, processing_mode.select_processing_mode input current now_ms (some cached) = ok d_fix ∧
+      d_fix.mode = processing_mode.ProcessingMode.BoundedReplay ∧
+      d_fix.dependency_count = 1#usize) := by
+  obtain ⟨d_leg, hleg⟩ := select_processing_mode_legacy_total input current now_ms
+  have hreuse : d_leg.mode = processing_mode.ProcessingMode.Reuse :=
+    (select_processing_mode_legacy_reuse_iff input current now_ms d_leg hleg).mpr
+      ⟨hopt, hpol, hlease, hver, hev⟩
+  exact ⟨⟨d_leg, hleg, hreuse⟩,
+    select_processing_mode_bounded_replay_on_digest_change input current now_ms cached d_leg hleg hreuse hdiff⟩
+
+/-- MATH-10: Opt-out outranks every version and digest check, always returning `BoundedReplay`. -/
+theorem select_processing_mode_opt_out
+    (input : processing_mode.ModeInput) (current : types.VersionDeps)
+    (now_ms : Std.U64) (cached_digests : Option types.MaterialDigests)
+    (hopt : input.opt_out = true) :
+    ∃ d,
+      processing_mode.select_processing_mode input current now_ms cached_digests = ok d ∧
+      d.mode = processing_mode.ProcessingMode.BoundedReplay ∧
+      d.dependency_count = 2#usize := by
+  have hwp : processing_mode.select_processing_mode input current now_ms cached_digests ⦃ d =>
+      d.mode = processing_mode.ProcessingMode.BoundedReplay ∧ d.dependency_count = 2#usize ⦄ := by
+    unfold processing_mode.select_processing_mode
+    have hdec : processing_mode.decide_legacy input current now_ms ⦃ r =>
+        r.1 = processing_mode.ProcessingMode.BoundedReplay ∧ r.2.2.2 = 2#usize ⦄ := by
+      unfold processing_mode.decide_legacy
+      simp only [hopt, ↓reduceIte]
+      have hp1 := push_dep_spec (Array.repeat 8#usize types.Dependency.Geo) 0#usize
+        types.Dependency.SourceAuthority (by simp [UScalar.ofNatCore_val_eq])
+      step with hp1 as ⟨e1, n1, hn1⟩
+      have hp2 := push_dep_spec e1 n1 types.Dependency.Policy (by omega)
+      step with hp2 as ⟨e2, n2, hn2⟩
+      have hn2_eq : n2 = 2#usize := by
+        apply UScalar.eq_of_val_eq
+        simp only [UScalar.ofNatCore_val_eq] at hn1 hn2 ⊢
+        omega
+      simp [hn2_eq]
+    step with hdec as ⟨mode, reason, deps, n, hmode, hn⟩
+    have heq := processing_mode_eq_reuse_spec mode
+    step with heq as ⟨b, hb⟩
+    have hbf : b = false := by
+      cases b with
+      | false => rfl
+      | true => have := hb.mp rfl; rw [hmode] at this; cases this
+    simp only [hbf, Bool.false_eq_true, ↓reduceIte, WP.spec_ok]
+    exact ⟨hmode, hn⟩
+  obtain ⟨d, hd, hmode, hcnt⟩ := wp_to_ok hwp
+  exact ⟨d, hd, hmode, hcnt⟩
