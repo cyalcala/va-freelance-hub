@@ -1,4 +1,6 @@
-﻿# Astra777 — operational continuation contract
+Foundation v2 strategy reset (2026-11-28): docs/rewrite/FOUNDATION_V2_CHARTER.md controls conflicting prior targets on merge; read docs/rewrite/FREE_TIER_OPERATING_SPEC.md and docs/rewrite/MATHEMATICAL_FOUNDATION.md first. Historical runtime facts below are not marching orders. No mandatory ten-minute cadence or 100/day floor; no GCP-only mandate, no unauthorized cloud operations. Next: read-only PR0.
+
+# Astra777 — operational continuation contract
 
 Updated 2026-10-27, Singapore/Manila (+08:00). Mission remains active: move toward
 100–150+ independently verified new PH-eligible remote publications/day while
