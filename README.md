@@ -1,5 +1,8 @@
 # VA Freelance Hub
 
+> **2026-11-28 — Foundation v2 rewrite doctrine.** Read [Pragmatic Rust Rewrite Master Plan](docs/plans/FOUNDATION_V2_PRAGMATIC_RUST_REWRITE.md) first for v2 goals, cost, cadence, scope and architectural decisions. It supersedes conflicting historical requirements to poll/publish every ten minutes, deliver a fixed 100/day floor or 150/day stretch, continuously mine the world, or mandate a particular execution provider. These are no longer compulsory v2 goals. Existing source permissions, publication safety, incident containment, production authority and historical evidence remain intact. No runtime or billing change follows from this documentation. Treat current deployment descriptions below as dated observations requiring PR0 verification.
+
+
 VA Freelance Hub is a public job index and portfolio project for Filipino
 freelancers. It collects allowed public remote and VA-friendly opportunities,
 keeps a VA-friendly company directory, and demonstrates a recovery-driven

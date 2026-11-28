@@ -1,5 +1,8 @@
 # VA Freelance Hub — maintainer bootloader
 
+> **2026-11-28 — Foundation v2 rewrite doctrine.** Read [Pragmatic Rust Rewrite Master Plan](../plans/FOUNDATION_V2_PRAGMATIC_RUST_REWRITE.md) first for v2 goals, cost, cadence, scope and architecture. It supersedes conflicting historical requirements to poll/publish every ten minutes, deliver a fixed 100/day floor or 150/day stretch, continuously mine the world, or mandate a particular execution provider. These are no longer compulsory v2 goals. Existing source permissions, publication safety, incident containment, production authority and historical evidence remain intact. No runtime or billing change follows from this documentation. All original mathematical challenges remain in scope for proportionate evidence; additional work areas are not a mandate to implement unnecessary machinery.
+
+
 Version 6.5 · 2026-10-27 Git authority · GCP background execution · GitHub provenance · PH/VA freshness priority
 
 **Identity:**
