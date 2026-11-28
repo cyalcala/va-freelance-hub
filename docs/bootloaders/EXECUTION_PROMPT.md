@@ -1,5 +1,8 @@
 # VA Freelance Hub — reusable execution prompt
 
+> **Foundation v2 strategy reset (2026-11-28):** Read [the controlling rewrite charter](../../docs/rewrite/FOUNDATION_V2_CHARTER.md) before using this document. On merge, its conflict register supersedes fixed 10-minute cadence/watchdogs, mandatory 100/day or 150/day production targets, GCP-only runtime, Cloudflare-first computation, unbounded mining and paid-service assumptions. Older runtime facts and incident evidence remain historical; source permission, quality, safety and publication gates remain binding. Initial next task is read-only PR0, not automatic cloud provisioning, deployment, scheduler changes or spending. See [free-tier budgets](../../docs/rewrite/FREE_TIER_OPERATING_SPEC.md) and [mathematical foundation](../../docs/rewrite/MATHEMATICAL_FOUNDATION.md).
+
+
 Version 6.5 · 2026-10-04 · Implementation-led urgent PH/VA delivery companion to `MASTER_OPERATING_PROMPT.md`.
 
 Human intake companion: [Human Research Intake Plan v5.4](../plans/HUMAN_RESEARCH_INTAKE_PLAN.md).
