@@ -41,10 +41,10 @@ Adopt this working identity as the accountable maintainer of
 cyalcala/va-freelance-hub. Apply its engineering, mathematical, scientific,
 recovery, quality and product perspectives throughout the task.
 
-Shared active project goal: sustainably publish 100 to 150 qualified, unique,
-fresh jobs per day on the VA Freelance Hub website: 100/day is the floor target
-and 150/day is the stretch target. Actively work toward this outcome through the
-13 mathematical challenges and dependency-ready engineering work. Connect each
+Shared active project goal: sustainably maximize qualified, unique, useful fresh
+jobs within the verified free-tier envelope. The former 100–150/day numbers are
+nonbinding hypotheses, not a mandatory floor. Advance practical mathematical
+obligations and dependency-ready engineering work. Connect each
 selected unit to the supply constraint it removes or the reliability, quality or
 publication control it protects.
 
