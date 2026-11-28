@@ -1,5 +1,8 @@
 # VA Freelance Hub — master operating prompt
 
+> **Foundation v2 strategy reset (2026-11-28):** Read [the controlling rewrite charter](../../docs/rewrite/FOUNDATION_V2_CHARTER.md) before using this document. On merge, its conflict register supersedes fixed 10-minute cadence/watchdogs, mandatory 100/day or 150/day production targets, GCP-only runtime, Cloudflare-first computation, unbounded mining and paid-service assumptions. Older runtime facts and incident evidence remain historical; source permission, quality, safety and publication gates remain binding. Initial next task is read-only PR0, not automatic cloud provisioning, deployment, scheduler changes or spending. See [free-tier budgets](../../docs/rewrite/FREE_TIER_OPERATING_SPEC.md) and [mathematical foundation](../../docs/rewrite/MATHEMATICAL_FOUNDATION.md).
+
+
 Version 6.5 · 2026-10-04 · Reconciled GCP execution, Git provenance and PH/VA freshness priority
 
 Human intake companion: [Human Research Intake Plan v5.4](../plans/HUMAN_RESEARCH_INTAKE_PLAN.md).
@@ -51,14 +54,14 @@ Maintain a trustworthy public opportunity index for people working from the
 Philippines. Jobs are perishable: optimize qualified value times freshness and
 probability of remaining actionable at public exposure. Delay is a quality cost. Improve dependable, qualified, unique fresh supply, usefulness,
 reliability and recoverability within accepted source, safety and cost bounds.
-The accepted product ambition is a 100/day floor and 150/day stretch, assessed
-under the current metric contract. These are targets, not guarantees or current
-results. A quiet market and an unobserved or broken pipeline are different facts.
+The former 100/day floor and 150/day stretch are nonbinding historical ambitions.
+Measure useful verified supply under actual resource and source constraints; adopt
+throughput targets only after evidence of feasible capacity. A quiet market and an unobserved or broken pipeline are different facts.
 
-Shared active project goal: sustainably publish 100 to 150 qualified, unique,
-fresh jobs per day on the VA Freelance Hub website: 100/day is the floor target
-and 150/day is the stretch target. Actively work toward this outcome through the
-13 mathematical challenges and dependency-ready engineering work. Connect each
+Shared active project goal: sustainably maximize qualified, unique, useful fresh
+jobs within the verified free-tier envelope. The former 100–150/day numbers are
+nonbinding hypotheses, not a mandatory floor. Advance practical mathematical
+obligations and dependency-ready engineering work. Connect each
 selected unit to the supply constraint it removes or the reliability, quality or
 publication control it protects.
 
@@ -860,7 +863,7 @@ resolved permitted mechanisms, recurring normal qualification/publication flow,
 measured health/economics, adaptive sparse polling and no material regression.
 Account for all 108 submitted labels and explicit duplicate/blocked/unresolved/
 directory-only populations; freeze and justify the numerator/denominator/window.
-That completion is separate from the sustained 100/day floor and 150/day stretch.
+That completion is separate from independently measured feasible daily flow.
 At each cycle recover durable source memory, choose the next feasible source or
 bottleneck, verify flow, measure, checkpoint and continue within TASK authority.
 
@@ -1038,7 +1041,7 @@ expiry and original submission/publication age remain distinct. Duplicate sighti
 reposts and replay never reset freshness. Show timestamp resolution/clock skew and
 visibility sampling intervals. A publish decision or D1 sync is not public exposure.
 
-| Population and latency | Initial proposed p95 target |
+| Population and latency | Historical p95 hypothesis (not an active SLO) |
 | --- | --- |
 | Established authorized source: discovery -> qualification decision | <=10 minutes |
 | Cleared established job: qualification clearance -> public visibility | <=5 minutes |
@@ -1068,7 +1071,7 @@ leave nearly 60 minutes of pre-dispatch wait and cannot establish the proposed
 5/15-minute targets. Diagnose stage delay and implement an authorized bounded
 cadence/event-driven improvement if justified; do not promise the SLO from docs.
 Retain all 15 PH fields, 108-label steady-state coverage, complete Manila-day fresh
-first-publication flow, 100/day floor and 150/day stretch. Raw throughput/stock,
+first-publication flow and measured feasible supply (no mandatory floor). Raw throughput/stock,
 backlog imports, duplicate reactivations and replays are separate outcomes.
 
 ### GitHub durability and GCP deployment provenance

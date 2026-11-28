@@ -1,5 +1,7 @@
 # VA Freelance Hub
 
+> **Foundation v2 strategy reset (2026-11-28):** Read [the controlling rewrite charter](docs/rewrite/FOUNDATION_V2_CHARTER.md) before using this document. On merge, its conflict register supersedes fixed 10-minute cadence/watchdogs, mandatory 100/day or 150/day production targets, GCP-only runtime, Cloudflare-first computation, unbounded mining and paid-service assumptions. Older runtime facts and incident evidence remain historical; source permission, quality, safety and publication gates remain binding. Initial next task is read-only PR0, not automatic cloud provisioning, deployment, scheduler changes or spending. See [free-tier budgets](docs/rewrite/FREE_TIER_OPERATING_SPEC.md) and [mathematical foundation](docs/rewrite/MATHEMATICAL_FOUNDATION.md).
+
 VA Freelance Hub is a public job index and portfolio project for Filipino
 freelancers. It collects allowed public remote and VA-friendly opportunities,
 keeps a VA-friendly company directory, and demonstrates a recovery-driven
@@ -8,13 +10,13 @@ agentic engineering loop. Canonical Git history is on
 
 Live site: [remotejobs-ph.pages.dev](https://remotejobs-ph.pages.dev)
 
-## Current Production Stack
+## Previously documented production stack (revalidate actual deployment)
 
 - Runtime and package manager: Bun workspaces
 - Frontend: Astro in `apps/web`
 - Hosting: Cloudflare Pages
 - Database: Cloudflare D1
-- Primary ingestion clock: Cloudflare Worker every 10 minutes
+- Previously documented ingestion clock: Cloudflare Worker every 10 minutes (legacy cadence, not a v2 requirement)
 - Scheduled maintenance: residual GitHub Actions pulse workflows; runtime acceptance is separate from Git authority.
 - Ingestion API: Astro API routes under `apps/web/src/pages/api`
 - Collection and triage: TypeScript packages under `packages/scraper`, with a
@@ -100,7 +102,7 @@ Start a fresh planning or execution session with
 `docs/bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md`. Its counts and SHAs must be
 revalidated against the repository and production evidence before use.
 
-## Architecture
+## Historical architecture (not the v2 target)
 
 ```text
 Cloudflare freshness Worker (every 10 minutes)
