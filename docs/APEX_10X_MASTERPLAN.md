@@ -12,7 +12,7 @@
 
 Transform VA Freelance Hub into a high-yield, high-reliability, Philippines-centered remote job discovery engine capable of delivering approximately **10x qualified opportunity inflow** while preserving its founding principles:
 1. **Conservative Source Governance**: No unauthorized scraping, no CAPTCHA/paywall bypass, no terms violations.
-2. **Cloudflare-First Zero-Cost Architecture**: Maintain 100% operation within free-tier limits ($0/month).
+2. **Static-First, Cost-Governed Architecture**: Target zero incremental spend with measured free-tier budgets, headroom and fail-closed admission; Cloudflare serves static artifacts, not the factory.
 3. **GitHub-Backed Durability & Recovery**: Every accepted slice is verified, committed, pushed, and observable in CI.
 4. **Deterministic Pre-Filtering**: Zero-waste multi-stage ingestion rejecting disqualifiers before invoking AI.
 5. **Exact Attribution & Linkback**: Direct users to the original employer or posting page; store minimal discovery metadata.
@@ -120,8 +120,8 @@ All major work units execute through this structured verification cycle:
 ## 5. Non-Regression Budget
 
 An expansion that damages data quality or system reliability is considered a failure. The system must maintain:
-- **Zero Paid Infrastructure**: 100% \$0/month hobby tier.
-- **Subrequest Cap**: Max 50 subrequests per Cloudflare Worker invocation.
-- **Freshness Invariant**: Primary clock beats every 10 min; secondary watchdog alerts at 15 min.
+- **Zero Unauthorized Spend**: Published free tiers are ceilings, not entitlements; enforce the v2 resource budget and verify actual billing.
+- **Subrequest Cap**: 50 external subrequests is the provider ceiling; reserve no more than 25 per v2 invocation including retries and redirects.
+- **Freshness Policy**: One fenced adaptive scheduler; initial budgeted pilot in the v2 specification. No fixed ten-minute heartbeat or mandatory watchdog.
 - **Zero Leakage**: Non-publishing shadows must NEVER publish to live active listings.
 - **Deterministic Truth**: Never fabricate timestamps, salary figures, or shift details. Return `null` when unstated.
