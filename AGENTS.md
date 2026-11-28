@@ -1,5 +1,7 @@
 # VA Freelance Hub - Agent Context
 
+> **Foundation v2 strategy reset (2026-11-28):** Read [the controlling rewrite charter](docs/rewrite/FOUNDATION_V2_CHARTER.md) before using this document. On merge, its conflict register supersedes fixed 10-minute cadence/watchdogs, mandatory 100/day or 150/day production targets, GCP-only runtime, Cloudflare-first computation, unbounded mining and paid-service assumptions. Older runtime facts and incident evidence remain historical; source permission, quality, safety and publication gates remain binding. Initial next task is read-only PR0, not automatic cloud provisioning, deployment, scheduler changes or spending. See [free-tier budgets](docs/rewrite/FREE_TIER_OPERATING_SPEC.md) and [mathematical foundation](docs/rewrite/MATHEMATICAL_FOUNDATION.md).
+
 ## What This Is
 
 VA Freelance Hub is a public portfolio project and resource site for Filipino
@@ -250,7 +252,7 @@ republishing automatically compliant.
 
 ## Engineering Preferences
 
-- Keep GCP as primary background execution, GitHub as canonical Git memory, GitLab as the secondary mirror, Turso as acquisition, and Cloudflare/D1 as serving; verify actual resources and residual clocks.
+- GitHub remains canonical. For v2, choose the simplest measured free execution environment; GCP is conditional, GitLab mirroring optional, Turso a candidate lake, Cloudflare static serving, and D1 optional bounded publication/control storage. Verify actual resources and residual clocks before changing them.
 - Make vertical slices that leave the site deployable after each commit.
 - Add observability before increasing ingestion complexity.
 - Prefer data-source configuration and source status tables over hard-coded
